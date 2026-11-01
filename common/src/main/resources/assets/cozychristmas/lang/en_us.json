@@ -1,0 +1,9 @@
+{
+  "commands.cozychristmas.karma.value": "%s: karma %s (%s)",
+  "commands.cozychristmas.season.active": "Christmas season is on (today %s, source: %s)",
+  "commands.cozychristmas.season.delivery": "Christmas season is on and the workshop is loading the sleigh (today %s, source: %s)",
+  "commands.cozychristmas.season.inactive": "Christmas season is off (today %s, source: %s)",
+  "karma.cozychristmas.tier.naughty": "naughty",
+  "karma.cozychristmas.tier.neutral": "neutral",
+  "karma.cozychristmas.tier.nice": "nice"
+}

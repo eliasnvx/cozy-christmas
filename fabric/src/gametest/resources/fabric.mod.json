@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "cozychristmas-test",
+  "version": "0.0.0",
+  "name": "Cozy Christmas GameTests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.eliasnvx.cozychristmas.fabric.gametest.KarmaGameTestsFabric"
+    ]
+  },
+  "depends": {
+    "cozychristmas": "*"
+  }
+}

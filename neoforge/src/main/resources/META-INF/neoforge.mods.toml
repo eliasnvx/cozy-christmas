@@ -1,0 +1,41 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${version}"
+displayName = "${mod_name}"
+authors = "eliasnvx"
+displayURL = "https://cubimoon.com"
+description = '''
+A Christmas adventure: Santa's workshop, Krampus's lair and goblin camps in the snow, and presents that hold gifts or coal depending on your karma.
+'''
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${minecraft_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "[${neoforge_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "architectury"
+type = "required"
+versionRange = "[${architectury_api_version},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "geckolib"
+type = "required"
+versionRange = "[${geckolib_version},)"
+ordering = "AFTER"
+side = "BOTH"

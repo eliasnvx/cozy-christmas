@@ -1,0 +1,9 @@
+{
+  "commands.cozychristmas.karma.value": "%s: карма %s (%s)",
+  "commands.cozychristmas.season.active": "Рождественский сезон идёт (сегодня %s, источник: %s)",
+  "commands.cozychristmas.season.delivery": "Рождественский сезон идёт, в мастерской грузят сани (сегодня %s, источник: %s)",
+  "commands.cozychristmas.season.inactive": "Рождественский сезон не идёт (сегодня %s, источник: %s)",
+  "karma.cozychristmas.tier.naughty": "плохая",
+  "karma.cozychristmas.tier.neutral": "нейтральная",
+  "karma.cozychristmas.tier.nice": "хорошая"
+}
