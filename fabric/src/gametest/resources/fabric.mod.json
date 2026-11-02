@@ -10,7 +10,8 @@
     ],
     "fabric-gametest": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.KarmaGameTestsFabric",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticSlotGameTestsFabric"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticSlotGameTestsFabric",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.ToastySetGameTestsFabric"
     ],
     "fabric-client-gametest": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest"

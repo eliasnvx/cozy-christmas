@@ -4,6 +4,7 @@ import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.eliasnvx.cozychristmas.command.CozyCommands;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsEvents;
+import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
 import dev.eliasnvx.cozychristmas.karma.KarmaRules;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
@@ -36,6 +37,7 @@ public final class CozyChristmas {
         CozyItems.TABS.register();
 
         CosmeticsEvents.register();
+        ToastySet.register();
         KarmaRules.register();
         CommandRegistrationEvent.EVENT.register(CozyCommands::register);
 

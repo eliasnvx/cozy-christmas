@@ -19,6 +19,7 @@
   },
   "mixins": [
     "InventoryMenuMixin",
+    "LivingEntityMixin",
     "ServerGamePacketListenerImplMixin"
   ]
 }

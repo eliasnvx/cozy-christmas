@@ -2,9 +2,11 @@ package dev.eliasnvx.cozychristmas.config;
 
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import dev.eliasnvx.cozychristmas.cosmetic.ToastySettings;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommonConfigTest {
 
@@ -22,5 +24,17 @@ class CommonConfigTest {
         assertEquals(CommonConfig.DEFAULTS.karma().niceAbove(), config.karma().niceAbove());
         assertEquals(CommonConfig.DEFAULTS.season(), config.season());
         assertEquals(CommonConfig.DEFAULTS.presents(), config.presents());
+        assertEquals(CommonConfig.DEFAULTS.toastySet(), config.toastySet());
+    }
+
+    @Test
+    void toastySpeedBonusOutOfRangeTakesTheDefault() {
+        var tooFast = JsonParser.parseString("{\"toasty_set\": {\"snow_speed_bonus\": 5.0}}");
+        assertEquals(ToastySettings.DEFAULTS.snowSpeedBonus(),
+                CommonConfig.CODEC.parse(JsonOps.INSTANCE, tooFast).getOrThrow().toastySet().snowSpeedBonus());
+        var off = JsonParser.parseString("{\"toasty_set\": {\"snow_speed_bonus\": 0}}");
+        ToastySettings toasty = CommonConfig.CODEC.parse(JsonOps.INSTANCE, off).getOrThrow().toastySet();
+        assertEquals(0.0, toasty.snowSpeedBonus());
+        assertTrue(toasty.keepsWarm());
     }
 }

@@ -14,9 +14,11 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerInput;
@@ -29,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Visual check of the knitwear on the player (every sweater, dyed and undyed knitwear, over armor, first person) and
@@ -123,6 +126,24 @@ public final class CosmeticsLookClientTest implements FabricClientGameTest {
                     "shift-click did not put the hat into its slot"));
             context.runOnClient(mc -> mc.gui.toastManager().clear());
             context.takeScreenshot("inventory_panel");
+            // the whole outfit is on: the worn hat's tooltip counts the Toasty set complete
+            context.runOnClient(mc -> {
+                ItemStack hat = CosmeticsManager.get(mc.player).get(CosmeticSlot.HEAD);
+                String tooltip = Screen.getTooltipFromItem(mc, hat).stream().map(Component::getString)
+                        .collect(Collectors.joining("\n"));
+                check(tooltip.contains("(4/4)"), "the Toasty set is not counted complete:\n" + tooltip);
+            });
+            double[] hatCenter = context.computeOnClient(mc -> {
+                AbstractContainerScreenAccessor screen = (AbstractContainerScreenAccessor) mc.gui.screen();
+                Slot slot = mc.player.inventoryMenu.getSlot(cosmeticSlot(mc.player.inventoryMenu, CosmeticSlot.HEAD));
+                int scale = mc.getWindow().getGuiScale();
+                return new double[]{(screen.cozychristmas$leftPos() + slot.x + 8) * scale,
+                        (screen.cozychristmas$topPos() + slot.y + 8) * scale};
+            });
+            context.getInput().setCursorPos(hatCenter[0], hatCenter[1]);
+            context.waitTicks(2);
+            context.takeScreenshot("toasty_set_tooltip");
+            context.getInput().setCursorPos(0, 0);
             context.runOnClient(mc -> mc.gameMode.handleContainerInput(mc.player.inventoryMenu.containerId,
                     cosmeticSlot(mc.player.inventoryMenu, CosmeticSlot.HEAD), 0, ContainerInput.QUICK_MOVE, mc.player));
             context.waitTicks(SETTLE / 2);

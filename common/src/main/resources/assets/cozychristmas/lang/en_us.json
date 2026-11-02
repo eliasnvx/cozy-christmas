@@ -19,5 +19,8 @@
   "karma.cozychristmas.tier.naughty": "naughty",
   "karma.cozychristmas.tier.neutral": "neutral",
   "karma.cozychristmas.tier.nice": "nice",
-  "tooltip.cozychristmas.slot": "Worn in the %s slot"
+  "tooltip.cozychristmas.slot": "Worn in the %s slot",
+  "tooltip.cozychristmas.toasty_set": "Toasty set (%s/%s)",
+  "tooltip.cozychristmas.toasty_set.snow_speed": " Faster on snow",
+  "tooltip.cozychristmas.toasty_set.warm": " No freezing in powder snow"
 }

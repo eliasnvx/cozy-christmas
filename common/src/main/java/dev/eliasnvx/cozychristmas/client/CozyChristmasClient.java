@@ -6,8 +6,12 @@ import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticLooks;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticShape;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
+import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
+import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -37,5 +41,20 @@ public final class CozyChristmasClient {
             lines.add(Component.translatable("tooltip.cozychristmas.slot", Component.translatable(slot.translationKey()))
                     .withStyle(ChatFormatting.GRAY));
         }
+        if (stack.is(CozyTags.TOASTY_SET)) {
+            appendToastySet(lines);
+        }
+    }
+
+    /** "Toasty set (2/4)" for the local player, then the bonuses, lit while the set is complete. */
+    private static void appendToastySet(List<Component> lines) {
+        Player player = Minecraft.getInstance().player;
+        int worn = player == null ? 0 : ToastySet.piecesWorn(CosmeticsManager.get(player));
+        boolean complete = worn == ToastySet.SLOTS.size();
+        lines.add(Component.translatable("tooltip.cozychristmas.toasty_set", worn, ToastySet.SLOTS.size())
+                .withStyle(complete ? ChatFormatting.GOLD : ChatFormatting.GRAY));
+        ChatFormatting bonus = complete ? ChatFormatting.BLUE : ChatFormatting.DARK_GRAY;
+        lines.add(Component.translatable("tooltip.cozychristmas.toasty_set.warm").withStyle(bonus));
+        lines.add(Component.translatable("tooltip.cozychristmas.toasty_set.snow_speed").withStyle(bonus));
     }
 }

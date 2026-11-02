@@ -6,7 +6,6 @@ import dev.eliasnvx.cozychristmas.cosmetic.menu.InventoryMenuCosmetics;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -361,17 +360,9 @@ public final class CosmeticSlotGameTests {
             this.helper = helper;
             Vec3 center = helper.absoluteVec(TEST_AREA_CENTER);
             this.dropArea = new AABB(center, center).inflate(DROP_RADIUS);
-            this.player = mockPlayer(helper); // joins at world spawn and in creative
-            player.snapTo(center);
-            player.setGameMode(GameType.SURVIVAL);
-            clientLoaded();
+            this.player = TestPlayers.survival(helper, TEST_AREA_CENTER);
             this.menu = player.inventoryMenu;
             this.hat = ((InventoryMenuCosmetics) menu).cozychristmas$cosmeticStart() + CosmeticSlot.HEAD.ordinal();
-        }
-
-        @SuppressWarnings("removal") // vanilla's only way to get a mock player into the level; no replacement in 26.3
-        private static ServerPlayer mockPlayer(GameTestHelper helper) {
-            return helper.makeMockServerPlayerInLevel();
         }
 
         Inventory inventory() {
@@ -416,13 +407,8 @@ public final class CosmeticSlotGameTests {
         void respawn(boolean leavingTheEnd) {
             player = level().getServer().getPlayerList().respawn(player, leavingTheEnd,
                     leavingTheEnd ? Entity.RemovalReason.CHANGED_DIMENSION : Entity.RemovalReason.KILLED);
-            clientLoaded();
+            TestPlayers.loaded(player);
             menu = player.inventoryMenu;
-        }
-
-        /** What a real client sends once the world is shown; until then the server keeps the player invulnerable. */
-        private void clientLoaded() {
-            player.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
         }
 
         void withKeepInventory(boolean keep, Runnable body) {
@@ -456,7 +442,7 @@ public final class CosmeticSlotGameTests {
 
         void close() {
             drops().forEach(Entity::discard);
-            level().getServer().getPlayerList().remove(player);
+            TestPlayers.remove(helper, player);
         }
 
         ItemStack worn() {

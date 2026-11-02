@@ -5,12 +5,10 @@ import dev.eliasnvx.cozychristmas.karma.Karma;
 import dev.eliasnvx.cozychristmas.karma.KarmaManager;
 import dev.eliasnvx.cozychristmas.karma.KarmaSettings;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -103,18 +101,13 @@ public final class KarmaGameTests {
     }
 
     /** Runs {@code body} with a survival mock player, then removes the player the body returns (a respawn replaces it). */
-    @SuppressWarnings("removal") // vanilla's only way to get a mock player into the level; no replacement in 26.3
     private static void withReplacedPlayer(GameTestHelper helper, UnaryOperator<ServerPlayer> body) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel(); // joins at world spawn, in creative
-        player.snapTo(helper.absoluteVec(TEST_AREA_CENTER));
-        player.setGameMode(GameType.SURVIVAL);
-        // what a real client sends once the world is shown; until then the server keeps the player invulnerable
-        player.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
+        ServerPlayer player = TestPlayers.survival(helper, TEST_AREA_CENTER);
         try {
             player = body.apply(player);
             helper.succeed();
         } finally {
-            helper.getLevel().getServer().getPlayerList().remove(player);
+            TestPlayers.remove(helper, player);
         }
     }
 }
