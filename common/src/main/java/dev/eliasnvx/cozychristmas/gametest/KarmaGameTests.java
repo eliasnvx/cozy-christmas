@@ -24,16 +24,12 @@ import java.util.function.UnaryOperator;
  */
 public final class KarmaGameTests {
 
-    /** A test: its name and body. The loader glue registers every entry of {@link #ALL}. */
-    public record Entry(String name, Consumer<GameTestHelper> body) {
-    }
-
-    public static final List<Entry> ALL = List.of(
-            new Entry("karma_stays_in_range", KarmaGameTests::karmaStaysInRange),
-            new Entry("hurting_a_villager_is_naughty", KarmaGameTests::hurtingAVillagerIsNaughty),
-            new Entry("hurting_a_zombie_is_fine", KarmaGameTests::hurtingAZombieIsFine),
-            new Entry("killing_a_villager_costs_more", KarmaGameTests::killingAVillagerCostsMore),
-            new Entry("karma_survives_death", KarmaGameTests::karmaSurvivesDeath));
+    public static final List<GameTestEntry> ALL = List.of(
+            new GameTestEntry("karma_stays_in_range", KarmaGameTests::karmaStaysInRange),
+            new GameTestEntry("hurting_a_villager_is_naughty", KarmaGameTests::hurtingAVillagerIsNaughty),
+            new GameTestEntry("hurting_a_zombie_is_fine", KarmaGameTests::hurtingAZombieIsFine),
+            new GameTestEntry("killing_a_villager_costs_more", KarmaGameTests::killingAVillagerCostsMore),
+            new GameTestEntry("karma_survives_death", KarmaGameTests::karmaSurvivesDeath));
 
     private static final Vec3 TEST_AREA_CENTER = new Vec3(1.5, 1.0, 1.5);
 

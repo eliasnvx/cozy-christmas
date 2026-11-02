@@ -5,8 +5,15 @@
   "name": "Cozy Christmas GameTests",
   "environment": "*",
   "entrypoints": {
+    "client": [
+      "dev.eliasnvx.cozychristmas.fabric.gametest.ClientTestExit"
+    ],
     "fabric-gametest": [
-      "dev.eliasnvx.cozychristmas.fabric.gametest.KarmaGameTestsFabric"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.KarmaGameTestsFabric",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticSlotGameTestsFabric"
+    ],
+    "fabric-client-gametest": [
+      "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest"
     ]
   },
   "depends": {

@@ -15,6 +15,9 @@
   "entrypoints": {
     "main": [
       "dev.eliasnvx.cozychristmas.fabric.CozyChristmasFabric"
+    ],
+    "client": [
+      "dev.eliasnvx.cozychristmas.fabric.CozyChristmasFabricClient"
     ]
   },
   "depends": {
@@ -24,5 +27,8 @@
     "architectury": ">=${architectury_api_version}",
     "geckolib": ">=${geckolib_version}",
     "java": ">=25"
-  }
+  },
+  "mixins": [
+    "cozychristmas.mixins.json"
+  ]
 }

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "cozychristmas_sweater",
+  "pattern": [
+    "W W",
+    "WCW",
+    "WWW"
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "C": "minecraft:honeycomb"
+  },
+  "result": {
+    "id": "cozychristmas:bee_sweater"
+  }
+}

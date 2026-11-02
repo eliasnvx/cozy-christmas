@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "cozychristmas:item/scarf",
+    "layer1": "cozychristmas:item/scarf_overlay"
+  }
+}

@@ -3,7 +3,10 @@ package dev.eliasnvx.cozychristmas;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.eliasnvx.cozychristmas.command.CozyCommands;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
+import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsEvents;
 import dev.eliasnvx.cozychristmas.karma.KarmaRules;
+import dev.eliasnvx.cozychristmas.registry.CozyComponents;
+import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +30,12 @@ public final class CozyChristmas {
 
         CozyConfig.loadCommon();
 
+        // components first: items read them in their properties
+        CozyComponents.REGISTER.register();
+        CozyItems.REGISTER.register();
+        CozyItems.TABS.register();
+
+        CosmeticsEvents.register();
         KarmaRules.register();
         CommandRegistrationEvent.EVENT.register(CozyCommands::register);
 

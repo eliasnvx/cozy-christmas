@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.platform.neoforge;
 
 import dev.eliasnvx.cozychristmas.CozyChristmas;
+import dev.eliasnvx.cozychristmas.cosmetic.CosmeticInventory;
 import dev.eliasnvx.cozychristmas.karma.Karma;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.IEventBus;
@@ -21,6 +22,12 @@ public final class PlatformHelperImpl {
                     .copyOnDeath()
                     .build());
 
+    private static final Supplier<AttachmentType<CosmeticInventory>> COSMETICS = ATTACHMENTS.register("cosmetics",
+            () -> AttachmentType.builder(() -> CosmeticInventory.EMPTY)
+                    .serialize(CosmeticInventory.CODEC.fieldOf("cosmetics"))
+                    .copyOnDeath()
+                    .build());
+
     private PlatformHelperImpl() {
     }
 
@@ -35,5 +42,13 @@ public final class PlatformHelperImpl {
 
     public static void setKarma(Player player, Karma karma) {
         player.setData(KARMA, karma);
+    }
+
+    public static CosmeticInventory getCosmetics(Player player) {
+        return player.getData(COSMETICS);
+    }
+
+    public static void setCosmetics(Player player, CosmeticInventory cosmetics) {
+        player.setData(COSMETICS, cosmetics);
     }
 }

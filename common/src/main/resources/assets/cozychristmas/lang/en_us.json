@@ -3,7 +3,21 @@
   "commands.cozychristmas.season.active": "Christmas season is on (today %s, source: %s)",
   "commands.cozychristmas.season.delivery": "Christmas season is on and the workshop is loading the sleigh (today %s, source: %s)",
   "commands.cozychristmas.season.inactive": "Christmas season is off (today %s, source: %s)",
+  "cosmetic_slot.cozychristmas.body": "Sweater",
+  "cosmetic_slot.cozychristmas.hands": "Mittens",
+  "cosmetic_slot.cozychristmas.head": "Hat",
+  "cosmetic_slot.cozychristmas.neck": "Scarf",
+  "item.cozychristmas.bee_sweater": "Bee Sweater",
+  "item.cozychristmas.cat_sweater": "Cat Sweater",
+  "item.cozychristmas.mittens": "Mittens",
+  "item.cozychristmas.pompom_hat": "Pompom Hat",
+  "item.cozychristmas.present_sweater": "Present Sweater",
+  "item.cozychristmas.reindeer_sweater": "Reindeer Sweater",
+  "item.cozychristmas.scarf": "Scarf",
+  "item.cozychristmas.snowflake_sweater": "Snowflake Sweater",
+  "itemGroup.cozychristmas": "Cozy Christmas",
   "karma.cozychristmas.tier.naughty": "naughty",
   "karma.cozychristmas.tier.neutral": "neutral",
-  "karma.cozychristmas.tier.nice": "nice"
+  "karma.cozychristmas.tier.nice": "nice",
+  "tooltip.cozychristmas.slot": "Worn in the %s slot"
 }

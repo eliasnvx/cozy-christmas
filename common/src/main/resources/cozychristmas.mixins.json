@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.eliasnvx.cozychristmas.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "client.AbstractContainerScreenAccessor",
+    "client.AbstractContainerScreenMixin",
+    "client.AbstractRecipeBookScreenMixin",
+    "client.AvatarRenderStateMixin",
+    "client.AvatarRendererHandMixin",
+    "client.AvatarRendererMixin",
+    "client.CreativeModeInventoryScreenMixin",
+    "client.EffectsInInventoryMixin",
+    "client.InventoryScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "InventoryMenuMixin",
+    "ServerGamePacketListenerImplMixin"
+  ]
+}
