@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "design=red,ticking=false": {
+      "model": "cozychristmas:block/present_red"
+    },
+    "design=red,ticking=true": {
+      "model": "cozychristmas:block/present_red_ticking"
+    },
+    "design=green,ticking=false": {
+      "model": "cozychristmas:block/present_green"
+    },
+    "design=green,ticking=true": {
+      "model": "cozychristmas:block/present_green_ticking"
+    },
+    "design=blue,ticking=false": {
+      "model": "cozychristmas:block/present_blue"
+    },
+    "design=blue,ticking=true": {
+      "model": "cozychristmas:block/present_blue_ticking"
+    },
+    "design=gold,ticking=false": {
+      "model": "cozychristmas:block/present_gold"
+    },
+    "design=gold,ticking=true": {
+      "model": "cozychristmas:block/present_gold_ticking"
+    }
+  }
+}

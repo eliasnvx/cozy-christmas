@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PSP",
+    "###",
+    "# #"
+  ],
+  "key": {
+    "P": "minecraft:paper",
+    "S": "minecraft:string",
+    "#": "#minecraft:planks"
+  },
+  "result": {
+    "id": "cozychristmas:wrapping_table"
+  }
+}

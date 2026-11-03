@@ -57,4 +57,18 @@ class KarmaTest {
         assertEquals(Karma.MAX, new Karma(90, 0).plus(Integer.MAX_VALUE, 0, 1).value());
         assertEquals(Karma.MIN, new Karma(-90, 0).plus(Integer.MIN_VALUE, 0, 1).value());
     }
+
+    @Test
+    void giftsEarnKarmaOncePerDay() {
+        Karma first = new Karma(10, 5).plusGift(3, 5, 1);
+        assertEquals(new Karma(13, 5, 5), first);
+        assertEquals(first, first.plusGift(3, 5, 1));
+        assertEquals(new Karma(15, 6, 6), first.plusGift(3, 6, 1)); // drifted to 12, then +3
+    }
+
+    @Test
+    void driftKeepsTheGiftDay() {
+        assertEquals(new Karma(9, 8, 5), new Karma(10, 7, 5).settle(8, 1));
+        assertEquals(new Karma(-1, 8, 5), new Karma(10, 7, 5).plus(-10, 8, 1));
+    }
 }

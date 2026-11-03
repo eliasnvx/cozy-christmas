@@ -6,6 +6,8 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.cosmetic.Cosmetic;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
+import dev.eliasnvx.cozychristmas.present.PresentBlock;
+import dev.eliasnvx.cozychristmas.present.PresentDesign;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -14,6 +16,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.DyedItemColor;
 
 import java.util.ArrayList;
@@ -50,6 +53,10 @@ public final class CozyItems {
             .title(Component.translatable("itemGroup.cozychristmas"))
             .icon(() -> new ItemStack(POMPOM_HAT.get()))
             .displayItems((parameters, output) -> {
+                output.accept(CozyBlocks.WRAPPING_TABLE_ITEM.get());
+                for (PresentDesign design : PresentDesign.values()) {
+                    output.accept(present(design));
+                }
                 for (RegistrySupplier<Item> item : SWEATERS) {
                     output.accept(item.get());
                 }
@@ -76,6 +83,13 @@ public final class CozyItems {
     public static ItemStack dyed(Item item, DyeColor dye) {
         ItemStack stack = new ItemStack(item);
         stack.set(DataComponents.DYED_COLOR, new DyedItemColor(dye.getTextureDiffuseColor()));
+        return stack;
+    }
+
+    /** An unopened surprise present: karma decides what's inside. */
+    public static ItemStack present(PresentDesign design) {
+        ItemStack stack = new ItemStack(CozyBlocks.PRESENT_ITEM.get());
+        stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(PresentBlock.DESIGN, design));
         return stack;
     }
 

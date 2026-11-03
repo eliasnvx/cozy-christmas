@@ -6,8 +6,12 @@ import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsEvents;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
 import dev.eliasnvx.cozychristmas.karma.KarmaRules;
+import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
+import dev.eliasnvx.cozychristmas.registry.CozyMenus;
+import dev.eliasnvx.cozychristmas.registry.CozyParticles;
+import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +35,14 @@ public final class CozyChristmas {
 
         CozyConfig.loadCommon();
 
-        // components first: items read them in their properties
+        // components first: items read them in their properties; blocks before items: block items look them up
         CozyComponents.REGISTER.register();
+        CozyBlocks.REGISTER.register();
         CozyItems.REGISTER.register();
+        CozyBlocks.BLOCK_ENTITIES.register();
+        CozyMenus.REGISTER.register();
+        CozySounds.REGISTER.register();
+        CozyParticles.REGISTER.register();
         CozyItems.TABS.register();
 
         CosmeticsEvents.register();

@@ -1,12 +1,17 @@
 package dev.eliasnvx.cozychristmas.client;
 
 import dev.architectury.event.events.client.ClientTooltipEvent;
+import dev.architectury.registry.client.particle.ParticleProviderRegistry;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticLooks;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticShape;
+import dev.eliasnvx.cozychristmas.client.present.ConfettiParticle;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
+import dev.eliasnvx.cozychristmas.present.PresentContents;
+import dev.eliasnvx.cozychristmas.registry.CozyComponents;
+import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -20,7 +25,8 @@ import java.util.List;
 
 /**
  * Client entry point, called by each loader's client initializer after {@link CozyChristmas#init()}. The loaders add
- * {@code CosmeticLayer} to the player renderers themselves (no common hook for that).
+ * {@code CosmeticLayer} to the player renderers and register the screens and block entity renderers themselves (their
+ * events need the registered types).
  */
 public final class CozyChristmasClient {
 
@@ -31,6 +37,7 @@ public final class CozyChristmasClient {
         CosmeticShape.registerLayers();
         CosmeticLooks.registerDefaults();
         ClientTooltipEvent.ITEM.register(CozyChristmasClient::appendTooltip);
+        ParticleProviderRegistry.register(CozyParticles.CONFETTI, sprites -> new ConfettiParticle.Provider(sprites));
 
         CozyChristmas.LOGGER.info("{} client initialized", CozyChristmas.MOD_ID);
     }
@@ -44,6 +51,18 @@ public final class CozyChristmasClient {
         if (stack.is(CozyTags.TOASTY_SET)) {
             appendToastySet(lines);
         }
+        PresentContents present = stack.get(CozyComponents.PRESENT_CONTENTS.get());
+        if (present != null) {
+            appendPresent(present, lines);
+        }
+    }
+
+    /** Who it's from, never what's inside: a prank and a gift read the same. */
+    private static void appendPresent(PresentContents present, List<Component> lines) {
+        lines.add(present.from()
+                .map(giver -> Component.translatable("tooltip.cozychristmas.present.from", giver.name()))
+                .orElseGet(() -> Component.translatable("tooltip.cozychristmas.present.mystery"))
+                .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
     }
 
     /** "Toasty set (2/4)" for the local player, then the bonuses, lit while the set is complete. */

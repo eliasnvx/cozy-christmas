@@ -1,0 +1,8 @@
+{
+  "parent": "cozychristmas:block/present",
+  "textures": {
+    "side": "cozychristmas:block/present_red_side",
+    "top": "cozychristmas:block/present_red_top",
+    "bow": "cozychristmas:block/present_red_bow"
+  }
+}

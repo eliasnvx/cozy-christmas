@@ -1,0 +1,92 @@
+{
+  "block.present.open": {
+    "sounds": [
+      {
+        "name": "minecraft:item/bundle/drop_contents1",
+        "pitch": 1.2
+      },
+      {
+        "name": "minecraft:item/bundle/drop_contents2",
+        "pitch": 1.2
+      },
+      {
+        "name": "minecraft:item/book/open_flip1",
+        "pitch": 0.9
+      },
+      {
+        "name": "minecraft:item/book/open_flip2",
+        "pitch": 0.9
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.block.present.open"
+  },
+  "block.present.coal": {
+    "sounds": [
+      {
+        "name": "minecraft:item/bundle/drop_contents1",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:item/bundle/drop_contents3",
+        "pitch": 0.6
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.block.present.coal"
+  },
+  "block.present.tick": {
+    "sounds": [
+      {
+        "name": "minecraft:random/click",
+        "pitch": 1.9,
+        "volume": 0.35
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.block.present.tick"
+  },
+  "block.present.boom": {
+    "sounds": [
+      {
+        "name": "minecraft:fireworks/blast1",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:random/explode1",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:random/explode2",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.block.present.boom"
+  },
+  "block.present.confetti": {
+    "sounds": [
+      {
+        "name": "minecraft:fireworks/twinkle1",
+        "pitch": 1.2
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.block.present.confetti"
+  },
+  "block.wrapping_table.wrap": {
+    "sounds": [
+      {
+        "name": "minecraft:item/book/open_flip1",
+        "pitch": 1.1
+      },
+      {
+        "name": "minecraft:item/book/open_flip3",
+        "pitch": 1.1
+      },
+      {
+        "name": "minecraft:item/armor/equip_leather1",
+        "pitch": 1.3,
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.block.wrapping_table.wrap"
+  }
+}

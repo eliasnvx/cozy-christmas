@@ -11,10 +11,12 @@
     "fabric-gametest": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.KarmaGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticSlotGameTestsFabric",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.ToastySetGameTestsFabric"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.ToastySetGameTestsFabric",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.PresentGameTestsFabric"
     ],
     "fabric-client-gametest": [
-      "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.PresentsLookClientTest"
     ]
   },
   "depends": {

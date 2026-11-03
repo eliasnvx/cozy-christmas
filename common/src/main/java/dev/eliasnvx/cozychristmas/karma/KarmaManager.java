@@ -36,8 +36,23 @@ public final class KarmaManager {
         return updated.value();
     }
 
+    /**
+     * Someone else opened a gift this player wrapped: {@code gift_given} karma, once per game day (so two friends
+     * can't farm it by wrapping dirt for each other).
+     * @return whether karma was given
+     */
+    public static boolean rewardGift(ServerPlayer giver) {
+        Karma before = PlatformHelper.getKarma(giver);
+        long today = today(giver);
+        if (before.giftDay() == today) {
+            return false;
+        }
+        PlatformHelper.setKarma(giver, before.plusGift(CozyConfig.common().karma().giftGiven(), today, decayPerDay()));
+        return true;
+    }
+
     public static void set(ServerPlayer player, int value) {
-        PlatformHelper.setKarma(player, new Karma(value, today(player)));
+        PlatformHelper.setKarma(player, new Karma(value, today(player), PlatformHelper.getKarma(player).giftDay()));
     }
 
     private static Karma current(ServerPlayer player) {

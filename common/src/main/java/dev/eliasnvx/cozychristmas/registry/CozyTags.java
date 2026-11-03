@@ -23,6 +23,15 @@ public final class CozyTags {
     /** Blocks the Toasty set is faster on, under the feet or around them (snow layers). */
     public static final TagKey<Block> TOASTY_SNOW = TagKey.create(Registries.BLOCK, CozyChristmas.id("toasty_snow"));
 
+    /** Wrapped at the wrapping table, these make a prank: the present goes boom (one is used, not the stack). */
+    public static final TagKey<Item> WRAPS_AS_BOOM = TagKey.create(Registries.ITEM, CozyChristmas.id("wraps_as_boom"));
+
+    /** The wrapping table won't take these as a gift (presents: no present in a present). */
+    public static final TagKey<Item> UNWRAPPABLE = TagKey.create(Registries.ITEM, CozyChristmas.id("unwrappable"));
+
+    /** What the wrapping table wraps with; one per present. */
+    public static final TagKey<Item> WRAPPING_PAPER = TagKey.create(Registries.ITEM, CozyChristmas.id("wrapping_paper"));
+
     private CozyTags() {
     }
 }
