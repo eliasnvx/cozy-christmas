@@ -8,6 +8,7 @@ import dev.eliasnvx.cozychristmas.present.PresentBlockEntity;
 import dev.eliasnvx.cozychristmas.present.PresentContents;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
 import dev.eliasnvx.cozychristmas.present.PresentOutcome;
+import dev.eliasnvx.cozychristmas.present.SnowPresents;
 import dev.eliasnvx.cozychristmas.present.WrappingTableMenu;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
@@ -15,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.ContainerInput;
@@ -35,7 +37,8 @@ import java.util.Optional;
  * Presents and the wrapping table on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest},
  * NeoForge: {@code neoforge/.../dev/CozyGameTestsNeoForge}): contents surviving a break, gifts and the giver's karma,
  * karma deciding a surprise when a player comes close, the ticking warning, the boom's damage without block damage,
- * and the wrapping table's menu. The odds and damage math are in JUnit. Dev only: not in the released jars.
+ * the wrapping table's menu and where presents appear in the snow. The odds and damage math are in JUnit. Dev only:
+ * not in the released jars.
  */
 public final class PresentGameTests {
 
@@ -45,7 +48,8 @@ public final class PresentGameTests {
             new GameTestEntry("coal_and_loot_come_out", PresentGameTests::coalAndLoot),
             new GameTestEntry("boom_hurts_but_spares_blocks", PresentGameTests::boomSparesBlocks),
             new GameTestEntry("boom_ticks_while_someone_is_near", PresentGameTests::boomTicksNearPlayers),
-            new GameTestEntry("wrapping_table_wraps_gifts_and_pranks", PresentGameTests::wrappingTable));
+            new GameTestEntry("wrapping_table_wraps_gifts_and_pranks", PresentGameTests::wrappingTable),
+            new GameTestEntry("snow_presents_need_snow_and_room", PresentGameTests::snowPresents));
 
     private static final BlockPos PRESENT = new BlockPos(2, 1, 2);
     private static final Vec3 BESIDE = new Vec3(3.5, 1.0, 2.5);
@@ -202,6 +206,34 @@ public final class PresentGameTests {
         } finally {
             TestPlayers.remove(helper, player);
         }
+    }
+
+    /** Where a December present may appear: snow under it, a thin layer on solid ground, no present too close. */
+    public static void snowPresents(GameTestHelper helper) {
+        int spacing = 5; // small, so presents of other tests running next to this one don't count
+        RandomSource random = helper.getLevel().getRandom();
+        BlockPos onStone = new BlockPos(1, 1, 6);
+        BlockPos onSnowBlock = new BlockPos(1, 1, 1);
+        BlockPos inSnowLayer = new BlockPos(4, 1, 1);
+        helper.setBlock(onStone.below(), Blocks.STONE);
+        helper.setBlock(onSnowBlock.below(), Blocks.SNOW_BLOCK);
+        helper.setBlock(inSnowLayer.below(), Blocks.STONE);
+        helper.setBlock(inSnowLayer, Blocks.SNOW);
+
+        helper.assertFalse(SnowPresents.trySpawnAt(helper.getLevel(), helper.absolutePos(onStone), random, spacing),
+                "a present on bare stone");
+        helper.assertTrue(SnowPresents.trySpawnAt(helper.getLevel(), helper.absolutePos(onSnowBlock), random, spacing),
+                "a present on a snow block");
+        helper.assertBlockPresent(CozyBlocks.PRESENT.get(), onSnowBlock);
+        helper.assertFalse(SnowPresents.trySpawnAt(helper.getLevel(), helper.absolutePos(inSnowLayer), random, spacing),
+                "a present 3 blocks from another one");
+        helper.setBlock(onSnowBlock, Blocks.AIR);
+        helper.assertTrue(SnowPresents.trySpawnAt(helper.getLevel(), helper.absolutePos(inSnowLayer), random, spacing),
+                "a present in a snow layer");
+        helper.assertBlockPresent(CozyBlocks.PRESENT.get(), inSnowLayer);
+        PresentContents contents = helper.getBlockEntity(inSnowLayer, PresentBlockEntity.class).contents();
+        helper.assertValueEqual(contents, PresentContents.SURPRISE, "a snow present is an undecided surprise");
+        helper.succeed();
     }
 
     private static PresentContents gift(Item item, int count,

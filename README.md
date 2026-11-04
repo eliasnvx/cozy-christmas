@@ -19,7 +19,7 @@ Any item can be made wearable with the `cozychristmas:cosmetic` component (`{"sl
 **Toasty set:** a sweater, hat, scarf and mittens together keep you from freezing in powder snow and make you 10% faster on snow. The tooltip counts the pieces you wear. Pieces are the item tag `#cozychristmas:toasty_set`, the snow is the block tag `#cozychristmas:toasty_snow`.
 
 ## Presents
-Presents hide something that depends on how you've behaved: a real gift, a lump of coal or a "boom" of confetti and snow (a prank: 4-6 damage and a push, blocks stay intact). A present that's going to go boom ticks and shakes when you stand close, so the careful notice. Break a present to carry it and give it to someone else.
+Presents hide something that depends on how you've behaved: a real gift, a lump of coal or a "boom" of confetti and snow (a prank: 4-6 damage and a push, blocks stay intact). A present that's going to go boom ticks and shakes when you stand close, so the careful notice. Break a present to carry it and give it to someone else. During the Christmas season presents now and then turn up in the snow around you.
 
 The **wrapping table** wraps any stack into a present in one of four designs and signs it with your name. Wrap TNT to make your own prank. When someone else opens a gift you wrapped, Santa notices.
 
@@ -31,7 +31,7 @@ Every player has a hidden karma from -100 to +100. Hurting villagers and other p
 Mobs that count are in the entity tag `#cozychristmas:karma_protected`, so data packs can change them.
 
 ## Config
-`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius and the boom (damage, radius, knockback, `breaks_blocks`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
+`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
 
 Operators: `/cozychristmas karma get|set|add <players> [value]`, `/cozychristmas season`.
 

@@ -32,6 +32,9 @@ public final class CozyTags {
     /** What the wrapping table wraps with; one per present. */
     public static final TagKey<Item> WRAPPING_PAPER = TagKey.create(Registries.ITEM, CozyChristmas.id("wrapping_paper"));
 
+    /** Presents appear in December on top of these (and in thin snow layers on solid ground). */
+    public static final TagKey<Block> SNOW_PRESENT_GROUND = TagKey.create(Registries.BLOCK, CozyChristmas.id("snow_present_ground"));
+
     private CozyTags() {
     }
 }
