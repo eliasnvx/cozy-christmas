@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.present;
 
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
+import dev.eliasnvx.cozychristmas.workshop.WorkshopAlarm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -59,6 +60,16 @@ public class PresentBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         return level.isClientSide() ? null : createTickerHelper(type, CozyBlocks.PRESENT_ENTITY.get(), PresentBlockEntity::serverTick);
+    }
+
+    /** Breaking a present of the workshop warehouse is theft too (like gold guarded by piglins). */
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (player instanceof ServerPlayer thief && level.getBlockEntity(pos) instanceof PresentBlockEntity present
+                && present.isWorkshopStock()) {
+            WorkshopAlarm.theft(thief.level(), pos, thief);
+        }
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     /** Any hand opens it: block use comes before item use, and sneaking with an item still places blocks against it. */

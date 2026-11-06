@@ -1,16 +1,21 @@
 package dev.eliasnvx.cozychristmas.client;
 
 import dev.architectury.event.events.client.ClientTooltipEvent;
+import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
 import dev.architectury.registry.client.particle.ParticleProviderRegistry;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticLooks;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticShape;
 import dev.eliasnvx.cozychristmas.client.present.ConfettiParticle;
+import dev.eliasnvx.cozychristmas.client.reindeer.ReindeerRenderer;
+import dev.eliasnvx.cozychristmas.client.workshop.ElfRenderer;
+import dev.eliasnvx.cozychristmas.client.workshop.SantaRenderer;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
 import dev.eliasnvx.cozychristmas.present.PresentContents;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
+import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import net.minecraft.ChatFormatting;
@@ -38,6 +43,12 @@ public final class CozyChristmasClient {
         CosmeticLooks.registerDefaults();
         ClientTooltipEvent.ITEM.register(CozyChristmasClient::appendTooltip);
         ParticleProviderRegistry.register(CozyParticles.CONFETTI, sprites -> new ConfettiParticle.Provider(sprites));
+        ElfRenderer.registerLayers();
+        SantaRenderer.registerLayers();
+        ReindeerRenderer.registerLayers();
+        EntityRendererRegistry.register(CozyEntities.ELF, ElfRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.SANTA, SantaRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.REINDEER, ReindeerRenderer::new);
 
         CozyChristmas.LOGGER.info("{} client initialized", CozyChristmas.MOD_ID);
     }

@@ -9,15 +9,19 @@ import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.present.PresentBlock;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.item.component.TypedEntityData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +53,10 @@ public final class CozyItems {
     public static final RegistrySupplier<Item> SCARF = dyeable("scarf", CosmeticSlot.NECK);
     public static final RegistrySupplier<Item> MITTENS = dyeable("mittens", CosmeticSlot.HANDS);
 
+    public static final RegistrySupplier<Item> SANTA_SPAWN_EGG = spawnEgg("santa_spawn_egg", CozyEntities.SANTA_KEY);
+    public static final RegistrySupplier<Item> ELF_SPAWN_EGG = spawnEgg("elf_spawn_egg", CozyEntities.ELF_KEY);
+    public static final RegistrySupplier<Item> REINDEER_SPAWN_EGG = spawnEgg("reindeer_spawn_egg", CozyEntities.REINDEER_KEY);
+
     public static final RegistrySupplier<CreativeModeTab> TAB = TABS.register("cozychristmas", () -> CreativeTabRegistry.create(builder -> builder
             .title(Component.translatable("itemGroup.cozychristmas"))
             .icon(() -> new ItemStack(POMPOM_HAT.get()))
@@ -66,6 +74,9 @@ public final class CozyItems {
                         output.accept(dyed(item.get(), dye));
                     }
                 }
+                output.accept(SANTA_SPAWN_EGG.get());
+                output.accept(ELF_SPAWN_EGG.get());
+                output.accept(REINDEER_SPAWN_EGG.get());
             })));
 
     private CozyItems() {
@@ -91,6 +102,13 @@ public final class CozyItems {
         ItemStack stack = new ItemStack(CozyBlocks.PRESENT_ITEM.get());
         stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(PresentBlock.DESIGN, design));
         return stack;
+    }
+
+    private static RegistrySupplier<Item> spawnEgg(String name, ResourceKey<EntityType<?>> entity) {
+        return register(name, props -> new SpawnEggItem(
+                // resolved late: on NeoForge items may be built before entity types are registered
+                props.delayedComponent(DataComponents.ENTITY_DATA, context -> TypedEntityData.of(
+                        context.lookupOrThrow(Registries.ENTITY_TYPE).getOrThrow(entity).value(), new CompoundTag()))));
     }
 
     private static RegistrySupplier<Item> sweater(String name) {

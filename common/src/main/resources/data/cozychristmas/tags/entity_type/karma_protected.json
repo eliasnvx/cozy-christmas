@@ -12,6 +12,9 @@
     "minecraft:snow_golem",
     "minecraft:turtle",
     "minecraft:armadillo",
-    "minecraft:panda"
+    "minecraft:panda",
+    "cozychristmas:elf",
+    "cozychristmas:santa",
+    "cozychristmas:reindeer"
   ]
 }

@@ -3,6 +3,7 @@ package dev.eliasnvx.cozychristmas.karma;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.platform.PlatformHelper;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -51,8 +52,27 @@ public final class KarmaManager {
         return true;
     }
 
+    /**
+     * Santa gives a nice player one present a game day: marks today and returns true, or false if they already had
+     * today's.
+     */
+    public static boolean takeSantaGift(ServerPlayer player) {
+        Karma before = PlatformHelper.getKarma(player);
+        long today = today(player);
+        if (before.santaGiftDay() == today) {
+            return false;
+        }
+        PlatformHelper.setKarma(player, before.withSantaGift(today, decayPerDay()));
+        return true;
+    }
+
     public static void set(ServerPlayer player, int value) {
-        PlatformHelper.setKarma(player, new Karma(value, today(player), PlatformHelper.getKarma(player).giftDay()));
+        PlatformHelper.setKarma(player, PlatformHelper.getKarma(player).withValue(value, today(player)));
+    }
+
+    /** Game days from the overworld clock, as karma counts them. */
+    public static long today(ServerLevel level) {
+        return level.getServer().overworld().getGameTime() / TICKS_PER_DAY;
     }
 
     private static Karma current(ServerPlayer player) {
@@ -66,7 +86,7 @@ public final class KarmaManager {
 
     /** Game days from the overworld clock: sleeping skips the night but not the day count, so it can't wash karma. */
     private static long today(ServerPlayer player) {
-        return player.level().getServer().overworld().getGameTime() / TICKS_PER_DAY;
+        return today(player.level());
     }
 
     private static int decayPerDay() {

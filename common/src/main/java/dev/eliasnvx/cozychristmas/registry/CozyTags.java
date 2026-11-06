@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 
 /** The mod's tags: the data-driven knobs for packs. */
@@ -34,6 +35,27 @@ public final class CozyTags {
 
     /** Presents appear in December on top of these (and in thin snow layers on solid ground). */
     public static final TagKey<Block> SNOW_PRESENT_GROUND = TagKey.create(Registries.BLOCK, CozyChristmas.id("snow_present_ground"));
+
+    /** Elves work at these: crafting table, wrapping table and other workbenches. */
+    public static final TagKey<Block> ELF_WORKSTATIONS = TagKey.create(Registries.BLOCK, CozyChristmas.id("elf_workstations"));
+
+    /** A player holding one of these near an elf is a threat: the elf runs. */
+    public static final TagKey<Item> SCARES_ELVES = TagKey.create(Registries.ITEM, CozyChristmas.id("scares_elves"));
+
+    /** Elves follow a player holding one of these. */
+    public static final TagKey<Item> ELF_TREATS = TagKey.create(Registries.ITEM, CozyChristmas.id("elf_treats"));
+
+    /** What a reindeer eats (heals, grows, breeds with the golden ones) and follows. */
+    public static final TagKey<Item> REINDEER_FOOD = TagKey.create(Registries.ITEM, CozyChristmas.id("reindeer_food"));
+
+    /** Fed to a wild reindeer, each has a chance to tame it. */
+    public static final TagKey<Item> REINDEER_TAMING_ITEMS = TagKey.create(Registries.ITEM, CozyChristmas.id("reindeer_taming_items"));
+
+    /** Wild reindeer spawn on these. */
+    public static final TagKey<Block> REINDEER_SPAWNABLE_ON = TagKey.create(Registries.BLOCK, CozyChristmas.id("reindeer_spawnable_on"));
+
+    /** Biomes with wild reindeer herds. */
+    public static final TagKey<Biome> SPAWNS_REINDEER = TagKey.create(Registries.BIOME, CozyChristmas.id("spawns_reindeer"));
 
     private CozyTags() {
     }

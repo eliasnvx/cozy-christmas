@@ -23,6 +23,30 @@ public final class CozySounds {
     public static final RegistrySupplier<SoundEvent> PRESENT_CONFETTI = event("block.present.confetti");
     public static final RegistrySupplier<SoundEvent> WRAPPING_TABLE_WRAP = event("block.wrapping_table.wrap");
 
+    public static final RegistrySupplier<SoundEvent> ELF_AMBIENT = event("entity.elf.ambient");
+    public static final RegistrySupplier<SoundEvent> ELF_HURT = event("entity.elf.hurt");
+    public static final RegistrySupplier<SoundEvent> ELF_DEATH = event("entity.elf.death");
+    /** The tap of an elf at its workbench. */
+    public static final RegistrySupplier<SoundEvent> ELF_WORK = event("entity.elf.work");
+    /** Elves call for Santa: someone hurt one of them or stole. */
+    public static final RegistrySupplier<SoundEvent> ELF_ALARM = event("entity.elf.alarm");
+
+    public static final RegistrySupplier<SoundEvent> SANTA_AMBIENT = event("entity.santa.ambient");
+    public static final RegistrySupplier<SoundEvent> SANTA_HURT = event("entity.santa.hurt");
+    public static final RegistrySupplier<SoundEvent> SANTA_DEATH = event("entity.santa.death");
+    public static final RegistrySupplier<SoundEvent> SANTA_YES = event("entity.santa.yes");
+    public static final RegistrySupplier<SoundEvent> SANTA_NO = event("entity.santa.no");
+    /** Santa hands out a daily present. */
+    public static final RegistrySupplier<SoundEvent> SANTA_GIFT = event("entity.santa.gift");
+
+    public static final RegistrySupplier<SoundEvent> REINDEER_AMBIENT = event("entity.reindeer.ambient");
+    public static final RegistrySupplier<SoundEvent> REINDEER_HURT = event("entity.reindeer.hurt");
+    public static final RegistrySupplier<SoundEvent> REINDEER_DEATH = event("entity.reindeer.death");
+    public static final RegistrySupplier<SoundEvent> REINDEER_EAT = event("entity.reindeer.eat");
+    public static final RegistrySupplier<SoundEvent> REINDEER_ANGRY = event("entity.reindeer.angry");
+    /** Sleigh bells, jingling while a reindeer flies. */
+    public static final RegistrySupplier<SoundEvent> REINDEER_BELLS = event("entity.reindeer.bells");
+
     private CozySounds() {
     }
 

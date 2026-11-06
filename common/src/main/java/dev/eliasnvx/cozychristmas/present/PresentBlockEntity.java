@@ -5,6 +5,7 @@ import dev.eliasnvx.cozychristmas.karma.KarmaManager;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
+import dev.eliasnvx.cozychristmas.workshop.WorkshopAlarm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
@@ -27,6 +28,10 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>A surprise is decided by the karma of the first player who comes within {@code presents.warning_radius} (or opens
  * it from farther away), so the ticking is honest: a boom ticks before it's opened, and breaking it keeps the decision.
+ *
+ * <p>Presents in the warehouse of Santa's workshop are {@linkplain #isWorkshopStock() stock} (set by the structure
+ * template): opening or breaking one is theft ({@code WorkshopAlarm#theft}). The mark isn't part of the item, so a
+ * stolen present is just a present afterwards.
  */
 public class PresentBlockEntity extends BlockEntity {
 
@@ -34,8 +39,10 @@ public class PresentBlockEntity extends BlockEntity {
     private static final int CHECK_INTERVAL = 10;
     private static final float TICK_VOLUME = 0.6F;
     private static final String CONTENTS = "contents";
+    private static final String WORKSHOP_STOCK = "workshop_stock";
 
     private PresentContents contents = PresentContents.SURPRISE;
+    private boolean workshopStock;
 
     public PresentBlockEntity(BlockPos pos, BlockState state) {
         super(CozyBlocks.PRESENT_ENTITY.get(), pos, state);
@@ -47,6 +54,16 @@ public class PresentBlockEntity extends BlockEntity {
 
     public void setContents(PresentContents contents) {
         this.contents = contents;
+        setChanged();
+    }
+
+    /** Santa's: part of the workshop warehouse. */
+    public boolean isWorkshopStock() {
+        return workshopStock;
+    }
+
+    public void setWorkshopStock(boolean workshopStock) {
+        this.workshopStock = workshopStock;
         setChanged();
     }
 
@@ -76,6 +93,9 @@ public class PresentBlockEntity extends BlockEntity {
         if (!(level instanceof ServerLevel serverLevel) || isRemoved()) {
             return;
         }
+        if (workshopStock) {
+            WorkshopAlarm.theft(serverLevel, worldPosition, opener); // first: stealing makes the thief naughtier
+        }
         decideFor(opener);
         PresentContents opened = contents;
         BlockPos pos = worldPosition;
@@ -95,12 +115,16 @@ public class PresentBlockEntity extends BlockEntity {
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         contents = input.read(CONTENTS, PresentContents.CODEC).orElse(PresentContents.SURPRISE);
+        workshopStock = input.getBooleanOr(WORKSHOP_STOCK, false);
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.store(CONTENTS, PresentContents.CODEC, contents);
+        if (workshopStock) {
+            output.putBoolean(WORKSHOP_STOCK, true);
+        }
     }
 
     @Override

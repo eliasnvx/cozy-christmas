@@ -9,6 +9,7 @@ import dev.eliasnvx.cozychristmas.karma.KarmaRules;
 import dev.eliasnvx.cozychristmas.present.SnowPresents;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
+import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozyMenus;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
@@ -39,12 +40,14 @@ public final class CozyChristmas {
         // components first: items read them in their properties; blocks before items: block items look them up
         CozyComponents.REGISTER.register();
         CozyBlocks.REGISTER.register();
+        CozyEntities.REGISTER.register(); // before items: spawn eggs refer to the entity types
         CozyItems.REGISTER.register();
         CozyBlocks.BLOCK_ENTITIES.register();
         CozyMenus.REGISTER.register();
         CozySounds.REGISTER.register();
         CozyParticles.REGISTER.register();
         CozyItems.TABS.register();
+        CozyEntities.init();
 
         CosmeticsEvents.register();
         ToastySet.register();

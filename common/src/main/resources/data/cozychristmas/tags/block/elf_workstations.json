@@ -1,0 +1,11 @@
+{
+  "values": [
+    "minecraft:crafting_table",
+    "cozychristmas:wrapping_table",
+    "minecraft:smithing_table",
+    "minecraft:loom",
+    "minecraft:cartography_table",
+    "minecraft:fletching_table",
+    "minecraft:stonecutter"
+  ]
+}

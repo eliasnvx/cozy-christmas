@@ -25,13 +25,22 @@ The **wrapping table** wraps any stack into a present in one of four designs and
 
 What's in a present is the loot tables `cozychristmas:presents/gift` and `cozychristmas:presents/coal`; the tags `#cozychristmas:wraps_as_boom`, `#cozychristmas:wrapping_paper` and `#cozychristmas:unwrappable` tune the table.
 
+## Santa's workshop
+Very rarely, in snowy plains and taiga, you find Santa's workshop: a snowy square with a decorated tree and the sleigh at the way in, the hall where elves hammer at their workbenches, Santa's house, the present warehouse and a stable of reindeer.
+
+- **Santa** trades for emeralds (presents, saddles, knitwear, treats) and buys back your coal. He knows his list: nice players pay less and, during the Christmas season, get a present once a day; naughty ones he turns away. Hurt him or an elf, or take a present from the warehouse, and he comes after you.
+- **Elves** work at the workbenches and carry finished presents around. They're harmless: they run from anyone with a weapon out and follow a cookie.
+- **Reindeer** are mounts. Feed a wild one carrots to tame it, golden carrots to breed. Saddled, it flies during the Christmas season: jump to take off, look where you want to go, hold jump to climb. Wild herds live in the taiga too. Feeding reindeer is a good deed.
+
+Where the workshop generates is the biome tag `#cozychristmas:has_structure/santas_workshop`, how often the structure set `cozychristmas:santas_workshop`; Santa's goods are the trade sets `cozychristmas:santa/goods` and `cozychristmas:santa/buying`; elves work at `#cozychristmas:elf_workstations`.
+
 ## Karma
-Every player has a hidden karma from -100 to +100. Hurting villagers and other peaceful folk lowers it; it drifts back toward zero by about one point per in-game day. Nice players mostly find gifts in their presents, naughty ones find coal.
+Every player has a hidden karma from -100 to +100. Hurting villagers, elves and other peaceful folk or stealing from Santa lowers it; giving gifts and feeding reindeer raises it; it drifts back toward zero by about one point per in-game day. Nice players mostly find gifts in their presents, naughty ones find coal.
 
 Mobs that count are in the entity tag `#cozychristmas:karma_protected`, so data packs can change them.
 
 ## Config
-`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
+`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
 
 Operators: `/cozychristmas karma get|set|add <players> [value]`, `/cozychristmas season`.
 

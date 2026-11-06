@@ -71,4 +71,14 @@ class KarmaTest {
         assertEquals(new Karma(9, 8, 5), new Karma(10, 7, 5).settle(8, 1));
         assertEquals(new Karma(-1, 8, 5), new Karma(10, 7, 5).plus(-10, 8, 1));
     }
+
+    @Test
+    void santaGiftDayIsKeptThroughEveryChange() {
+        Karma gifted = new Karma(40, 7, 5).withSantaGift(8, 1);
+        assertEquals(new Karma(39, 8, 5, 8), gifted);
+        assertEquals(8, gifted.settle(20, 1).santaGiftDay());
+        assertEquals(8, gifted.plus(-10, 9, 1).santaGiftDay());
+        assertEquals(8, gifted.plusGift(3, 9, 1).santaGiftDay());
+        assertEquals(new Karma(5, 9, 5, 8), gifted.withValue(5, 9));
+    }
 }
