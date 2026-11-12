@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.client.cosmetic;
 
+import dev.eliasnvx.cozychristmas.compat.catgirl.CatgirlEars;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticInventory;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
@@ -42,6 +43,8 @@ public final class CosmeticRenderData {
     private List<Worn> worn = List.of();
     private final float phase;
     private float walkAmount;
+    private boolean catEars;
+    private float flatten;
     private float lastAge = Float.NaN;
 
     private CosmeticRenderData(int entityId) {
@@ -61,6 +64,7 @@ public final class CosmeticRenderData {
         if (data.source != inventory) {
             data.rebuild(inventory);
         }
+        data.catEars = CatgirlEars.wears(player);
         data.updateMotion(state);
         return data;
     }
@@ -100,6 +104,8 @@ public final class CosmeticRenderData {
         }
         float alpha = 1.0F - (float) Math.exp(-dt * SMOOTHING);
         walkAmount += (Math.min(state.walkAnimationSpeed, 1.0F) - walkAmount) * alpha;
+        float flattenRate = state.hasRedOverlay ? CatgirlEars.FLATTEN_IN : CatgirlEars.FLATTEN_OUT;
+        flatten += ((state.hasRedOverlay ? 1.0F : 0.0F) - flatten) * (1.0F - (float) Math.exp(-dt * flattenRate));
         lastAge = state.ageInTicks;
     }
 
@@ -110,6 +116,16 @@ public final class CosmeticRenderData {
     /** 0..1 how fast the player is walking, smoothed. */
     public float walkAmount() {
         return walkAmount;
+    }
+
+    /** Whether the wearer has Catgirl &amp; Catboy Mod's cat ears on: the ear warmers go over them. */
+    public boolean catEars() {
+        return catEars;
+    }
+
+    /** 0..1 how flat cat ears are pressed back (the wearer just took damage), as Catgirl's ears are. */
+    public float flatten() {
+        return flatten;
     }
 
     /** Per-player phase offset in radians, so the scarves of different players do not flutter in sync. */

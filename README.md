@@ -14,9 +14,11 @@ Requires [Architectury API](https://modrinth.com/mod/architectury-api) and [Geck
 ## Knitwear
 Four cosmetic slots next to your inventory (hat, scarf, sweater, mittens), worn on top of armor: right-click a piece or shift-click it into its slot. Sweaters come with snowflakes, a reindeer, a cat, a bee or a present; the pompom hat, scarf and mittens take any dye, like leather armor. Mittens and sleeves show in first person too.
 
+**Head pieces:** fluffy ear warmers (any dye), an elf hat with a bell (any dye) and an antler headband. With [Catgirl & Catboy Mod](https://github.com/eliasnvx/catgirl-catboy-mod) the ear warmers go over your cat ears and move with them; its cosmetics panel and ours sit side by side.
+
 Any item can be made wearable with the `cozychristmas:cosmetic` component (`{"slot": "head"}`); it is then worn, though only the mod's own pieces have a look.
 
-**Toasty set:** a sweater, hat, scarf and mittens together keep you from freezing in powder snow and make you 10% faster on snow. The tooltip counts the pieces you wear. Pieces are the item tag `#cozychristmas:toasty_set`, the snow is the block tag `#cozychristmas:toasty_snow`.
+**Toasty set:** a sweater, hat (or ear warmers), scarf and mittens together keep you from freezing in powder snow and make you 10% faster on snow. The tooltip counts the pieces you wear. Pieces are the item tag `#cozychristmas:toasty_set`, the snow is the block tag `#cozychristmas:toasty_snow`.
 
 ## Presents
 Presents hide something that depends on how you've behaved: a real gift, a lump of coal or a "boom" of confetti and snow (a prank: 4-6 damage and a push, blocks stay intact). A present that's going to go boom ticks and shakes when you stand close, so the careful notice. Break a present to carry it and give it to someone else. During the Christmas season presents now and then turn up in the snow around you.

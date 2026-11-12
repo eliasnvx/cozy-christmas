@@ -20,6 +20,12 @@ dependencies {
     implementation "com.geckolib:geckolib-fabric-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
 
     common(project(path: ":common")) { transitive false }
+
+    // Optional: -Pcatgirl_jar=<path to a Catgirl & Catboy Mod Fabric jar> puts that mod into the dev runs and client
+    // tests, to check the ear warmers on its cat ears (compat.catgirl). It isn't published yet, so there's no coordinate.
+    if (project.hasProperty("catgirl_jar")) {
+        runtimeOnly files(project.property("catgirl_jar"))
+    }
     shadowBundle(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 }
 

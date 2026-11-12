@@ -151,6 +151,11 @@
         },
         {
           "type": "minecraft:item",
+          "name": "cozychristmas:elf_hat",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
           "name": "cozychristmas:wrapping_table",
           "weight": 2
         }

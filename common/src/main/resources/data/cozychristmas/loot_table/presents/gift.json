@@ -164,6 +164,21 @@
           "weight": 2
         },
         {
+          "type": "minecraft:item",
+          "name": "cozychristmas:ear_warmers",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:elf_hat",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:antler_headband",
+          "weight": 1
+        },
+        {
           "type": "minecraft:tag",
           "expand": true,
           "weight": 1,

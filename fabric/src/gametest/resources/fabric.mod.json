@@ -12,15 +12,20 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.KarmaGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticSlotGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.ToastySetGameTestsFabric",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.HeadPieceGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.PresentGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.WorkshopGameTestsFabric"
     ],
     "fabric-client-gametest": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest",
       "dev.eliasnvx.cozychristmas.fabric.gametest.PresentsLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.WorkshopLookClientTest"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.WorkshopLookClientTest",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.HeadPiecesLookClientTest"
     ]
   },
+  "mixins": [
+    "cozychristmas-test.mixins.json"
+  ],
   "depends": {
     "cozychristmas": "*"
   }

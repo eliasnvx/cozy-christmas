@@ -25,11 +25,23 @@ public final class CosmeticLooks {
         knit(CozyItems.POMPOM_HAT, CosmeticShape.POMPOM_HAT);
         knit(CozyItems.SCARF, CosmeticShape.SCARF);
         knit(CozyItems.MITTENS, CosmeticShape.MITTENS);
+        knit(CozyItems.EAR_WARMERS, CosmeticShape.EAR_WARMERS);
+        dyeable(CozyItems.ELF_HAT, CosmeticShape.ELF_HAT, CozyItems.ELF_GREEN);
+        look(CozyItems.ANTLER_HEADBAND, CosmeticLook.of(CosmeticShape.ANTLER_HEADBAND,
+                CozyItems.ANTLER_HEADBAND.getId().getPath(), false, CosmeticLook.UNTINTED));
     }
 
     /** Dyeable knitwear: a grayscale knit tinted with the dye, white trims on top. */
     private static void knit(RegistrySupplier<Item> item, CosmeticShape shape) {
-        CosmeticLook look = CosmeticLook.of(shape, item.getId().getPath(), true, CozyItems.KNIT_RED);
+        dyeable(item, shape, CozyItems.KNIT_RED);
+    }
+
+    /** Grayscale base tinted with the dye ({@code undyed} without one), untinted overlay on top. */
+    private static void dyeable(RegistrySupplier<Item> item, CosmeticShape shape, int undyed) {
+        look(item, CosmeticLook.of(shape, item.getId().getPath(), true, undyed));
+    }
+
+    private static void look(RegistrySupplier<Item> item, CosmeticLook look) {
         item.listen(registered -> register(registered, look));
     }
 

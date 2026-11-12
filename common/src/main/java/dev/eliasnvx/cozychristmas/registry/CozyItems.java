@@ -34,6 +34,8 @@ public final class CozyItems {
 
     /** Undyed color of the knitwear; the item models' tint default and the renderer use the same one. */
     public static final int KNIT_RED = 0xB3262E;
+    /** Undyed color of the elf hat (felt green, like the workshop elves'). */
+    public static final int ELF_GREEN = 0x2F8A3C;
     /** Besides undyed red, the creative tab shows the knitwear in these dyes (any dye works in crafting). */
     private static final List<DyeColor> CREATIVE_DYES =
             List.of(DyeColor.GREEN, DyeColor.WHITE, DyeColor.LIGHT_BLUE, DyeColor.YELLOW, DyeColor.BLACK);
@@ -48,10 +50,15 @@ public final class CozyItems {
     public static final RegistrySupplier<Item> BEE_SWEATER = sweater("bee_sweater");
     public static final RegistrySupplier<Item> PRESENT_SWEATER = sweater("present_sweater");
 
-    // dyed like leather armor (vanilla crafting_dye recipes); undyed they are KNIT_RED
+    // dyed like leather armor (vanilla crafting_dye recipes); undyed they are KNIT_RED unless said otherwise
     public static final RegistrySupplier<Item> POMPOM_HAT = dyeable("pompom_hat", CosmeticSlot.HEAD);
     public static final RegistrySupplier<Item> SCARF = dyeable("scarf", CosmeticSlot.NECK);
     public static final RegistrySupplier<Item> MITTENS = dyeable("mittens", CosmeticSlot.HANDS);
+    /** Fluffy muffs: on the sides of the head, or over the cat ears of Catgirl & Catboy Mod. */
+    public static final RegistrySupplier<Item> EAR_WARMERS = dyeable("ear_warmers", CosmeticSlot.HEAD);
+    /** Undyed it is {@link #ELF_GREEN}. */
+    public static final RegistrySupplier<Item> ELF_HAT = dyeable("elf_hat", CosmeticSlot.HEAD);
+    public static final RegistrySupplier<Item> ANTLER_HEADBAND = wearable("antler_headband", CosmeticSlot.HEAD);
 
     public static final RegistrySupplier<Item> SANTA_SPAWN_EGG = spawnEgg("santa_spawn_egg", CozyEntities.SANTA_KEY);
     public static final RegistrySupplier<Item> ELF_SPAWN_EGG = spawnEgg("elf_spawn_egg", CozyEntities.ELF_KEY);
@@ -74,6 +81,7 @@ public final class CozyItems {
                         output.accept(dyed(item.get(), dye));
                     }
                 }
+                output.accept(ANTLER_HEADBAND.get());
                 output.accept(SANTA_SPAWN_EGG.get());
                 output.accept(ELF_SPAWN_EGG.get());
                 output.accept(REINDEER_SPAWN_EGG.get());
