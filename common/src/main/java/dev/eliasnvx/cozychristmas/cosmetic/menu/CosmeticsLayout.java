@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.cosmetic.menu;
 
+import dev.eliasnvx.cozychristmas.compat.catgirl.CatgirlPanel;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 
 /**
@@ -23,13 +24,23 @@ public final class CosmeticsLayout {
     private CosmeticsLayout() {
     }
 
+    /** Right of the inventory, or right of Catgirl &amp; Catboy Mod's panel when that mod is loaded. */
     public static int panelX(int imageWidth) {
-        return imageWidth + GAP;
+        return panelX(imageWidth, CatgirlPanel.offset());
+    }
+
+    /** {@link #panelX(int)} with the room another mod's panel takes ({@code shift}) given. */
+    public static int panelX(int imageWidth, int shift) {
+        return imageWidth + GAP + shift;
     }
 
     /** Item position of cosmetic slot {@code index} (the slot frame is one pixel up-left). */
     public static int slotX(int imageWidth, int index) {
-        return panelX(imageWidth) + PADDING + 1 + index / ROWS * SLOT;
+        return slotX(imageWidth, CatgirlPanel.offset(), index);
+    }
+
+    public static int slotX(int imageWidth, int shift, int index) {
+        return panelX(imageWidth, shift) + PADDING + 1 + index / ROWS * SLOT;
     }
 
     public static int slotY(int index) {
