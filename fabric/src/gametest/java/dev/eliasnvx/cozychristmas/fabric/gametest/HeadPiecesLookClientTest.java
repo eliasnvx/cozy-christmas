@@ -10,6 +10,8 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -96,6 +98,27 @@ public final class HeadPiecesLookClientTest implements FabricClientGameTest {
             if (FabricLoader.getInstance().isModLoaded(CatgirlEars.MOD_ID)) {
                 catEars(context, world, cameras);
             }
+
+            // status effects right of every cosmetics panel (ours, and Catgirl's when it's loaded); at gui scale 1
+            // there is room for them in the test window
+            context.runOnClient(mc -> {
+                TestCamera.showPlayer = false;
+                mc.setCameraEntity(mc.player);
+            });
+            world.getServer().runCommand("effect give @p minecraft:speed 60 0 true");
+            context.runOnClient(mc -> {
+                mc.options.guiScale().set(1);
+                mc.resizeGui();
+            });
+            context.setScreen(() -> new InventoryScreen(Minecraft.getInstance().player));
+            context.waitTicks(SETTLE / 2);
+            context.runOnClient(mc -> mc.gui.toastManager().clear());
+            context.takeScreenshot("effects_beside_panels");
+            context.setScreen(() -> null);
+            context.runOnClient(mc -> {
+                mc.options.guiScale().set(0);
+                mc.resizeGui();
+            });
 
             context.runOnClient(mc -> {
                 TestCamera.showPlayer = false;
