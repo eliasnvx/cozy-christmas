@@ -8,6 +8,9 @@ import dev.eliasnvx.cozychristmas.present.PresentBlockEntity;
 import dev.eliasnvx.cozychristmas.present.PresentContents;
 import dev.eliasnvx.cozychristmas.present.PresentItem;
 import dev.eliasnvx.cozychristmas.present.WrappingTableBlock;
+import dev.eliasnvx.cozychristmas.stocking.FireplaceBlock;
+import dev.eliasnvx.cozychristmas.stocking.StockingBlock;
+import dev.eliasnvx.cozychristmas.stocking.StockingBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
@@ -44,6 +47,22 @@ public final class CozyBlocks {
             BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD).ignitedByLava());
     public static final RegistrySupplier<Item> WRAPPING_TABLE_ITEM = CozyItems.register("wrapping_table",
             props -> new BlockItem(WRAPPING_TABLE.get(), props.useBlockDescriptionPrefix()));
+
+    public static final RegistrySupplier<Block> FIREPLACE = block("fireplace", FireplaceBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(2.0F, 6.0F).requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE).lightLevel(state -> state.getValue(FireplaceBlock.LIT) ? FireplaceBlock.LIGHT : 0)
+                    .noOcclusion());
+    public static final RegistrySupplier<Item> FIREPLACE_ITEM = CozyItems.register("fireplace",
+            props -> new BlockItem(FIREPLACE.get(), props.useBlockDescriptionPrefix()));
+
+    /** Hangs on a wall; doesn't stack (each one is somebody's). */
+    public static final RegistrySupplier<Block> STOCKING = block("stocking", StockingBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.2F).sound(SoundType.WOOL).noCollision()
+                    .noOcclusion().ignitedByLava());
+    public static final RegistrySupplier<Item> STOCKING_ITEM = CozyItems.register("stocking",
+            props -> new BlockItem(STOCKING.get(), props.useBlockDescriptionPrefix().stacksTo(16)));
+    public static final RegistrySupplier<BlockEntityType<StockingBlockEntity>> STOCKING_ENTITY = BLOCK_ENTITIES.register("stocking",
+            () -> new BlockEntityType<>(StockingBlockEntity::new, Set.of(STOCKING.get())));
 
     private CozyBlocks() {
     }

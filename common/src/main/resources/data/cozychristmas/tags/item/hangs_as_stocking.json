@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "femboymod:programming_socks",
+      "required": false
+    },
+    {
+      "id": "femboymod:lost_sock",
+      "required": false
+    }
+  ]
+}

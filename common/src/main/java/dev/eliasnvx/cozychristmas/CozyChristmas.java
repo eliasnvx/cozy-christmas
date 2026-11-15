@@ -14,6 +14,7 @@ import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozyMenus;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
+import dev.eliasnvx.cozychristmas.stocking.StockingEvents;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,7 @@ public final class CozyChristmas {
         CozyEntities.init();
 
         CosmeticsEvents.register();
+        StockingEvents.register();
         ToastySet.register();
         SnowPresents.register();
         KarmaRules.register();

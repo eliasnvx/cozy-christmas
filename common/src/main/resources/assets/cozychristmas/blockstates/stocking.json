@@ -1,0 +1,100 @@
+{
+  "variants": {
+    "facing=south,fill=empty,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_empty",
+      "y": 0
+    },
+    "facing=south,fill=empty,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_empty",
+      "y": 0
+    },
+    "facing=south,fill=present,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_present",
+      "y": 0
+    },
+    "facing=south,fill=present,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_present",
+      "y": 0
+    },
+    "facing=south,fill=coal,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_coal",
+      "y": 0
+    },
+    "facing=south,fill=coal,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_coal",
+      "y": 0
+    },
+    "facing=west,fill=empty,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_empty",
+      "y": 90
+    },
+    "facing=west,fill=empty,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_empty",
+      "y": 90
+    },
+    "facing=west,fill=present,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_present",
+      "y": 90
+    },
+    "facing=west,fill=present,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_present",
+      "y": 90
+    },
+    "facing=west,fill=coal,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_coal",
+      "y": 90
+    },
+    "facing=west,fill=coal,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_coal",
+      "y": 90
+    },
+    "facing=north,fill=empty,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_empty",
+      "y": 180
+    },
+    "facing=north,fill=empty,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_empty",
+      "y": 180
+    },
+    "facing=north,fill=present,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_present",
+      "y": 180
+    },
+    "facing=north,fill=present,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_present",
+      "y": 180
+    },
+    "facing=north,fill=coal,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_coal",
+      "y": 180
+    },
+    "facing=north,fill=coal,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_coal",
+      "y": 180
+    },
+    "facing=east,fill=empty,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_empty",
+      "y": 270
+    },
+    "facing=east,fill=empty,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_empty",
+      "y": 270
+    },
+    "facing=east,fill=present,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_present",
+      "y": 270
+    },
+    "facing=east,fill=present,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_present",
+      "y": 270
+    },
+    "facing=east,fill=coal,style=stocking": {
+      "model": "cozychristmas:block/stocking_stocking_coal",
+      "y": 270
+    },
+    "facing=east,fill=coal,style=sock": {
+      "model": "cozychristmas:block/stocking_sock_coal",
+      "y": 270
+    }
+  }
+}

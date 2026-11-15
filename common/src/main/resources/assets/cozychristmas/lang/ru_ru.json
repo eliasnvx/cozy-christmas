@@ -84,5 +84,12 @@
   "subtitles.cozychristmas.entity.present_goblin.steal": "Гоблин хватает",
   "subtitles.cozychristmas.entity.gingerbread_man.ambient": "Пряничный человечек пищит",
   "subtitles.cozychristmas.entity.gingerbread_man.hurt": "Пряничный человечек трескается",
-  "subtitles.cozychristmas.entity.gingerbread_man.death": "Пряничный человечек крошится"
+  "subtitles.cozychristmas.entity.gingerbread_man.death": "Пряничный человечек крошится",
+  "block.cozychristmas.fireplace": "Камин",
+  "block.cozychristmas.stocking": "Рождественский чулок",
+  "message.cozychristmas.stocking.not_yours": "Это чулок другого игрока",
+  "message.cozychristmas.stocking.empty": "Пока пусто. Он наполняется рождественским утром",
+  "message.cozychristmas.stocking.no_fireplace": "Повесьте его на стену над камином",
+  "tooltip.cozychristmas.stocking": "Повесьте над камином: рождественским утром в нём подарок, а если вы шалили, уголь",
+  "tooltip.cozychristmas.hangs_as_stocking": "Используйте на стене крадучись, чтобы повесить как чулок"
 }

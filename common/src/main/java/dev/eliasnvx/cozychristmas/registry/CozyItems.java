@@ -76,6 +76,8 @@ public final class CozyItems {
             .icon(() -> new ItemStack(POMPOM_HAT.get()))
             .displayItems((parameters, output) -> {
                 output.accept(CozyBlocks.WRAPPING_TABLE_ITEM.get());
+                output.accept(CozyBlocks.FIREPLACE_ITEM.get());
+                output.accept(CozyBlocks.STOCKING_ITEM.get());
                 for (PresentDesign design : PresentDesign.values()) {
                     output.accept(present(design));
                 }

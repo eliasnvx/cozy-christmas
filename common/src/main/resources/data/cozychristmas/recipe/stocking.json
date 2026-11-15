@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "W ",
+    "R ",
+    "RR"
+  ],
+  "key": {
+    "W": "minecraft:white_wool",
+    "R": "minecraft:red_wool"
+  },
+  "result": {
+    "id": "cozychristmas:stocking"
+  }
+}

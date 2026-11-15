@@ -63,6 +63,15 @@ public final class CozyTags {
     /** Biomes where present goblins prowl at night, outside their camps. */
     public static final TagKey<Biome> SPAWNS_PRESENT_GOBLINS = TagKey.create(Registries.BIOME, CozyChristmas.id("spawns_present_goblins"));
 
+    /** Blocks a stocking counts as hung over: on the block above one of these (or two above). */
+    public static final TagKey<Block> FIREPLACES = TagKey.create(Registries.BLOCK, CozyChristmas.id("fireplaces"));
+
+    /** Items that light a fireplace (flint and steel, fire charges). */
+    public static final TagKey<Item> LIGHTS_FIREPLACES = TagKey.create(Registries.ITEM, CozyChristmas.id("lights_fireplaces"));
+
+    /** Other items that hang as a stocking when used on a wall (Femboy Mod's socks): they look like a striped sock. */
+    public static final TagKey<Item> HANGS_AS_STOCKING = TagKey.create(Registries.ITEM, CozyChristmas.id("hangs_as_stocking"));
+
     private CozyTags() {
     }
 }

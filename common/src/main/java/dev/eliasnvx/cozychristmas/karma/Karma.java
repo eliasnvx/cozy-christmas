@@ -9,13 +9,15 @@ import net.minecraft.util.Mth;
  * applied lazily when the karma is read or changed ({@link #settle}), so nothing ticks per player and days spent
  * offline count too. {@code giftDay} is the last day a gift of theirs earned karma (once a day, see
  * {@code KarmaManager#rewardGift}), {@code santaGiftDay} the last day Santa gave them a present (once a day, see
- * {@code KarmaManager#takeSantaGift}). Immutable: the attachment always holds a whole new record.
+ * {@code KarmaManager#takeSantaGift}), {@code stockingDay} the last morning one of their stockings was filled (by the
+ * day-night clock, see {@code KarmaManager#takeStockingGift}). Immutable: the attachment always holds a whole new
+ * record.
  */
-public record Karma(int value, long day, long giftDay, long santaGiftDay) {
+public record Karma(int value, long day, long giftDay, long santaGiftDay, long stockingDay) {
 
     public static final int MIN = -100;
     public static final int MAX = 100;
-    /** {@link #giftDay} / {@link #santaGiftDay} of a player who never had one. */
+    /** {@link #giftDay} / {@link #santaGiftDay} / {@link #stockingDay} of a player who never had one. */
     public static final long NO_GIFT = Long.MIN_VALUE;
 
     public static final Karma ZERO = new Karma(0, 0);
@@ -24,7 +26,8 @@ public record Karma(int value, long day, long giftDay, long santaGiftDay) {
             Codec.INT.fieldOf("value").forGetter(Karma::value), // lenient: the constructor clamps
             Codec.LONG.fieldOf("day").forGetter(Karma::day),
             Codec.LONG.optionalFieldOf("gift_day", NO_GIFT).forGetter(Karma::giftDay),
-            Codec.LONG.optionalFieldOf("santa_gift_day", NO_GIFT).forGetter(Karma::santaGiftDay)
+            Codec.LONG.optionalFieldOf("santa_gift_day", NO_GIFT).forGetter(Karma::santaGiftDay),
+            Codec.LONG.optionalFieldOf("stocking_day", NO_GIFT).forGetter(Karma::stockingDay)
     ).apply(i, Karma::new));
 
     public Karma {
@@ -32,11 +35,11 @@ public record Karma(int value, long day, long giftDay, long santaGiftDay) {
     }
 
     public Karma(int value, long day) {
-        this(value, day, NO_GIFT, NO_GIFT);
+        this(value, day, NO_GIFT, NO_GIFT, NO_GIFT);
     }
 
     public Karma(int value, long day, long giftDay) {
-        this(value, day, giftDay, NO_GIFT);
+        this(value, day, giftDay, NO_GIFT, NO_GIFT);
     }
 
     /** This karma on {@code today}, after {@code decayPerDay} of drift toward 0 for every day since {@link #day}. */
@@ -64,18 +67,23 @@ public record Karma(int value, long day, long giftDay, long santaGiftDay) {
             return settle(today, decayPerDay);
         }
         Karma rewarded = plus(gift, today, decayPerDay);
-        return new Karma(rewarded.value, today, today, santaGiftDay);
+        return new Karma(rewarded.value, today, today, santaGiftDay, stockingDay);
     }
 
     /** Settles and marks {@code today} as the day Santa gave a present. */
     public Karma withSantaGift(long today, int decayPerDay) {
         Karma settled = settle(today, decayPerDay);
-        return new Karma(settled.value, today, giftDay, today);
+        return new Karma(settled.value, today, giftDay, today, stockingDay);
+    }
+
+    /** Marks {@code morning} (a day of the day-night clock, not of {@link #day}) as the day a stocking was filled. */
+    public Karma withStocking(long morning) {
+        return new Karma(value, day, giftDay, santaGiftDay, morning);
     }
 
     /** The same days, another value as of {@code newDay}. */
     public Karma withValue(int newValue, long newDay) {
-        return new Karma(newValue, newDay, giftDay, santaGiftDay);
+        return new Karma(newValue, newDay, giftDay, santaGiftDay, stockingDay);
     }
 
     public static int clamp(long value) {

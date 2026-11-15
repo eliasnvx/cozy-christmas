@@ -16,6 +16,7 @@ import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
 import dev.eliasnvx.cozychristmas.present.PresentContents;
+import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
@@ -71,6 +72,11 @@ public final class CozyChristmasClient {
         PresentContents present = stack.get(CozyComponents.PRESENT_CONTENTS.get());
         if (present != null) {
             appendPresent(present, lines);
+        }
+        if (stack.is(CozyBlocks.STOCKING_ITEM.get())) {
+            lines.add(Component.translatable("tooltip.cozychristmas.stocking").withStyle(ChatFormatting.GRAY));
+        } else if (stack.is(CozyTags.HANGS_AS_STOCKING)) {
+            lines.add(Component.translatable("tooltip.cozychristmas.hangs_as_stocking").withStyle(ChatFormatting.GRAY));
         }
     }
 

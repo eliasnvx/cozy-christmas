@@ -66,6 +66,19 @@ public final class KarmaManager {
         return true;
     }
 
+    /**
+     * One stocking of a player is filled a morning: marks {@code morning} (a day of the day-night clock) and returns
+     * true, or false if one was already filled that morning. The clock, not game time: sleeping brings the morning.
+     */
+    public static boolean takeStockingGift(ServerPlayer player, long morning) {
+        Karma before = PlatformHelper.getKarma(player);
+        if (before.stockingDay() == morning) {
+            return false;
+        }
+        PlatformHelper.setKarma(player, before.withStocking(morning));
+        return true;
+    }
+
     public static void set(ServerPlayer player, int value) {
         PlatformHelper.setKarma(player, PlatformHelper.getKarma(player).withValue(value, today(player)));
     }

@@ -75,10 +75,20 @@ class KarmaTest {
     @Test
     void santaGiftDayIsKeptThroughEveryChange() {
         Karma gifted = new Karma(40, 7, 5).withSantaGift(8, 1);
-        assertEquals(new Karma(39, 8, 5, 8), gifted);
+        assertEquals(new Karma(39, 8, 5, 8, Karma.NO_GIFT), gifted);
         assertEquals(8, gifted.settle(20, 1).santaGiftDay());
         assertEquals(8, gifted.plus(-10, 9, 1).santaGiftDay());
         assertEquals(8, gifted.plusGift(3, 9, 1).santaGiftDay());
-        assertEquals(new Karma(5, 9, 5, 8), gifted.withValue(5, 9));
+        assertEquals(new Karma(5, 9, 5, 8, Karma.NO_GIFT), gifted.withValue(5, 9));
+    }
+
+    @Test
+    void stockingDayIsKeptThroughEveryChange() {
+        Karma filled = new Karma(40, 7, 5).withStocking(30);
+        assertEquals(new Karma(40, 7, 5, Karma.NO_GIFT, 30), filled);
+        assertEquals(30, filled.settle(20, 1).stockingDay());
+        assertEquals(30, filled.plus(-10, 9, 1).stockingDay());
+        assertEquals(30, filled.plusGift(3, 9, 1).stockingDay());
+        assertEquals(30, filled.withSantaGift(9, 1).stockingDay());
     }
 }

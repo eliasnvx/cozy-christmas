@@ -84,5 +84,12 @@
   "subtitles.cozychristmas.entity.present_goblin.steal": "Goblin snatches",
   "subtitles.cozychristmas.entity.gingerbread_man.ambient": "Gingerbread Man squeaks",
   "subtitles.cozychristmas.entity.gingerbread_man.hurt": "Gingerbread Man cracks",
-  "subtitles.cozychristmas.entity.gingerbread_man.death": "Gingerbread Man crumbles"
+  "subtitles.cozychristmas.entity.gingerbread_man.death": "Gingerbread Man crumbles",
+  "block.cozychristmas.fireplace": "Fireplace",
+  "block.cozychristmas.stocking": "Stocking",
+  "message.cozychristmas.stocking.not_yours": "That stocking belongs to someone else",
+  "message.cozychristmas.stocking.empty": "Nothing yet. Christmas mornings fill it",
+  "message.cozychristmas.stocking.no_fireplace": "Hang it on the wall above a fireplace",
+  "tooltip.cozychristmas.stocking": "Hang it above a fireplace: on Christmas mornings it holds a present, or coal if you've been naughty",
+  "tooltip.cozychristmas.hangs_as_stocking": "Sneak and use it on a wall to hang it as a stocking"
 }

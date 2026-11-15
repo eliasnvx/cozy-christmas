@@ -8,6 +8,7 @@ import dev.eliasnvx.cozychristmas.karma.KarmaSettings;
 import dev.eliasnvx.cozychristmas.present.PresentSettings;
 import dev.eliasnvx.cozychristmas.reindeer.ReindeerSettings;
 import dev.eliasnvx.cozychristmas.season.SeasonSettings;
+import dev.eliasnvx.cozychristmas.stocking.StockingSettings;
 import dev.eliasnvx.cozychristmas.workshop.WorkshopSettings;
 
 /**
@@ -16,11 +17,11 @@ import dev.eliasnvx.cozychristmas.workshop.WorkshopSettings;
  */
 public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSettings presents,
                            ToastySettings toastySet, WorkshopSettings workshop, ReindeerSettings reindeer,
-                           GoblinSettings goblins) {
+                           GoblinSettings goblins, StockingSettings stockings) {
 
     public static final CommonConfig DEFAULTS = new CommonConfig(SeasonSettings.DEFAULTS, KarmaSettings.DEFAULTS,
             PresentSettings.DEFAULTS, ToastySettings.DEFAULTS, WorkshopSettings.DEFAULTS, ReindeerSettings.DEFAULTS,
-            GoblinSettings.DEFAULTS);
+            GoblinSettings.DEFAULTS, StockingSettings.DEFAULTS);
 
     public static final Codec<CommonConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
             SeasonSettings.CODEC.fieldOf("season").orElse(DEFAULTS.season).forGetter(CommonConfig::season),
@@ -29,6 +30,7 @@ public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSe
             ToastySettings.CODEC.fieldOf("toasty_set").orElse(DEFAULTS.toastySet).forGetter(CommonConfig::toastySet),
             WorkshopSettings.CODEC.fieldOf("workshop").orElse(DEFAULTS.workshop).forGetter(CommonConfig::workshop),
             ReindeerSettings.CODEC.fieldOf("reindeer").orElse(DEFAULTS.reindeer).forGetter(CommonConfig::reindeer),
-            GoblinSettings.CODEC.fieldOf("goblins").orElse(DEFAULTS.goblins).forGetter(CommonConfig::goblins)
+            GoblinSettings.CODEC.fieldOf("goblins").orElse(DEFAULTS.goblins).forGetter(CommonConfig::goblins),
+            StockingSettings.CODEC.fieldOf("stockings").orElse(DEFAULTS.stockings).forGetter(CommonConfig::stockings)
     ).apply(i, CommonConfig::new));
 }
