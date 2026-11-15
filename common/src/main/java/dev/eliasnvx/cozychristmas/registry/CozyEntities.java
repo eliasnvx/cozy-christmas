@@ -13,6 +13,9 @@ import dev.eliasnvx.cozychristmas.goblin.PresentGoblin;
 import dev.eliasnvx.cozychristmas.goblin.PresentGoblinSettings;
 import dev.eliasnvx.cozychristmas.reindeer.Reindeer;
 import dev.eliasnvx.cozychristmas.reindeer.ReindeerSettings;
+import dev.eliasnvx.cozychristmas.snowman.EvilSnowman;
+import dev.eliasnvx.cozychristmas.snowman.EvilSnowmanSettings;
+import dev.eliasnvx.cozychristmas.snowman.IceSnowball;
 import dev.eliasnvx.cozychristmas.workshop.Elf;
 import dev.eliasnvx.cozychristmas.workshop.Santa;
 import net.minecraft.core.registries.Registries;
@@ -28,7 +31,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 /**
  * Entity types, their attributes (from the config) and natural spawns. Santa and the elves only come with the workshop
  * (structure templates), so they're {@code MISC} like villagers and never count against the mob cap. Present goblins
- * and gingerbread men are monsters; gingerbread men spawn only through the goblin camp's spawn overrides.
+ * and gingerbread men are monsters; gingerbread men spawn only through the goblin camp's spawn overrides. Evil snowmen
+ * are monsters of snowy nights.
  */
 public final class CozyEntities {
 
@@ -60,6 +64,17 @@ public final class CozyEntities {
             () -> EntityType.Builder.<GingerbreadMan>of(GingerbreadMan::new, MobCategory.MONSTER)
                     .sized(0.45F, 0.8F).eyeHeight(0.65F).notInPeaceful().clientTrackingRange(8).build(GINGERBREAD_MAN_KEY));
 
+    public static final ResourceKey<EntityType<?>> EVIL_SNOWMAN_KEY = key("evil_snowman");
+    public static final RegistrySupplier<EntityType<EvilSnowman>> EVIL_SNOWMAN = REGISTER.register(EVIL_SNOWMAN_KEY.identifier(),
+            () -> EntityType.Builder.<EvilSnowman>of(EvilSnowman::new, MobCategory.MONSTER)
+                    .sized(0.7F, 1.9F).eyeHeight(1.7F).notInPeaceful().clientTrackingRange(8).build(EVIL_SNOWMAN_KEY));
+
+    public static final ResourceKey<EntityType<?>> ICE_SNOWBALL_KEY = key("ice_snowball");
+    /** Sized, tracked and updated like vanilla's snowball. */
+    public static final RegistrySupplier<EntityType<IceSnowball>> ICE_SNOWBALL = REGISTER.register(ICE_SNOWBALL_KEY.identifier(),
+            () -> EntityType.Builder.<IceSnowball>of(IceSnowball::new, MobCategory.MISC)
+                    .noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10).build(ICE_SNOWBALL_KEY));
+
     private CozyEntities() {
     }
 
@@ -75,6 +90,7 @@ public final class CozyEntities {
         EntityAttributeRegistry.register(REINDEER, () -> Reindeer.createAttributes(config.reindeer()));
         EntityAttributeRegistry.register(PRESENT_GOBLIN, () -> PresentGoblin.createAttributes(config.goblins().presentGoblin()));
         EntityAttributeRegistry.register(GINGERBREAD_MAN, () -> GingerbreadMan.createAttributes(config.goblins().gingerbreadMan()));
+        EntityAttributeRegistry.register(EVIL_SNOWMAN, () -> EvilSnowman.createAttributes(config.evilSnowman()));
 
         SpawnPlacementsRegistry.register(REINDEER, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Reindeer::checkReindeerSpawnRules);
@@ -83,6 +99,8 @@ public final class CozyEntities {
         // any light: their spawns are the camps' overrides only, and the camp is theirs by day too
         SpawnPlacementsRegistry.register(GINGERBREAD_MAN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkAnyLightMonsterSpawnRules);
+        SpawnPlacementsRegistry.register(EVIL_SNOWMAN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                EvilSnowman::checkEvilSnowmanSpawnRules);
         ReindeerSettings reindeer = config.reindeer();
         if (reindeer.spawnWeight() > 0) {
             BiomeModifications.addProperties(context -> context.hasTag(CozyTags.SPAWNS_REINDEER), (context, properties) ->
@@ -94,6 +112,12 @@ public final class CozyEntities {
             BiomeModifications.addProperties(context -> context.hasTag(CozyTags.SPAWNS_PRESENT_GOBLINS), (context, properties) ->
                     properties.getSpawnProperties().addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(
                             PRESENT_GOBLIN.get(), UniformInt.of(goblin.minGroup(), goblin.maxGroup())), goblin.spawnWeight()));
+        }
+        EvilSnowmanSettings snowman = config.evilSnowman();
+        if (snowman.spawnWeight() > 0) {
+            BiomeModifications.addProperties(context -> context.hasTag(CozyTags.SPAWNS_EVIL_SNOWMEN), (context, properties) ->
+                    properties.getSpawnProperties().addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(
+                            EVIL_SNOWMAN.get(), UniformInt.of(snowman.minGroup(), snowman.maxGroup())), snowman.spawnWeight()));
         }
     }
 }

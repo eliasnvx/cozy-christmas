@@ -91,5 +91,15 @@
   "message.cozychristmas.stocking.empty": "Nothing yet. Christmas mornings fill it",
   "message.cozychristmas.stocking.no_fireplace": "Hang it on the wall above a fireplace",
   "tooltip.cozychristmas.stocking": "Hang it above a fireplace: on Christmas mornings it holds a present, or coal if you've been naughty",
-  "tooltip.cozychristmas.hangs_as_stocking": "Sneak and use it on a wall to hang it as a stocking"
+  "tooltip.cozychristmas.hangs_as_stocking": "Sneak and use it on a wall to hang it as a stocking",
+  "entity.cozychristmas.evil_snowman": "Evil Snowman",
+  "entity.cozychristmas.ice_snowball": "Ice Snowball",
+  "item.cozychristmas.evil_snowman_spawn_egg": "Evil Snowman Spawn Egg",
+  "item.cozychristmas.ice_snowball": "Ice Snowball",
+  "tooltip.cozychristmas.ice_snowball": "Slows and chills whoever it hits",
+  "subtitles.cozychristmas.entity.evil_snowman.ambient": "Evil Snowman grumbles",
+  "subtitles.cozychristmas.entity.evil_snowman.hurt": "Evil Snowman hurts",
+  "subtitles.cozychristmas.entity.evil_snowman.death": "Evil Snowman crumbles",
+  "subtitles.cozychristmas.entity.evil_snowman.throw": "Ice snowball flies",
+  "subtitles.cozychristmas.entity.evil_snowman.melt": "Evil Snowman melts"
 }

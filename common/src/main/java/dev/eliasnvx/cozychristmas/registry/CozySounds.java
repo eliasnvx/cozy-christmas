@@ -59,6 +59,15 @@ public final class CozySounds {
     public static final RegistrySupplier<SoundEvent> GINGERBREAD_MAN_DEATH = event("entity.gingerbread_man.death");
     public static final RegistrySupplier<SoundEvent> GINGERBREAD_MAN_STEP = event("entity.gingerbread_man.step");
 
+    /** A low, crunchy grumble. */
+    public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_AMBIENT = event("entity.evil_snowman.ambient");
+    public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_HURT = event("entity.evil_snowman.hurt");
+    public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_DEATH = event("entity.evil_snowman.death");
+    public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_STEP = event("entity.evil_snowman.step");
+    public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_THROW = event("entity.evil_snowman.throw");
+    /** Fire or heat on snow: a hiss. */
+    public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_MELT = event("entity.evil_snowman.melt");
+
     private CozySounds() {
     }
 

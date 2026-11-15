@@ -16,6 +16,7 @@ import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.stocking.StockingEvents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.DispenserBlock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,7 @@ public final class CozyChristmas {
         CozyBlocks.REGISTER.register();
         CozyEntities.REGISTER.register(); // before items: spawn eggs refer to the entity types
         CozyItems.REGISTER.register();
+        CozyItems.ICE_SNOWBALL.listen(DispenserBlock::registerProjectileBehavior); // dispensers throw them like snowballs
         CozyBlocks.BLOCK_ENTITIES.register();
         CozyMenus.REGISTER.register();
         CozySounds.REGISTER.register();

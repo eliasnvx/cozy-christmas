@@ -72,6 +72,12 @@ public final class CozyTags {
     /** Other items that hang as a stocking when used on a wall (Femboy Mod's socks): they look like a striped sock. */
     public static final TagKey<Item> HANGS_AS_STOCKING = TagKey.create(Registries.ITEM, CozyChristmas.id("hangs_as_stocking"));
 
+    /** Biomes where evil snowmen come out at night (under the open sky). */
+    public static final TagKey<Biome> SPAWNS_EVIL_SNOWMEN = TagKey.create(Registries.BIOME, CozyChristmas.id("spawns_evil_snowmen"));
+
+    /** Warm blocks an evil snowman melts next to, if lit when they have a {@code lit} state (fire, campfires, fireplaces). */
+    public static final TagKey<Block> MELTS_SNOWMEN = TagKey.create(Registries.BLOCK, CozyChristmas.id("melts_snowmen"));
+
     private CozyTags() {
     }
 }

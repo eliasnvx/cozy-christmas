@@ -10,6 +10,7 @@ import dev.eliasnvx.cozychristmas.client.present.ConfettiParticle;
 import dev.eliasnvx.cozychristmas.client.goblin.GingerbreadManRenderer;
 import dev.eliasnvx.cozychristmas.client.goblin.PresentGoblinRenderer;
 import dev.eliasnvx.cozychristmas.client.reindeer.ReindeerRenderer;
+import dev.eliasnvx.cozychristmas.client.snowman.EvilSnowmanRenderer;
 import dev.eliasnvx.cozychristmas.client.workshop.ElfRenderer;
 import dev.eliasnvx.cozychristmas.client.workshop.SantaRenderer;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
@@ -19,10 +20,12 @@ import dev.eliasnvx.cozychristmas.present.PresentContents;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozyEntities;
+import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -51,11 +54,14 @@ public final class CozyChristmasClient {
         ReindeerRenderer.registerLayers();
         PresentGoblinRenderer.registerLayers();
         GingerbreadManRenderer.registerLayers();
+        EvilSnowmanRenderer.registerLayers();
         EntityRendererRegistry.register(CozyEntities.ELF, ElfRenderer::new);
         EntityRendererRegistry.register(CozyEntities.SANTA, SantaRenderer::new);
         EntityRendererRegistry.register(CozyEntities.REINDEER, ReindeerRenderer::new);
         EntityRendererRegistry.register(CozyEntities.PRESENT_GOBLIN, PresentGoblinRenderer::new);
         EntityRendererRegistry.register(CozyEntities.GINGERBREAD_MAN, GingerbreadManRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.EVIL_SNOWMAN, EvilSnowmanRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.ICE_SNOWBALL, ThrownItemRenderer::new);
 
         CozyChristmas.LOGGER.info("{} client initialized", CozyChristmas.MOD_ID);
     }
@@ -77,6 +83,9 @@ public final class CozyChristmasClient {
             lines.add(Component.translatable("tooltip.cozychristmas.stocking").withStyle(ChatFormatting.GRAY));
         } else if (stack.is(CozyTags.HANGS_AS_STOCKING)) {
             lines.add(Component.translatable("tooltip.cozychristmas.hangs_as_stocking").withStyle(ChatFormatting.GRAY));
+        }
+        if (stack.is(CozyItems.ICE_SNOWBALL.get())) {
+            lines.add(Component.translatable("tooltip.cozychristmas.ice_snowball").withStyle(ChatFormatting.GRAY));
         }
     }
 

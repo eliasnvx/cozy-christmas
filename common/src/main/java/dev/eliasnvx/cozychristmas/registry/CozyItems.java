@@ -8,6 +8,7 @@ import dev.eliasnvx.cozychristmas.cosmetic.Cosmetic;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.present.PresentBlock;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
+import dev.eliasnvx.cozychristmas.snowman.IceSnowballItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.Registries;
@@ -66,6 +67,10 @@ public final class CozyItems {
     public static final RegistrySupplier<Item> REINDEER_SPAWN_EGG = spawnEgg("reindeer_spawn_egg", CozyEntities.REINDEER_KEY);
     public static final RegistrySupplier<Item> PRESENT_GOBLIN_SPAWN_EGG = spawnEgg("present_goblin_spawn_egg", CozyEntities.PRESENT_GOBLIN_KEY);
     public static final RegistrySupplier<Item> GINGERBREAD_MAN_SPAWN_EGG = spawnEgg("gingerbread_man_spawn_egg", CozyEntities.GINGERBREAD_MAN_KEY);
+    public static final RegistrySupplier<Item> EVIL_SNOWMAN_SPAWN_EGG = spawnEgg("evil_snowman_spawn_egg", CozyEntities.EVIL_SNOWMAN_KEY);
+
+    /** Evil snowmen drop them; thrown, they hurt, slow and chill. Stacks like snowballs. */
+    public static final RegistrySupplier<Item> ICE_SNOWBALL = register("ice_snowball", props -> new IceSnowballItem(props.stacksTo(16)));
 
     /** SPEC: 4 food, lures elves ({@code #cozychristmas:elf_treats}). Gingerbread men crumble into them. */
     public static final RegistrySupplier<Item> GINGERBREAD_COOKIE = register("gingerbread_cookie", props -> new Item(props.food(
@@ -97,6 +102,8 @@ public final class CozyItems {
                 output.accept(PRESENT_GOBLIN_SPAWN_EGG.get());
                 output.accept(GINGERBREAD_MAN_SPAWN_EGG.get());
                 output.accept(GINGERBREAD_COOKIE.get());
+                output.accept(EVIL_SNOWMAN_SPAWN_EGG.get());
+                output.accept(ICE_SNOWBALL.get());
             })));
 
     private CozyItems() {

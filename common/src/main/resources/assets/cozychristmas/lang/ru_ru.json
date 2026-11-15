@@ -91,5 +91,15 @@
   "message.cozychristmas.stocking.empty": "Пока пусто. Он наполняется рождественским утром",
   "message.cozychristmas.stocking.no_fireplace": "Повесьте его на стену над камином",
   "tooltip.cozychristmas.stocking": "Повесьте над камином: рождественским утром в нём подарок, а если вы шалили, уголь",
-  "tooltip.cozychristmas.hangs_as_stocking": "Используйте на стене крадучись, чтобы повесить как чулок"
+  "tooltip.cozychristmas.hangs_as_stocking": "Используйте на стене крадучись, чтобы повесить как чулок",
+  "entity.cozychristmas.evil_snowman": "Злой снеговик",
+  "entity.cozychristmas.ice_snowball": "Ледяной снежок",
+  "item.cozychristmas.evil_snowman_spawn_egg": "Яйцо призыва злого снеговика",
+  "item.cozychristmas.ice_snowball": "Ледяной снежок",
+  "tooltip.cozychristmas.ice_snowball": "Замедляет и морозит того, в кого попадёт",
+  "subtitles.cozychristmas.entity.evil_snowman.ambient": "Злой снеговик ворчит",
+  "subtitles.cozychristmas.entity.evil_snowman.hurt": "Злому снеговику больно",
+  "subtitles.cozychristmas.entity.evil_snowman.death": "Злой снеговик рассыпается",
+  "subtitles.cozychristmas.entity.evil_snowman.throw": "Летит ледяной снежок",
+  "subtitles.cozychristmas.entity.evil_snowman.melt": "Злой снеговик тает"
 }

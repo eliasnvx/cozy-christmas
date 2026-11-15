@@ -546,5 +546,107 @@
         "volume": 1.0
       }
     ]
+  },
+  "entity.evil_snowman.ambient": {
+    "sounds": [
+      {
+        "name": "minecraft:entity/snowman/hurt1",
+        "pitch": 0.55,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity/snowman/hurt2",
+        "pitch": 0.55,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity/snowman/hurt3",
+        "pitch": 0.55,
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.evil_snowman.ambient"
+  },
+  "entity.evil_snowman.hurt": {
+    "sounds": [
+      {
+        "name": "minecraft:entity/snowman/hurt1",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/snowman/hurt2",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/snowman/hurt3",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.evil_snowman.hurt"
+  },
+  "entity.evil_snowman.death": {
+    "sounds": [
+      {
+        "name": "minecraft:entity/snowman/death1",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/snowman/death2",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/snowman/death3",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.evil_snowman.death"
+  },
+  "entity.evil_snowman.step": {
+    "sounds": [
+      {
+        "name": "minecraft:step/snow1",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:step/snow2",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:step/snow3",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:step/snow4",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ]
+  },
+  "entity.evil_snowman.throw": {
+    "sounds": [
+      {
+        "name": "minecraft:random/bow",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.evil_snowman.throw"
+  },
+  "entity.evil_snowman.melt": {
+    "sounds": [
+      {
+        "name": "minecraft:random/fizz",
+        "volume": 0.6
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.evil_snowman.melt"
   }
 }

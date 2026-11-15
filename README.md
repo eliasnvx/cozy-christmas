@@ -49,6 +49,11 @@ Build a **fireplace** (bricks round a campfire; light it with flint and steel, p
 
 Blocks that count as a fireplace are the tag `#cozychristmas:fireplaces`; items that hang as a stocking are `#cozychristmas:hangs_as_stocking`.
 
+## Evil snowmen
+On snowy nights, under the open sky, evil snowmen come out with glowing icy eyes and pelt you with **ice snowballs**: they hurt, slow you down and chill you (warm clothes keep the freezing out). Snowmen melt: fire hurts them three times over, warm biomes melt them, and so does standing near a lit fire, campfire, furnace or fireplace, so a fire at home keeps them away. They drop snowballs and ice snowballs, which you can throw (or load into a dispenser), and sometimes their coal and carrot.
+
+Where they spawn is the biome tag `#cozychristmas:spawns_evil_snowmen`; warm blocks they melt next to are `#cozychristmas:melts_snowmen`.
+
 ## Karma
 Every player has a hidden karma from -100 to +100. Hurting villagers, elves and other peaceful folk or stealing from Santa lowers it; giving gifts, feeding reindeer and getting back what goblins stole raises it; it drifts back toward zero by about one point per in-game day. Nice players mostly find gifts in their presents, naughty ones find coal.
 
