@@ -7,6 +7,8 @@ import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticLooks;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticShape;
 import dev.eliasnvx.cozychristmas.client.present.ConfettiParticle;
+import dev.eliasnvx.cozychristmas.client.goblin.GingerbreadManRenderer;
+import dev.eliasnvx.cozychristmas.client.goblin.PresentGoblinRenderer;
 import dev.eliasnvx.cozychristmas.client.reindeer.ReindeerRenderer;
 import dev.eliasnvx.cozychristmas.client.workshop.ElfRenderer;
 import dev.eliasnvx.cozychristmas.client.workshop.SantaRenderer;
@@ -46,9 +48,13 @@ public final class CozyChristmasClient {
         ElfRenderer.registerLayers();
         SantaRenderer.registerLayers();
         ReindeerRenderer.registerLayers();
+        PresentGoblinRenderer.registerLayers();
+        GingerbreadManRenderer.registerLayers();
         EntityRendererRegistry.register(CozyEntities.ELF, ElfRenderer::new);
         EntityRendererRegistry.register(CozyEntities.SANTA, SantaRenderer::new);
         EntityRendererRegistry.register(CozyEntities.REINDEER, ReindeerRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.PRESENT_GOBLIN, PresentGoblinRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.GINGERBREAD_MAN, GingerbreadManRenderer::new);
 
         CozyChristmas.LOGGER.info("{} client initialized", CozyChristmas.MOD_ID);
     }

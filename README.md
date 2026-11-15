@@ -36,13 +36,21 @@ Very rarely, in snowy plains and taiga, you find Santa's workshop: a snowy squar
 
 Where the workshop generates is the biome tag `#cozychristmas:has_structure/santas_workshop`, how often the structure set `cozychristmas:santas_workshop`; Santa's goods are the trade sets `cozychristmas:santa/goods` and `cozychristmas:santa/buying`; elves work at `#cozychristmas:elf_workstations`.
 
+## Present goblins
+Among ice spikes and on snowy slopes, present goblins camp around a fire: a few patched tents, a heap of stolen presents and a chest of loot, guarded by goblins and packs of gingerbread men.
+
+- **Present goblins** also prowl snowy biomes at night. Instead of hitting you, a goblin snatches a whole stack from your hotbar and runs off with it held over its head. Catch it: you get your things back, a surprise present on top, and getting stolen goods back is a good deed.
+- **Gingerbread men** come four to six at a time and are quick but weak. Water makes them soggy. They crumble into gingerbread cookies, which elves love.
+
+Where camps generate is the biome tag `#cozychristmas:has_structure/goblin_camp`, how often the structure set `cozychristmas:goblin_camp`; night goblins spawn in `#cozychristmas:spawns_present_goblins`; items in `#cozychristmas:goblin_proof` are never stolen.
+
 ## Karma
-Every player has a hidden karma from -100 to +100. Hurting villagers, elves and other peaceful folk or stealing from Santa lowers it; giving gifts and feeding reindeer raises it; it drifts back toward zero by about one point per in-game day. Nice players mostly find gifts in their presents, naughty ones find coal.
+Every player has a hidden karma from -100 to +100. Hurting villagers, elves and other peaceful folk or stealing from Santa lowers it; giving gifts, feeding reindeer and getting back what goblins stole raises it; it drifts back toward zero by about one point per in-game day. Nice players mostly find gifts in their presents, naughty ones find coal.
 
 Mobs that count are in the entity tag `#cozychristmas:karma_protected`, so data packs can change them.
 
 ## Config
-`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
+`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
 
 Operators: `/cozychristmas karma get|set|add <players> [value]`, `/cozychristmas season`.
 

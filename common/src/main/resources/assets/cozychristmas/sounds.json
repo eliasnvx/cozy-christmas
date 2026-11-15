@@ -382,5 +382,169 @@
       }
     ],
     "subtitle": "subtitles.cozychristmas.entity.reindeer.bells"
+  },
+  "entity.present_goblin.ambient": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/villager/idle1",
+        "pitch": 1.75,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/villager/idle2",
+        "pitch": 1.75,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/villager/idle3",
+        "pitch": 1.75,
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.present_goblin.ambient"
+  },
+  "entity.present_goblin.hurt": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/villager/hit1",
+        "pitch": 1.75,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/villager/hit2",
+        "pitch": 1.75,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/villager/hit3",
+        "pitch": 1.75,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/villager/hit4",
+        "pitch": 1.75,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.present_goblin.hurt"
+  },
+  "entity.present_goblin.death": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/villager/death",
+        "pitch": 1.75,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.present_goblin.death"
+  },
+  "entity.present_goblin.steal": {
+    "sounds": [
+      {
+        "name": "minecraft:random/pop",
+        "pitch": 1.0,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.present_goblin.steal"
+  },
+  "entity.gingerbread_man.ambient": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/silverfish/say1",
+        "pitch": 1.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:mob/silverfish/say2",
+        "pitch": 1.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:mob/silverfish/say3",
+        "pitch": 1.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:mob/silverfish/say4",
+        "pitch": 1.6,
+        "volume": 0.5
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.gingerbread_man.ambient"
+  },
+  "entity.gingerbread_man.hurt": {
+    "sounds": [
+      {
+        "name": "minecraft:dig/sand1",
+        "pitch": 1.4,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/sand2",
+        "pitch": 1.4,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/sand3",
+        "pitch": 1.4,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/sand4",
+        "pitch": 1.4,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.gingerbread_man.hurt"
+  },
+  "entity.gingerbread_man.death": {
+    "sounds": [
+      {
+        "name": "minecraft:dig/gravel1",
+        "pitch": 1.2,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/gravel2",
+        "pitch": 1.2,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/gravel3",
+        "pitch": 1.2,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/gravel4",
+        "pitch": 1.2,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.gingerbread_man.death"
+  },
+  "entity.gingerbread_man.step": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/silverfish/step1",
+        "pitch": 1.4,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/silverfish/step2",
+        "pitch": 1.4,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/silverfish/step3",
+        "pitch": 1.4,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/silverfish/step4",
+        "pitch": 1.4,
+        "volume": 1.0
+      }
+    ]
   }
 }

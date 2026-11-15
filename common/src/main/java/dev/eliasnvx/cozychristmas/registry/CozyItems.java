@@ -14,6 +14,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -63,6 +64,12 @@ public final class CozyItems {
     public static final RegistrySupplier<Item> SANTA_SPAWN_EGG = spawnEgg("santa_spawn_egg", CozyEntities.SANTA_KEY);
     public static final RegistrySupplier<Item> ELF_SPAWN_EGG = spawnEgg("elf_spawn_egg", CozyEntities.ELF_KEY);
     public static final RegistrySupplier<Item> REINDEER_SPAWN_EGG = spawnEgg("reindeer_spawn_egg", CozyEntities.REINDEER_KEY);
+    public static final RegistrySupplier<Item> PRESENT_GOBLIN_SPAWN_EGG = spawnEgg("present_goblin_spawn_egg", CozyEntities.PRESENT_GOBLIN_KEY);
+    public static final RegistrySupplier<Item> GINGERBREAD_MAN_SPAWN_EGG = spawnEgg("gingerbread_man_spawn_egg", CozyEntities.GINGERBREAD_MAN_KEY);
+
+    /** SPEC: 4 food, lures elves ({@code #cozychristmas:elf_treats}). Gingerbread men crumble into them. */
+    public static final RegistrySupplier<Item> GINGERBREAD_COOKIE = register("gingerbread_cookie", props -> new Item(props.food(
+            new FoodProperties.Builder().nutrition(4).saturationModifier(0.3F).build())));
 
     public static final RegistrySupplier<CreativeModeTab> TAB = TABS.register("cozychristmas", () -> CreativeTabRegistry.create(builder -> builder
             .title(Component.translatable("itemGroup.cozychristmas"))
@@ -85,6 +92,9 @@ public final class CozyItems {
                 output.accept(SANTA_SPAWN_EGG.get());
                 output.accept(ELF_SPAWN_EGG.get());
                 output.accept(REINDEER_SPAWN_EGG.get());
+                output.accept(PRESENT_GOBLIN_SPAWN_EGG.get());
+                output.accept(GINGERBREAD_MAN_SPAWN_EGG.get());
+                output.accept(GINGERBREAD_COOKIE.get());
             })));
 
     private CozyItems() {

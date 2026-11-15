@@ -47,6 +47,18 @@ public final class CozySounds {
     /** Sleigh bells, jingling while a reindeer flies. */
     public static final RegistrySupplier<SoundEvent> REINDEER_BELLS = event("entity.reindeer.bells");
 
+    public static final RegistrySupplier<SoundEvent> PRESENT_GOBLIN_AMBIENT = event("entity.present_goblin.ambient");
+    public static final RegistrySupplier<SoundEvent> PRESENT_GOBLIN_HURT = event("entity.present_goblin.hurt");
+    public static final RegistrySupplier<SoundEvent> PRESENT_GOBLIN_DEATH = event("entity.present_goblin.death");
+    /** A snatch and a cackle: something just left your hotbar. */
+    public static final RegistrySupplier<SoundEvent> PRESENT_GOBLIN_STEAL = event("entity.present_goblin.steal");
+
+    public static final RegistrySupplier<SoundEvent> GINGERBREAD_MAN_AMBIENT = event("entity.gingerbread_man.ambient");
+    public static final RegistrySupplier<SoundEvent> GINGERBREAD_MAN_HURT = event("entity.gingerbread_man.hurt");
+    /** It crumbles. */
+    public static final RegistrySupplier<SoundEvent> GINGERBREAD_MAN_DEATH = event("entity.gingerbread_man.death");
+    public static final RegistrySupplier<SoundEvent> GINGERBREAD_MAN_STEP = event("entity.gingerbread_man.step");
+
     private CozySounds() {
     }
 

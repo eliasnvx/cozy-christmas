@@ -70,5 +70,19 @@
   "tooltip.cozychristmas.slot": "Worn in the %s slot",
   "tooltip.cozychristmas.toasty_set": "Toasty set (%s/%s)",
   "tooltip.cozychristmas.toasty_set.snow_speed": " Faster on snow",
-  "tooltip.cozychristmas.toasty_set.warm": " No freezing in powder snow"
+  "tooltip.cozychristmas.toasty_set.warm": " No freezing in powder snow",
+  "entity.cozychristmas.present_goblin": "Present Goblin",
+  "entity.cozychristmas.gingerbread_man": "Gingerbread Man",
+  "item.cozychristmas.present_goblin_spawn_egg": "Present Goblin Spawn Egg",
+  "item.cozychristmas.gingerbread_man_spawn_egg": "Gingerbread Man Spawn Egg",
+  "item.cozychristmas.gingerbread_cookie": "Gingerbread Cookie",
+  "message.cozychristmas.present_goblin.stole": "A goblin snatched your %s!",
+  "message.cozychristmas.present_goblin.returned": "You got the goblin's loot back",
+  "subtitles.cozychristmas.entity.present_goblin.ambient": "Goblin cackles",
+  "subtitles.cozychristmas.entity.present_goblin.hurt": "Goblin hurts",
+  "subtitles.cozychristmas.entity.present_goblin.death": "Goblin dies",
+  "subtitles.cozychristmas.entity.present_goblin.steal": "Goblin snatches",
+  "subtitles.cozychristmas.entity.gingerbread_man.ambient": "Gingerbread Man squeaks",
+  "subtitles.cozychristmas.entity.gingerbread_man.hurt": "Gingerbread Man cracks",
+  "subtitles.cozychristmas.entity.gingerbread_man.death": "Gingerbread Man crumbles"
 }

@@ -70,5 +70,19 @@
   "tooltip.cozychristmas.slot": "Надевается в слот «%s»",
   "tooltip.cozychristmas.toasty_set": "Сет «Toasty» (%s/%s)",
   "tooltip.cozychristmas.toasty_set.snow_speed": " Быстрее на снегу",
-  "tooltip.cozychristmas.toasty_set.warm": " Не мёрзнешь в рыхлом снегу"
+  "tooltip.cozychristmas.toasty_set.warm": " Не мёрзнешь в рыхлом снегу",
+  "entity.cozychristmas.present_goblin": "Подарочный гоблин",
+  "entity.cozychristmas.gingerbread_man": "Пряничный человечек",
+  "item.cozychristmas.present_goblin_spawn_egg": "Яйцо призыва подарочного гоблина",
+  "item.cozychristmas.gingerbread_man_spawn_egg": "Яйцо призыва пряничного человечка",
+  "item.cozychristmas.gingerbread_cookie": "Имбирное печенье",
+  "message.cozychristmas.present_goblin.stole": "Гоблин утащил ваш предмет: %s!",
+  "message.cozychristmas.present_goblin.returned": "Вы отобрали у гоблина добычу",
+  "subtitles.cozychristmas.entity.present_goblin.ambient": "Гоблин хихикает",
+  "subtitles.cozychristmas.entity.present_goblin.hurt": "Гоблину больно",
+  "subtitles.cozychristmas.entity.present_goblin.death": "Гоблин погибает",
+  "subtitles.cozychristmas.entity.present_goblin.steal": "Гоблин хватает",
+  "subtitles.cozychristmas.entity.gingerbread_man.ambient": "Пряничный человечек пищит",
+  "subtitles.cozychristmas.entity.gingerbread_man.hurt": "Пряничный человечек трескается",
+  "subtitles.cozychristmas.entity.gingerbread_man.death": "Пряничный человечек крошится"
 }

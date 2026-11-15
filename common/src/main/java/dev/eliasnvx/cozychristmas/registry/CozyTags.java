@@ -57,6 +57,12 @@ public final class CozyTags {
     /** Biomes with wild reindeer herds. */
     public static final TagKey<Biome> SPAWNS_REINDEER = TagKey.create(Registries.BIOME, CozyChristmas.id("spawns_reindeer"));
 
+    /** Items a present goblin never steals (empty by default: packs can protect keys, backpacks, quest items). */
+    public static final TagKey<Item> GOBLIN_PROOF = TagKey.create(Registries.ITEM, CozyChristmas.id("goblin_proof"));
+
+    /** Biomes where present goblins prowl at night, outside their camps. */
+    public static final TagKey<Biome> SPAWNS_PRESENT_GOBLINS = TagKey.create(Registries.BIOME, CozyChristmas.id("spawns_present_goblins"));
+
     private CozyTags() {
     }
 }

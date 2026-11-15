@@ -3,6 +3,7 @@ package dev.eliasnvx.cozychristmas.workshop;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.karma.KarmaManager;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
+import dev.eliasnvx.cozychristmas.util.Players;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -52,17 +53,11 @@ public final class WorkshopAlarm {
         }
     }
 
-    /**
-     * Not one of Santa's own, and not a player out of the game's reach: only survival and adventure count. A server
-     * player's mode is read from its game mode manager (GameTest mock players report creative whatever it is).
-     */
+    /** Not one of Santa's own, and not a player out of the game's reach: only survival and adventure count. */
     static boolean canBeBlamed(LivingEntity culprit) {
         if (culprit instanceof Santa || culprit instanceof Elf || !culprit.isAlive()) {
             return false;
         }
-        if (culprit instanceof ServerPlayer player) {
-            return player.gameMode.getGameModeForPlayer().isSurvival();
-        }
-        return !(culprit instanceof Player player) || !player.isCreative() && !player.isSpectator();
+        return !(culprit instanceof Player player) || Players.inPlay(player);
     }
 }

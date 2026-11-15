@@ -14,13 +14,15 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.ToastySetGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.HeadPieceGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.PresentGameTestsFabric",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.WorkshopGameTestsFabric"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.WorkshopGameTestsFabric",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.GoblinGameTestsFabric"
     ],
     "fabric-client-gametest": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest",
       "dev.eliasnvx.cozychristmas.fabric.gametest.PresentsLookClientTest",
       "dev.eliasnvx.cozychristmas.fabric.gametest.WorkshopLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.HeadPiecesLookClientTest"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.HeadPiecesLookClientTest",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.GoblinsLookClientTest"
     ]
   },
   "mixins": [

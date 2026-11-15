@@ -5,6 +5,7 @@ import dev.eliasnvx.cozychristmas.gametest.CosmeticSlotGameTests;
 import dev.eliasnvx.cozychristmas.gametest.GameTestEntry;
 import dev.eliasnvx.cozychristmas.gametest.KarmaGameTests;
 import dev.eliasnvx.cozychristmas.gametest.PresentGameTests;
+import dev.eliasnvx.cozychristmas.gametest.GoblinGameTests;
 import dev.eliasnvx.cozychristmas.gametest.HeadPieceGameTests;
 import dev.eliasnvx.cozychristmas.gametest.ToastySetGameTests;
 import dev.eliasnvx.cozychristmas.gametest.WorkshopGameTests;
@@ -26,8 +27,9 @@ import java.util.function.Consumer;
 
 /**
  * Registers the shared GameTests ({@link KarmaGameTests}, {@link CosmeticSlotGameTests}, {@link ToastySetGameTests},
- * {@link HeadPieceGameTests}, {@link PresentGameTests}, {@link WorkshopGameTests}) on NeoForge. Started by {@code CozyChristmasNeoForge} only when
- * GameTests are enabled ({@code ./gradlew :neoforge:runGameTestServer}, part of {@code build}); not in the released jar.
+ * {@link HeadPieceGameTests}, {@link PresentGameTests}, {@link WorkshopGameTests}, {@link GoblinGameTests}) on NeoForge.
+ * Started by {@code CozyChristmasNeoForge} only when GameTests are enabled ({@code ./gradlew :neoforge:runGameTestServer},
+ * part of {@code build}); not in the released jar.
  */
 public final class CozyGameTestsNeoForge {
 
@@ -42,7 +44,7 @@ public final class CozyGameTestsNeoForge {
         DeferredRegister<Consumer<GameTestHelper>> functions = DeferredRegister.create(Registries.TEST_FUNCTION, CozyChristmas.MOD_ID);
         List<DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>>> holders = new ArrayList<>();
         for (List<GameTestEntry> tests : List.of(KarmaGameTests.ALL, CosmeticSlotGameTests.ALL, ToastySetGameTests.ALL,
-                HeadPieceGameTests.ALL, PresentGameTests.ALL, WorkshopGameTests.ALL)) {
+                HeadPieceGameTests.ALL, PresentGameTests.ALL, WorkshopGameTests.ALL, GoblinGameTests.ALL)) {
             for (GameTestEntry entry : tests) {
                 holders.add(functions.register(entry.name(), entry::body));
             }

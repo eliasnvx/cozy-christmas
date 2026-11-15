@@ -10,12 +10,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
  * {@code hurtProtected} (at most once per victim every {@code hurtCooldownTicks}), killing one {@code killProtected}.
  * A wrapped gift opened by another player earns its giver {@code giftGiven}, once per game day. Opening or breaking a
  * present from the workshop warehouse costs {@code stealPresent}; feeding a reindeer earns {@code feedReindeer}, once per
- * reindeer per game day.
+ * reindeer per game day. Killing a present goblin that carries stolen loot earns {@code returnStolen}.
  */
 public record KarmaSettings(int decayPerDay, int niceAbove, int naughtyBelow, int hurtProtected, int killProtected,
-                            int hurtCooldownTicks, int giftGiven, int stealPresent, int feedReindeer) {
+                            int hurtCooldownTicks, int giftGiven, int stealPresent, int feedReindeer,
+                            int returnStolen) {
 
-    public static final KarmaSettings DEFAULTS = new KarmaSettings(1, 30, -30, -2, -10, 40, 3, -15, 1);
+    public static final KarmaSettings DEFAULTS = new KarmaSettings(1, 30, -30, -2, -10, 40, 3, -15, 1, 3);
 
     private static final Codec<Integer> KARMA = Codec.intRange(Karma.MIN, Karma.MAX);
     private static final Codec<Integer> PENALTY = Codec.intRange(Karma.MIN, 0);
@@ -29,7 +30,8 @@ public record KarmaSettings(int decayPerDay, int niceAbove, int naughtyBelow, in
             Codec.intRange(0, 72000).fieldOf("hurt_cooldown_ticks").orElse(DEFAULTS.hurtCooldownTicks).forGetter(KarmaSettings::hurtCooldownTicks),
             Codec.intRange(0, Karma.MAX).fieldOf("gift_given").orElse(DEFAULTS.giftGiven).forGetter(KarmaSettings::giftGiven),
             PENALTY.fieldOf("steal_present").orElse(DEFAULTS.stealPresent).forGetter(KarmaSettings::stealPresent),
-            Codec.intRange(0, Karma.MAX).fieldOf("feed_reindeer").orElse(DEFAULTS.feedReindeer).forGetter(KarmaSettings::feedReindeer)
+            Codec.intRange(0, Karma.MAX).fieldOf("feed_reindeer").orElse(DEFAULTS.feedReindeer).forGetter(KarmaSettings::feedReindeer),
+            Codec.intRange(0, Karma.MAX).fieldOf("return_stolen").orElse(DEFAULTS.returnStolen).forGetter(KarmaSettings::returnStolen)
     ).apply(i, KarmaSettings::new)).validate(KarmaSettings::validate);
 
     private static DataResult<KarmaSettings> validate(KarmaSettings settings) {

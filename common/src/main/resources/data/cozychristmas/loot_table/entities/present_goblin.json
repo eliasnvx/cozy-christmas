@@ -1,0 +1,105 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:gold_nugget",
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 0,
+                "max": 2
+              }
+            },
+            {
+              "type": "minecraft:enchanted_count_increase",
+              "enchantment": "minecraft:looting",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 0.0,
+                "max": 1.0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:killed_by_player"
+          },
+          {
+            "type": "minecraft:random_chance_with_enchanted_bonus",
+            "enchantment": "minecraft:looting",
+            "unenchanted_chance": 0.1,
+            "enchanted_chance": {
+              "type": "minecraft:linear",
+              "base": 0.12,
+              "per_level_above_first": 0.02
+            }
+          }
+        ]
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:present",
+          "modifier": {
+            "type": "minecraft:set_components",
+            "components": {
+              "minecraft:block_state": {
+                "design": "red"
+              }
+            }
+          }
+        },
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:present",
+          "modifier": {
+            "type": "minecraft:set_components",
+            "components": {
+              "minecraft:block_state": {
+                "design": "green"
+              }
+            }
+          }
+        },
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:present",
+          "modifier": {
+            "type": "minecraft:set_components",
+            "components": {
+              "minecraft:block_state": {
+                "design": "blue"
+              }
+            }
+          }
+        },
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:present",
+          "modifier": {
+            "type": "minecraft:set_components",
+            "components": {
+              "minecraft:block_state": {
+                "design": "gold"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cozychristmas:entities/present_goblin"
+}
