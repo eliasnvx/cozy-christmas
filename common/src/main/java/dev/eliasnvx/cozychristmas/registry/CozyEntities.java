@@ -15,6 +15,7 @@ import dev.eliasnvx.cozychristmas.krampus.Krampus;
 import dev.eliasnvx.cozychristmas.krampus.KrampusSack;
 import dev.eliasnvx.cozychristmas.reindeer.Reindeer;
 import dev.eliasnvx.cozychristmas.reindeer.ReindeerSettings;
+import dev.eliasnvx.cozychristmas.sleigh.SantasSleigh;
 import dev.eliasnvx.cozychristmas.snowman.EvilSnowman;
 import dev.eliasnvx.cozychristmas.snowman.EvilSnowmanSettings;
 import dev.eliasnvx.cozychristmas.snowman.IceSnowball;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Entity types, their attributes (from the config) and natural spawns. Santa and the elves only come with the workshop
@@ -87,6 +89,13 @@ public final class CozyEntities {
     public static final RegistrySupplier<EntityType<KrampusSack>> KRAMPUS_SACK = REGISTER.register(KRAMPUS_SACK_KEY.identifier(),
             () -> EntityType.Builder.<KrampusSack>of(KrampusSack::new, MobCategory.MISC)
                     .noLootTable().noSummon().sized(1.15F, 2.3F).clientTrackingRange(10).updateInterval(1).build(KRAMPUS_SACK_KEY));
+
+    public static final ResourceKey<EntityType<?>> SANTAS_SLEIGH_KEY = key("santas_sleigh");
+    /** Santa sits at the back; tracked far, so it's seen climbing into the night sky. */
+    public static final RegistrySupplier<EntityType<SantasSleigh>> SANTAS_SLEIGH = REGISTER.register(SANTAS_SLEIGH_KEY.identifier(),
+            () -> EntityType.Builder.<SantasSleigh>of(SantasSleigh::new, MobCategory.MISC)
+                    .noLootTable().sized(2.0F, 1.3F).passengerAttachments(new Vec3(0.0, 0.55, -0.55))
+                    .clientTrackingRange(16).updateInterval(1).build(SANTAS_SLEIGH_KEY));
 
     private CozyEntities() {
     }

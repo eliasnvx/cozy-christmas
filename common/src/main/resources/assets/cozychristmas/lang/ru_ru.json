@@ -166,5 +166,12 @@
   "info.cozychristmas.hot_cocoa": "Согревает: размораживает и две минуты не даёт замёрзнуть, даже в рыхлом снегу или под градом ледяных снежков. Кружка остаётся.",
   "info.cozychristmas.gingerbread_cookie": "Пряничные человечки рассыпаются в такое печенье. Эльфы ходят за тем, у кого оно в руке.",
   "info.cozychristmas.ice_snowball": "Их бросают и роняют злые снеговики. Попадание ранит, замедляет и морозит, тёплая одежда спасает от мороза. Раздатчики тоже стреляют ими.",
-  "info.cozychristmas.krampus_trophies": "Только с Крампуса: его логово под ямой в снегу, высоко в горах. Победа над ним заодно стирает плохую карму всем, кто сражался."
+  "info.cozychristmas.krampus_trophies": "Только с Крампуса: его логово под ямой в снегу, высоко в горах. Победа над ним заодно стирает плохую карму всем, кто сражался.",
+  "entity.cozychristmas.santas_sleigh": "Сани Санты",
+  "message.cozychristmas.sleigh.not_yet": "Санта грузит сани в канун Рождества",
+  "message.cozychristmas.sleigh.status": "Подарков в санях: %s из %s. Принеси свой, помоги!",
+  "message.cozychristmas.sleigh.loaded": "В мешок! Подарков в санях: %s из %s",
+  "message.cozychristmas.sleigh.prank": "Розыгрыш Санта в сани не возьмёт",
+  "message.cozychristmas.sleigh.full": "Мешок полон: Санта готов к ночи",
+  "message.cozychristmas.santa.thanks": "Спасибо, что помог загрузить сани!"
 }

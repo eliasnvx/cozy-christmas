@@ -21,7 +21,8 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.KrampusGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.FoodGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.TreeGameTestsFabric",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.CompatGameTestsFabric"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.CompatGameTestsFabric",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.SleighGameTestsFabric"
     ],
     "fabric-client-gametest": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest",
@@ -34,7 +35,8 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.KrampusLookClientTest",
       "dev.eliasnvx.cozychristmas.fabric.gametest.FoodLookClientTest",
       "dev.eliasnvx.cozychristmas.fabric.gametest.TreeLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.CompatLookClientTest"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.CompatLookClientTest",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.SleighLookClientTest"
     ],
     "jei_mod_plugin": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.TestJeiPlugin"

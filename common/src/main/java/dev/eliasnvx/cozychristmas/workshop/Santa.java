@@ -1,5 +1,7 @@
 package dev.eliasnvx.cozychristmas.workshop;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.karma.KarmaManager;
@@ -11,6 +13,9 @@ import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
+import dev.eliasnvx.cozychristmas.sleigh.SantasSleigh;
+import dev.eliasnvx.cozychristmas.sleigh.SleighFlight;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -34,6 +39,7 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.InteractGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.LookAtTradingPlayerGoal;
@@ -54,7 +60,16 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Santa, at home in his workshop. He trades for emeralds (trade sets {@code cozychristmas:santa/goods} and
@@ -76,6 +91,13 @@ public class Santa extends AbstractVillager {
     private static final double CHASE = 1.2;
     private static final double STROLL = 0.6;
     private static final String RESTOCK_DAY = "restock_day";
+    private static final String OWED_THANKS = "owed_thanks";
+    private static final String THANKED = "thanked";
+    private static final String THANKED_DAY = "day";
+    private static final String THANKED_PLAYER = "player";
+    /** On delivery days Santa stays this close to his sleigh, and looks for it this far. */
+    private static final double BY_THE_SLEIGH = 3.5;
+    private static final double SLEIGH_SEARCH = 32.0;
 
     private long restockDay = Long.MIN_VALUE;
     /**
@@ -84,6 +106,10 @@ public class Santa extends AbstractVillager {
      */
     private @Nullable LivingEntity angryAt;
     private long angryUntil;
+    /** Players who helped load the sleigh and haven't been thanked yet. */
+    private final Set<UUID> owedThanks = new HashSet<>();
+    /** The real day each helper last got a thank-you present: one a day, however often the sleigh flies. */
+    private final Map<UUID, Long> thankedOn = new HashMap<>();
 
     public Santa(EntityType<? extends Santa> type, Level level) {
         super(type, level);
@@ -108,6 +134,7 @@ public class Santa extends AbstractVillager {
         goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
         goalSelector.addGoal(1, new LookAtTradingPlayerGoal(this));
         goalSelector.addGoal(2, new MeleeAttackGoal(this, CHASE, true));
+        goalSelector.addGoal(3, new StayBySleighGoal());
         goalSelector.addGoal(4, new MoveTowardsRestrictionGoal(this, STROLL));
         goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, STROLL));
         goalSelector.addGoal(9, new InteractGoal(this, Player.class, 3.0F, 1.0F));
@@ -215,7 +242,7 @@ public class Santa extends AbstractVillager {
             refuse(visitor, isAngryAt(visitor) ? "angry" : "naughty");
             return;
         }
-        if (tier == KarmaTier.NICE && giveDailyPresent(level, visitor)) {
+        if (thankForHelping(level, visitor) || tier == KarmaTier.NICE && giveDailyPresent(level, visitor)) {
             return;
         }
         restockIfNewDay(level);
@@ -254,6 +281,37 @@ public class Santa extends AbstractVillager {
         makeSound(CozySounds.SANTA_GIFT.get());
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.8, getZ(), 8, 0.4, 0.4, 0.4, 0.0);
         visitor.sendOverlayMessage(Component.translatable("message.cozychristmas.santa.gift"));
+        return true;
+    }
+
+    /** Back from a delivery flight: these players helped load the sleigh. */
+    public void thank(Collection<UUID> helpers) {
+        owedThanks.addAll(helpers);
+    }
+
+    public boolean owesThanks(UUID player) {
+        return owedThanks.contains(player);
+    }
+
+    /**
+     * A player who helped load the sleigh gets a present (a gift, like the daily one) and a thank-you on their next
+     * visit, at most one a real day: loading takes any present, so this mustn't become a present mill.
+     */
+    private boolean thankForHelping(ServerLevel level, ServerPlayer visitor) {
+        if (!owedThanks.remove(visitor.getUUID())) {
+            return false;
+        }
+        long today = ChristmasSeason.today().toEpochDay();
+        if (thankedOn.getOrDefault(visitor.getUUID(), Long.MIN_VALUE) != today) {
+            thankedOn.put(visitor.getUUID(), today);
+            PresentDesign[] designs = PresentDesign.values();
+            ItemStack present = CozyItems.present(designs[getRandom().nextInt(designs.length)]);
+            present.set(CozyComponents.PRESENT_CONTENTS.get(), new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
+            visitor.getInventory().placeItemBackInInventory(present, Prediction.SERVER_ONLY);
+            level.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.8, getZ(), 8, 0.4, 0.4, 0.4, 0.0);
+        }
+        makeSound(CozySounds.SANTA_GIFT.get());
+        visitor.sendOverlayMessage(Component.translatable("message.cozychristmas.santa.thanks"));
         return true;
     }
 
@@ -302,12 +360,70 @@ public class Santa extends AbstractVillager {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putLong(RESTOCK_DAY, restockDay);
+        output.store(OWED_THANKS, UUIDUtil.CODEC.listOf(), List.copyOf(owedThanks));
+        output.store(THANKED, Thanked.CODEC.listOf(), thankedOn.entrySet().stream()
+                .map(entry -> new Thanked(entry.getKey(), entry.getValue())).toList());
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         restockDay = input.getLongOr(RESTOCK_DAY, Long.MIN_VALUE);
+        owedThanks.clear();
+        input.read(OWED_THANKS, UUIDUtil.CODEC.listOf()).ifPresent(owedThanks::addAll);
+        thankedOn.clear();
+        input.read(THANKED, Thanked.CODEC.listOf()).ifPresent(list -> list.forEach(entry -> thankedOn.put(entry.player(), entry.day())));
+    }
+
+    /** A helper's last thank-you day, as saved. */
+    private record Thanked(UUID player, long day) {
+        static final Codec<Thanked> CODEC = RecordCodecBuilder.create(i -> i.group(
+                UUIDUtil.CODEC.fieldOf(THANKED_PLAYER).forGetter(Thanked::player),
+                Codec.LONG.fieldOf(THANKED_DAY).forGetter(Thanked::day)
+        ).apply(i, Thanked::new));
+    }
+
+    /** On delivery days Santa stands by his parked sleigh while the elves load it, ready to get in at nightfall. */
+    final class StayBySleighGoal extends Goal {
+
+        private static final int RECHECK = 40;
+
+        private @Nullable SantasSleigh sleigh;
+        private int recheck;
+
+        StayBySleighGoal() {
+            setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (--recheck > 0 || isPassenger() || !ChristmasSeason.isWorkshopDelivery()) {
+                return false;
+            }
+            recheck = reducedTickDelay(RECHECK);
+            sleigh = level().getEntitiesOfClass(SantasSleigh.class, getBoundingBox().inflate(SLEIGH_SEARCH),
+                            candidate -> candidate.phase() == SleighFlight.Phase.PARKED).stream()
+                    .min(Comparator.comparingDouble(Santa.this::distanceToSqr)).orElse(null);
+            return sleigh != null && distanceTo(sleigh) > BY_THE_SLEIGH;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return sleigh != null && sleigh.isAlive() && !isPassenger() && distanceTo(sleigh) > BY_THE_SLEIGH - 1.0
+                    && !getNavigation().isDone();
+        }
+
+        @Override
+        public void start() {
+            if (sleigh != null) {
+                getNavigation().moveTo(sleigh, STROLL);
+            }
+        }
+
+        @Override
+        public void stop() {
+            sleigh = null;
+        }
     }
 
     // --- sounds --------------------------------------------------------------------------------------------------

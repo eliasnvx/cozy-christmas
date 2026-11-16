@@ -13,6 +13,7 @@ import dev.eliasnvx.cozychristmas.client.krampus.KrampusRenderer;
 import dev.eliasnvx.cozychristmas.client.krampus.SackOverlay;
 import dev.eliasnvx.cozychristmas.client.krampus.SackRenderer;
 import dev.eliasnvx.cozychristmas.client.reindeer.ReindeerRenderer;
+import dev.eliasnvx.cozychristmas.client.sleigh.SleighRenderer;
 import dev.eliasnvx.cozychristmas.client.snowman.EvilSnowmanRenderer;
 import dev.eliasnvx.cozychristmas.client.workshop.ElfRenderer;
 import dev.eliasnvx.cozychristmas.client.workshop.SantaRenderer;
@@ -62,6 +63,7 @@ public final class CozyChristmasClient {
         EvilSnowmanRenderer.registerLayers();
         KrampusRenderer.registerLayers();
         SackRenderer.registerLayers();
+        SleighRenderer.registerLayers();
         SackOverlay.register();
         EntityRendererRegistry.register(CozyEntities.ELF, ElfRenderer::new);
         EntityRendererRegistry.register(CozyEntities.SANTA, SantaRenderer::new);
@@ -72,6 +74,7 @@ public final class CozyChristmasClient {
         EntityRendererRegistry.register(CozyEntities.ICE_SNOWBALL, ThrownItemRenderer::new);
         EntityRendererRegistry.register(CozyEntities.KRAMPUS, KrampusRenderer::new);
         EntityRendererRegistry.register(CozyEntities.KRAMPUS_SACK, SackRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.SANTAS_SLEIGH, SleighRenderer::new);
 
         CozyChristmas.LOGGER.info("{} client initialized", CozyChristmas.MOD_ID);
     }

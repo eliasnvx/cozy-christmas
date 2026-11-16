@@ -166,5 +166,12 @@
   "info.cozychristmas.hot_cocoa": "Warms you through: thaws you and keeps the frost off for two minutes, even in powder snow or under a hail of ice snowballs. The mug comes back.",
   "info.cozychristmas.gingerbread_cookie": "Gingerbread men crumble into them. Elves follow whoever holds one.",
   "info.cozychristmas.ice_snowball": "Evil snowmen throw these and drop them. A hit hurts, slows and chills; warm clothes keep the chill out. Dispensers fire them too.",
-  "info.cozychristmas.krampus_trophies": "Only from Krampus, who waits in a lair under a pit in the snow, high in the mountains. Beating him also wipes out the bad karma of everyone who fought."
+  "info.cozychristmas.krampus_trophies": "Only from Krampus, who waits in a lair under a pit in the snow, high in the mountains. Beating him also wipes out the bad karma of everyone who fought.",
+  "entity.cozychristmas.santas_sleigh": "Santa's Sleigh",
+  "message.cozychristmas.sleigh.not_yet": "Santa loads his sleigh on Christmas Eve",
+  "message.cozychristmas.sleigh.status": "Presents aboard: %s of %s. Bring one to help!",
+  "message.cozychristmas.sleigh.loaded": "Into the sack it goes! Presents aboard: %s of %s",
+  "message.cozychristmas.sleigh.prank": "Santa won't take a prank on his sleigh",
+  "message.cozychristmas.sleigh.full": "The sack is full: Santa is ready for tonight",
+  "message.cozychristmas.santa.thanks": "Thank you for helping me load the sleigh!"
 }

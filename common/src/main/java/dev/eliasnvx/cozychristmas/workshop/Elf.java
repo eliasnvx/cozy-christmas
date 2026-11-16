@@ -6,6 +6,8 @@ import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
+import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
+import dev.eliasnvx.cozychristmas.sleigh.SantasSleigh;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -43,6 +45,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.EnumSet;
 
 /**
@@ -63,6 +66,8 @@ public class Elf extends PathfinderMob {
     private static final double RUN = 1.4;
     private static final int FLEE_TICKS = 300;
     private static final double TEMPT_RANGE = 10.0;
+    /** How far an elf will carry a present to Santa's sleigh. */
+    private static final double SLEIGH_SEARCH = 40.0;
 
     private @Nullable LivingEntity culprit;
     private long fleeUntil;
@@ -149,6 +154,28 @@ public class Elf extends PathfinderMob {
             WorkshopAlarm.raise(level, position(), attacker);
         }
         return hurt;
+    }
+
+    /**
+     * Puts the present in hand away: into Santa's sleigh if one taking presents is within reach (it counts as
+     * loaded), otherwise just onto the pile. True if it went into the sleigh.
+     */
+    public boolean putPresentAway() {
+        if (!isCarryingPresent()) {
+            return false;
+        }
+        SantasSleigh sleigh = loadingSleigh(CarryPresentGoal.SLEIGH_REACH + 1.0);
+        boolean loaded = sleigh != null && sleigh.loadPresent(null);
+        setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
+        playSound(SoundEvents.WOOL_PLACE, 0.8F, 1.2F);
+        return loaded;
+    }
+
+    /** The nearest parked sleigh within {@code range} that takes presents now, if any. */
+    private @Nullable SantasSleigh loadingSleigh(double range) {
+        return level().getEntitiesOfClass(SantasSleigh.class, getBoundingBox().inflate(range), SantasSleigh::isLoading).stream()
+                .min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
     }
 
     public boolean isCarryingPresent() {
@@ -304,7 +331,8 @@ public class Elf extends PathfinderMob {
 
         @Override
         public void stop() {
-            if (worked >= workFor && getRandom().nextFloat() < CARRY_CHANCE) {
+            // on delivery days every finished present goes to the sleigh
+            if (worked >= workFor && (ChristmasSeason.isWorkshopDelivery() || getRandom().nextFloat() < CARRY_CHANCE)) {
                 PresentDesign[] designs = PresentDesign.values();
                 setItemSlot(EquipmentSlot.MAINHAND, CozyItems.present(designs[getRandom().nextInt(designs.length)]));
             }
@@ -315,8 +343,9 @@ public class Elf extends PathfinderMob {
     }
 
     /**
-     * With a finished present in hand: carries it to the nearest present nearby (the pile) or, if there's none, a
-     * little way off, and puts it away there. The present in hand is only for show; it never drops.
+     * With a finished present in hand: carries it to Santa's sleigh on delivery days (while it takes presents),
+     * otherwise to the nearest present nearby (the pile) or, if there's none, a little way off, and puts it away there.
+     * The present in hand is only for show; it never drops.
      */
     final class CarryPresentGoal extends Goal {
 
@@ -324,8 +353,10 @@ public class Elf extends PathfinderMob {
         private static final int PILE_HEIGHT = 3;
         private static final int GIVE_UP_TICKS = 400;
         private static final double REACH = 1.8;
+        private static final double SLEIGH_REACH = 2.4;
 
         private @Nullable Vec3 target;
+        private double reach = REACH;
         private int tries;
 
         CarryPresentGoal() {
@@ -345,8 +376,14 @@ public class Elf extends PathfinderMob {
         @Override
         public void start() {
             tries = 0;
-            BlockPos pile = nearestPresent();
-            target = pile != null ? Vec3.atBottomCenterOf(pile) : DefaultRandomPos.getPos(Elf.this, 8, 3);
+            SantasSleigh sleigh = loadingSleigh(SLEIGH_SEARCH);
+            BlockPos pile = sleigh == null ? nearestPresent() : null;
+            if (sleigh != null) {
+                target = sleigh.position();
+            } else {
+                target = pile != null ? Vec3.atBottomCenterOf(pile) : DefaultRandomPos.getPos(Elf.this, 8, 3);
+            }
+            reach = sleigh != null ? SLEIGH_REACH : REACH;
             if (target == null) {
                 putAway();
                 return;
@@ -382,7 +419,7 @@ public class Elf extends PathfinderMob {
             if (target == null) {
                 return;
             }
-            if (position().closerThan(target, REACH)) {
+            if (position().closerThan(target, reach)) {
                 putAway();
             } else if (tries % 40 == 0) {
                 getNavigation().moveTo(target.x, target.y, target.z, WALK);
@@ -398,9 +435,7 @@ public class Elf extends PathfinderMob {
         }
 
         private void putAway() {
-            setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
-            playSound(SoundEvents.WOOL_PLACE, 0.8F, 1.2F);
+            putPresentAway();
             target = null;
         }
     }
