@@ -8,8 +8,12 @@
     "WWW"
   ],
   "key": {
-    "W": "#minecraft:wool",
-    "C": "minecraft:spruce_sapling"
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "C": {
+      "item": "minecraft:spruce_sapling"
+    }
   },
   "result": {
     "id": "cozychristmas:christmas_tree_sweater"

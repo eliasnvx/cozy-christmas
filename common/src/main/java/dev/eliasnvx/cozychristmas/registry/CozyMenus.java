@@ -12,7 +12,7 @@ public final class CozyMenus {
 
     public static final DeferredRegister<MenuType<?>> REGISTER = DeferredRegister.create(CozyChristmas.MOD_ID, Registries.MENU);
 
-    // the constructor is private in vanilla; Architectury's access widener opens it
+    // the constructor is private in vanilla; Architectury's access widener opens it (its MenuRegistry.of is deprecated for it)
     public static final RegistrySupplier<MenuType<WrappingTableMenu>> WRAPPING_TABLE = REGISTER.register("wrapping_table",
             () -> new MenuType<>(WrappingTableMenu::new, FeatureFlags.VANILLA_SET));
 

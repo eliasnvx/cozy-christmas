@@ -19,14 +19,13 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.Blocks;
@@ -156,10 +155,10 @@ public final class PresentGameTests {
         helper.runAfterDelay(CHECKS, () -> {
             try {
                 helper.assertBlockProperty(PRESENT, PresentBlock.TICKING, true);
-                PresentContents decided = helper.getBlockEntity(surprise, PresentBlockEntity.class).contents();
+                PresentContents decided = helper.<PresentBlockEntity>getBlockEntity(surprise).contents();
                 helper.assertTrue(decided instanceof PresentContents.Surprise s && s.decided().isPresent(),
                         "a surprise next to a player is decided, got " + decided);
-                player.snapTo(helper.absoluteVec(FAR_AWAY));
+                player.moveTo(helper.absoluteVec(FAR_AWAY));
             } catch (RuntimeException | AssertionError e) {
                 TestPlayers.remove(helper, player);
                 throw e;
@@ -188,7 +187,7 @@ public final class PresentGameTests {
             menu.getSlot(WrappingTableMenu.GIFT_SLOT).set(new ItemStack(Items.DIAMOND, 5));
             menu.getSlot(WrappingTableMenu.PAPER_SLOT).set(new ItemStack(Items.PAPER, 2));
             menu.clickMenuButton(player, PresentDesign.BLUE.ordinal());
-            menu.clicked(WrappingTableMenu.RESULT_SLOT, 0, ContainerInput.QUICK_MOVE, player);
+            menu.clicked(WrappingTableMenu.RESULT_SLOT, 0, ClickType.QUICK_MOVE, player);
             ItemStack present = findPresent(player);
             helper.assertValueEqual(present.get(CozyComponents.PRESENT_CONTENTS.get()),
                     gift(Items.DIAMOND, 5, Optional.of(PresentContents.Giver.of(player))), "wrapped gift");
@@ -199,7 +198,7 @@ public final class PresentGameTests {
             player.getInventory().clearContent();
 
             menu.getSlot(WrappingTableMenu.GIFT_SLOT).set(new ItemStack(Items.TNT, 3));
-            menu.clicked(WrappingTableMenu.RESULT_SLOT, 0, ContainerInput.PICKUP, player);
+            menu.clicked(WrappingTableMenu.RESULT_SLOT, 0, ClickType.PICKUP, player);
             helper.assertTrue(menu.getCarried().get(CozyComponents.PRESENT_CONTENTS.get()) instanceof PresentContents.Prank,
                     "TNT makes a prank");
             helper.assertValueEqual(menu.getSlot(WrappingTableMenu.GIFT_SLOT).getItem().getCount(), 2, "TNT left");
@@ -237,7 +236,7 @@ public final class PresentGameTests {
         helper.assertTrue(SnowPresents.trySpawnAt(helper.getLevel(), helper.absolutePos(inSnowLayer), random, spacing),
                 "a present in a snow layer");
         helper.assertBlockPresent(CozyBlocks.PRESENT.get(), inSnowLayer);
-        PresentContents contents = helper.getBlockEntity(inSnowLayer, PresentBlockEntity.class).contents();
+        PresentContents contents = helper.<PresentBlockEntity>getBlockEntity(inSnowLayer).contents();
         helper.assertValueEqual(contents, PresentContents.SURPRISE, "a snow present is an undecided surprise");
         helper.succeed();
     }
@@ -249,7 +248,7 @@ public final class PresentGameTests {
             Vec3 near = Vec3.atBottomCenterOf(helper.absolutePos(PRESENT)).add(1.0, 0.0, 0.0);
             ItemEntity diamond = new ItemEntity(helper.getLevel(), near.x, near.y, near.z, new ItemStack(Items.DIAMOND));
             helper.getLevel().addFreshEntity(diamond);
-            ArmorStand stand = helper.spawn(EntityTypes.ARMOR_STAND, PRESENT.relative(Direction.NORTH));
+            ArmorStand stand = helper.spawn(EntityType.ARMOR_STAND, PRESENT.relative(Direction.NORTH));
             placePresent(helper, PresentDesign.RED, new PresentContents.Surprise(PresentOutcome.BOOM)).open(opener);
             helper.assertTrue(diamond.isAlive(), "the diamond on the ground survives");
             helper.assertTrue(stand.isAlive(), "the armor stand survives");
@@ -293,7 +292,7 @@ public final class PresentGameTests {
 
     private static PresentContents gift(Item item, int count,
                                         Optional<PresentContents.Giver> from) {
-        return new PresentContents.Gift(new ItemStackTemplate(item, count), from);
+        return new PresentContents.Gift(new ItemStack(item, count), from);
     }
 
     private static PresentBlockEntity placePresent(GameTestHelper helper, PresentDesign design, PresentContents contents) {
@@ -304,7 +303,7 @@ public final class PresentGameTests {
                                                    PresentContents contents) {
         helper.setBlock(pos.below(), Blocks.STONE);
         helper.setBlock(pos, CozyBlocks.PRESENT.get().defaultBlockState().setValue(PresentBlock.DESIGN, design));
-        PresentBlockEntity present = helper.getBlockEntity(pos, PresentBlockEntity.class);
+        PresentBlockEntity present = helper.<PresentBlockEntity>getBlockEntity(pos);
         present.setContents(contents);
         return present;
     }
@@ -319,7 +318,7 @@ public final class PresentGameTests {
     }
 
     private static ItemStack findPresent(ServerPlayer player) {
-        for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
+        for (ItemStack stack : player.getInventory().items) {
             if (stack.is(CozyBlocks.PRESENT_ITEM.get())) {
                 return stack;
             }

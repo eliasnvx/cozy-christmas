@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.tree;
 
+import com.mojang.serialization.MapCodec;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
@@ -10,18 +11,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -43,8 +44,21 @@ public class TreeStarBlock extends BaseEntityBlock {
     public static final int LIGHT = 15;
     private static final VoxelShape SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 15.0, 13.0);
 
+    public static final MapCodec<TreeStarBlock> CODEC = simpleCodec(TreeStarBlock::new);
+
     public TreeStarBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends TreeStarBlock> codec() {
+        return CODEC;
+    }
+
+    /** {@link BaseEntityBlock} draws nothing by default; the star is a block model. */
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Override
@@ -65,11 +79,11 @@ public class TreeStarBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
-                                     Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
+                                     BlockPos pos, BlockPos neighborPos) {
         return direction == Direction.DOWN && !state.canSurvive(level, pos)
                 ? Blocks.AIR.defaultBlockState()
-                : super.updateShape(state, level, ticks, pos, direction, neighborPos, neighborState, random);
+                : super.updateShape(state, direction, neighborState, level, pos, neighborPos);
     }
 
     @Override
@@ -77,7 +91,7 @@ public class TreeStarBlock extends BaseEntityBlock {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (placer instanceof ServerPlayer player && level.getBlockEntity(pos) instanceof TreeStarBlockEntity star) {
             star.putUp(player, StockingBlockEntity.morning(level));
-            player.sendOverlayMessage(statusMessage(level, pos));
+            player.displayClientMessage(statusMessage(level, pos), true);
         }
     }
 
@@ -85,11 +99,11 @@ public class TreeStarBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (player instanceof ServerPlayer server && level.getBlockEntity(pos) instanceof TreeStarBlockEntity star) {
-            server.sendOverlayMessage(star.isOwner(player)
+            server.displayClientMessage(star.isOwner(player)
                     ? statusMessage(level, pos)
-                    : Component.translatable("message.cozychristmas.tree.not_yours", star.ownerName()));
+                    : Component.translatable("message.cozychristmas.tree.not_yours", star.ownerName()), true);
         }
-        return InteractionResult.SUCCESS;
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     /** "The star needs a tree", "3 of 6 ornaments" or "a present every morning" (or "in the season"). */

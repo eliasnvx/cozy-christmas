@@ -7,7 +7,7 @@ import dev.eliasnvx.cozychristmas.karma.KarmaSettings;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -46,7 +46,7 @@ public final class KarmaGameTests {
 
     public static void hurtingAVillagerIsNaughty(GameTestHelper helper) {
         withPlayer(helper, player -> {
-            LivingEntity villager = helper.spawn(EntityTypes.VILLAGER, TEST_AREA_CENTER);
+            LivingEntity villager = helper.spawn(EntityType.VILLAGER, TEST_AREA_CENTER);
             hit(player, villager, 1.0F);
             int afterOne = settings().hurtProtected();
             helper.assertValueEqual(KarmaManager.get(player), afterOne, "karma after one hit");
@@ -60,7 +60,7 @@ public final class KarmaGameTests {
     public static void twoPlayersBothPay(GameTestHelper helper) {
         ServerPlayer first = TestPlayers.survival(helper, TEST_AREA_CENTER);
         ServerPlayer second = TestPlayers.survival(helper, TEST_AREA_CENTER.add(2.0, 0.0, 0.0));
-        LivingEntity villager = helper.spawn(EntityTypes.VILLAGER, TEST_AREA_CENTER.add(1.0, 0.0, 2.0));
+        LivingEntity villager = helper.spawn(EntityType.VILLAGER, TEST_AREA_CENTER.add(1.0, 0.0, 2.0));
         hit(first, villager, 1.0F);
         helper.runAfterDelay(15, () -> { // past the villager's invulnerability, inside the cooldown
             try {
@@ -77,7 +77,7 @@ public final class KarmaGameTests {
 
     public static void hurtingAZombieIsFine(GameTestHelper helper) {
         withPlayer(helper, player -> {
-            LivingEntity zombie = helper.spawn(EntityTypes.ZOMBIE, TEST_AREA_CENTER);
+            LivingEntity zombie = helper.spawn(EntityType.ZOMBIE, TEST_AREA_CENTER);
             hit(player, zombie, 1.0F);
             helper.assertValueEqual(KarmaManager.get(player), 0, "karma after hitting a zombie");
             zombie.discard();
@@ -86,7 +86,7 @@ public final class KarmaGameTests {
 
     public static void killingAVillagerCostsMore(GameTestHelper helper) {
         withPlayer(helper, player -> {
-            LivingEntity villager = helper.spawn(EntityTypes.VILLAGER, TEST_AREA_CENTER);
+            LivingEntity villager = helper.spawn(EntityType.VILLAGER, TEST_AREA_CENTER);
             hit(player, villager, 1000.0F);
             helper.assertTrue(villager.isDeadOrDying(), "the villager should be dead");
             helper.assertValueEqual(KarmaManager.get(player), settings().hurtProtected() + settings().killProtected(),
@@ -97,7 +97,7 @@ public final class KarmaGameTests {
     public static void karmaSurvivesDeath(GameTestHelper helper) {
         withReplacedPlayer(helper, player -> {
             KarmaManager.set(player, -50);
-            player.kill(helper.getLevel());
+            player.kill();
             ServerPlayer respawned = helper.getLevel().getServer().getPlayerList()
                     .respawn(player, false, Entity.RemovalReason.KILLED);
             helper.assertValueEqual(KarmaManager.get(respawned), -50, "karma after death and respawn");
@@ -106,7 +106,7 @@ public final class KarmaGameTests {
     }
 
     private static void hit(ServerPlayer player, LivingEntity victim, float damage) {
-        victim.hurtServer(player.level(), player.damageSources().playerAttack(player), damage);
+        victim.hurt(player.damageSources().playerAttack(player), damage);
     }
 
     private static KarmaSettings settings() {

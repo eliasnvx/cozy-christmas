@@ -18,10 +18,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import dev.eliasnvx.cozychristmas.util.Players;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -40,11 +39,13 @@ public class IceSnowball extends ThrowableItemProjectile {
     }
 
     public IceSnowball(Level level, LivingEntity thrower, ItemStack stack) {
-        super(CozyEntities.ICE_SNOWBALL.get(), thrower, level, stack);
+        super(CozyEntities.ICE_SNOWBALL.get(), thrower, level);
+        setItem(stack);
     }
 
     public IceSnowball(Level level, double x, double y, double z, ItemStack stack) {
-        super(CozyEntities.ICE_SNOWBALL.get(), x, y, z, level, stack);
+        super(CozyEntities.ICE_SNOWBALL.get(), x, y, z, level);
+        setItem(stack);
     }
 
     @Override
@@ -61,17 +62,17 @@ public class IceSnowball extends ThrowableItemProjectile {
     @Override
     protected void onHitEntity(EntityHitResult hit) {
         super.onHitEntity(hit);
-        if (!(level() instanceof ServerLevel server)) {
+        if (!(level() instanceof ServerLevel)) {
             return;
         }
         IceSnowballSettings settings = CozyConfig.common().evilSnowman().iceSnowball();
         Entity target = hit.getEntity();
-        boolean hurt = target.hurtServer(server, damageSources().thrown(this, getOwner()), (float) settings.damage());
+        boolean hurt = target.hurt(damageSources().thrown(this, getOwner()), (float) settings.damage());
         // with no damage set, "hurt" is always false: then hit whoever could have been hurt (not creative players)
         boolean struck = hurt || settings.damage() == 0.0 && !(target instanceof Player player && !Players.inPlay(player));
         if (struck && target instanceof LivingEntity living) {
             if (settings.slownessTicks() > 0) {
-                living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, settings.slownessTicks(), settings.slownessAmplifier()),
+                living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, settings.slownessTicks(), settings.slownessAmplifier()),
                         getEffectSource());
             }
             Cold.chill(living, settings.chillTicks());
@@ -94,7 +95,7 @@ public class IceSnowball extends ThrowableItemProjectile {
         if (id == HIT_EVENT) {
             ItemStack item = getItem();
             ParticleOptions particle = item.isEmpty() ? ParticleTypes.ITEM_SNOWBALL
-                    : new ItemParticleOption(ParticleTypes.ITEM, ItemStackTemplate.fromNonEmptyStack(item));
+                    : new ItemParticleOption(ParticleTypes.ITEM, item);
             for (int i = 0; i < HIT_PARTICLES; i++) {
                 level().addParticle(particle, getX(), getY(), getZ(), 0.0, 0.0, 0.0);
             }

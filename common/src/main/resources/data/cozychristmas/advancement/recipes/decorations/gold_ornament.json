@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:gold_ornament"
+        "recipe": "cozychristmas:gold_ornament"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

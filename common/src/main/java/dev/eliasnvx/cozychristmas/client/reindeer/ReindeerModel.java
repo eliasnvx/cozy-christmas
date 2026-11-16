@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.client.reindeer;
 
-import net.minecraft.client.model.EntityModel;
+import dev.eliasnvx.cozychristmas.reindeer.Reindeer;
+import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -12,9 +13,10 @@ import net.minecraft.util.Mth;
 /**
  * A reindeer: a deer-sized quadruped with a raised neck, branching antlers and a stub tail; the saddle and a collar
  * with a bell show when saddled. Texture 128x64 ({@code tools/gen_workshop_mobs.py} paints it on the same box layout).
- * Flying, the legs fold like in a leap and paddle slowly, and the neck stretches forward.
+ * Flying, the legs fold like in a leap and paddle slowly, and the neck stretches forward. Santa's sleigh draws its team
+ * with this model too, through {@link #pose} (they're part of the sleigh, not entities).
  */
-public final class ReindeerModel extends EntityModel<ReindeerRenderState> {
+public final class ReindeerModel extends HierarchicalModel<Reindeer> {
 
     private static final int TEXTURE_WIDTH = 128;
     private static final int TEXTURE_HEIGHT = 64;
@@ -30,6 +32,7 @@ public final class ReindeerModel extends EntityModel<ReindeerRenderState> {
     private static final float FLY_PADDLE = 0.15F;
     private static final float FLY_PADDLE_SPEED = 0.2F;
 
+    private final ModelPart root;
     private final ModelPart neck;
     private final ModelPart head;
     private final ModelPart rightAntler;
@@ -42,7 +45,7 @@ public final class ReindeerModel extends EntityModel<ReindeerRenderState> {
     private final ModelPart leftHindLeg;
 
     public ReindeerModel(ModelPart root) {
-        super(root);
+        this.root = root;
         this.neck = root.getChild("neck");
         this.head = neck.getChild("head");
         this.rightAntler = head.getChild("right_antler");
@@ -98,26 +101,40 @@ public final class ReindeerModel extends EntityModel<ReindeerRenderState> {
     }
 
     @Override
-    public void setupAnim(ReindeerRenderState state) {
-        super.setupAnim(state);
-        saddle.visible = state.saddled;
-        collar.visible = state.saddled;
-        rightAntler.visible = !state.isBaby; // fawns have none yet
-        leftAntler.visible = !state.isBaby;
-        head.xRot += state.xRot * Mth.DEG_TO_RAD;
-        neck.yRot = state.yRot * Mth.DEG_TO_RAD;
-        if (state.flying) {
+    public ModelPart root() {
+        return root;
+    }
+
+    @Override
+    public void setupAnim(Reindeer reindeer, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
+        pose(reindeer.isSaddled(), reindeer.isBaby(), reindeer.isFlying(), walkPos, walkSpeed, ageInTicks, headYaw, headPitch);
+    }
+
+    /**
+     * Poses the model: saddled shows the saddle and bell collar, fawns have no antlers yet, flying tucks the legs. Every
+     * animated part is set outright (1.21.1 models keep last frame's pose), so a team of four can share one model.
+     */
+    public void pose(boolean saddled, boolean baby, boolean flying, float walkPos, float walkSpeed, float ageInTicks,
+                     float headYaw, float headPitch) {
+        saddle.visible = saddled;
+        collar.visible = saddled;
+        rightAntler.visible = !baby;
+        leftAntler.visible = !baby;
+        neck.yRot = headYaw * Mth.DEG_TO_RAD;
+        if (flying) {
             neck.xRot = NECK_TILT_FLYING;
             head.xRot = -NECK_TILT_FLYING;
-            float paddle = Mth.sin(state.ageInTicks * FLY_PADDLE_SPEED) * FLY_PADDLE;
+            float paddle = Mth.sin(ageInTicks * FLY_PADDLE_SPEED) * FLY_PADDLE;
             rightFrontLeg.xRot = -FLY_FOLD + paddle;
             leftFrontLeg.xRot = -FLY_FOLD - paddle;
             rightHindLeg.xRot = FLY_FOLD - paddle;
             leftHindLeg.xRot = FLY_FOLD + paddle;
             return;
         }
-        float walk = state.walkAnimationPos * WALK_SPEED;
-        float swing = WALK_SWING * state.walkAnimationSpeed;
+        neck.xRot = NECK_TILT;
+        head.xRot = -NECK_TILT + headPitch * Mth.DEG_TO_RAD;
+        float walk = walkPos * WALK_SPEED;
+        float swing = WALK_SWING * walkSpeed;
         rightHindLeg.xRot = Mth.cos(walk) * swing;
         leftHindLeg.xRot = Mth.cos(walk + Mth.PI) * swing;
         rightFrontLeg.xRot = Mth.cos(walk + Mth.PI) * swing;

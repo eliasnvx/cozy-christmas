@@ -24,8 +24,9 @@ public class WarmEffect extends MobEffect {
     }
 
     @Override
-    public boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
-        if (entity.getTicksFrozen() > 0) {
+    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        // 1.21.1 ticks effects on the client too; freezing is the server's (it syncs it)
+        if (entity.level() instanceof ServerLevel && entity.getTicksFrozen() > 0) {
             entity.setTicksFrozen(0);
         }
         return true;

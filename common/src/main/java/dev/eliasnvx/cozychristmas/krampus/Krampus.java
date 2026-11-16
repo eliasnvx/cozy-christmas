@@ -8,8 +8,12 @@ import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.util.Players;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -21,11 +25,12 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityEvent;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -42,8 +47,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -92,7 +95,7 @@ public class Krampus extends Monster {
     /** Blocks from him within which a player sees his boss bar (fighters always do). */
     private static final double BOSS_BAR_RANGE = 40.0;
     private static final int BOSS_BAR_CHECK = 20;
-    private final ServerBossEvent bossEvent = new ServerBossEvent(UUID.randomUUID(), getDisplayName(),
+    private final ServerBossEvent bossEvent = new ServerBossEvent(getDisplayName(),
             BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
     private final Set<UUID> fighters = new HashSet<>();
     private int summons;
@@ -141,9 +144,9 @@ public class Krampus extends Monster {
     /** In his lair he keeps to the arena and stays for good. */
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  EntitySpawnReason reason, @Nullable SpawnGroupData groupData) {
-        if (reason == EntitySpawnReason.STRUCTURE) {
-            setHomeTo(blockPosition(), HOME_RADIUS);
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+        if (reason == MobSpawnType.STRUCTURE) {
+            restrictTo(blockPosition(), HOME_RADIUS);
         }
         setPersistenceRequired();
         return super.finalizeSpawn(level, difficulty, reason, groupData);
@@ -152,8 +155,11 @@ public class Krampus extends Monster {
     // --- the fight ------------------------------------------------------------------------------------------------
 
     @Override
-    protected void customServerAiStep(ServerLevel level) {
-        super.customServerAiStep(level);
+    protected void customServerAiStep() {
+        super.customServerAiStep();
+        if (!(level() instanceof ServerLevel level)) {
+            return;
+        }
         bossEvent.setProgress(getHealth() / getMaxHealth());
         if (tickCount % BOSS_BAR_CHECK == 0) {
             seenBy.forEach(this::updateBossBar);
@@ -188,11 +194,11 @@ public class Krampus extends Monster {
     /** The chain: hurts and pulls the target toward him. */
     public void lash(ServerLevel level, LivingEntity target) {
         lashCooldown = settings().lashCooldown();
-        if (target.hurtServer(level, damageSources().mobAttack(this), (float) settings().lashDamage())) {
-            Vec3 toward = position().subtract(target.position()).horizontal().normalize();
+        if (target.hurt(damageSources().mobAttack(this), (float) settings().lashDamage())) {
+            Vec3 toward = new Vec3(getX() - target.getX(), 0.0, getZ() - target.getZ()).normalize();
             double resist = 1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
             target.setDeltaMovement(target.getDeltaMovement().add(toward.x * PULL * resist, PULL_UP * resist, toward.z * PULL * resist));
-            target.syncVelocity = true;
+            target.hurtMarked = true;
         }
         playSound(CozySounds.KRAMPUS_LASH.get(), 1.0F, 0.9F + getRandom().nextFloat() * 0.2F);
         level.broadcastEntityEvent(this, LASH_EVENT);
@@ -200,7 +206,7 @@ public class Krampus extends Monster {
 
     /** Players in survival or adventure, and any mob; never someone already in the sack. */
     public boolean canSack(LivingEntity target) {
-        if (settings().sackTicks() == 0 || target.hasEffect(CozyEffects.SACKED.asHolder()) || target.isPassenger()) {
+        if (settings().sackTicks() == 0 || target.hasEffect(sacked()) || target.isPassenger()) {
             return false;
         }
         return !(target instanceof Player player) || Players.inPlay(player);
@@ -210,13 +216,18 @@ public class Krampus extends Monster {
     public void sack(ServerLevel level, LivingEntity target) {
         sackCooldown = settings().sackCooldown();
         int ticks = settings().sackTicks();
-        if (target.addEffect(new MobEffectInstance(CozyEffects.SACKED.asHolder(), ticks, 0, false, false, true), this)) {
+        if (target.addEffect(new MobEffectInstance(sacked(), ticks, 0, false, false, true), this)) {
             target.setDeltaMovement(Vec3.ZERO);
-            target.syncVelocity = true;
+            target.hurtMarked = true;
             level.addFreshEntity(KrampusSack.over(target, ticks));
         }
         playSound(CozySounds.KRAMPUS_SACK.get(), 1.0F, 1.0F);
         level.broadcastEntityEvent(this, SACK_EVENT);
+    }
+
+    /** The registry's own holder: entities key their effects by holder identity. */
+    private static Holder<MobEffect> sacked() {
+        return BuiltInRegistries.MOB_EFFECT.wrapAsHolder(CozyEffects.SACKED.get());
     }
 
     /** A roar, smoke, and {@code summon_goblins} present goblins at his side, after his target. */
@@ -224,13 +235,13 @@ public class Krampus extends Monster {
         playSound(CozySounds.KRAMPUS_ROAR.get(), 2.0F, 1.0F);
         level.broadcastEntityEvent(this, ROAR_EVENT);
         for (int i = 0; i < settings().summonGoblins(); i++) {
-            PresentGoblin goblin = CozyEntities.PRESENT_GOBLIN.get().create(level, EntitySpawnReason.MOB_SUMMONED);
+            PresentGoblin goblin = CozyEntities.PRESENT_GOBLIN.get().create(level);
             BlockPos spot = summonSpot(level, goblin);
             if (goblin == null || spot == null) {
                 continue;
             }
-            goblin.snapTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, getRandom().nextFloat() * 360.0F, 0.0F);
-            goblin.finalizeSpawn(level, level.getCurrentDifficultyAt(spot), EntitySpawnReason.MOB_SUMMONED, null);
+            goblin.moveTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, getRandom().nextFloat() * 360.0F, 0.0F);
+            goblin.finalizeSpawn(level, level.getCurrentDifficultyAt(spot), MobSpawnType.MOB_SUMMONED, null);
             goblin.setTarget(getTarget());
             level.addFreshEntity(goblin);
             level.sendParticles(ParticleTypes.LARGE_SMOKE, goblin.getX(), goblin.getY() + 0.5, goblin.getZ(), 12, 0.3, 0.4, 0.3, 0.02);
@@ -253,11 +264,11 @@ public class Krampus extends Monster {
     }
 
     @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+    public boolean hurt(DamageSource source, float amount) {
         if (source.getEntity() instanceof ServerPlayer player) {
             fighters.add(player.getUUID());
         }
-        return super.hurtServer(level, source, amount);
+        return super.hurt(source, amount);
     }
 
     /** Everyone who fought him (and is still around) loses their bad karma; good karma stays. */
@@ -302,7 +313,7 @@ public class Krampus extends Monster {
     }
 
     private boolean shouldLeave(ServerLevel level) {
-        if (level.isBrightOutside()) {
+        if (level.isDay()) {
             return true;
         }
         Player player = level.getPlayerByUUID(visiting);
@@ -387,20 +398,24 @@ public class Krampus extends Monster {
     }
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
-        super.addAdditionalSaveData(output);
-        output.putInt("summons", summons);
-        output.store("fighters", UUIDUtil.CODEC.listOf(), List.copyOf(fighters));
-        output.storeNullable("visiting", UUIDUtil.CODEC, visiting);
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putInt("summons", summons);
+        UUIDUtil.CODEC.listOf().encodeStart(NbtOps.INSTANCE, List.copyOf(fighters)).ifSuccess(list -> tag.put("fighters", list));
+        if (visiting != null) {
+            tag.putUUID("visiting", visiting);
+        }
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        super.readAdditionalSaveData(input);
-        summons = input.getIntOr("summons", 0);
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        summons = tag.getInt("summons");
         fighters.clear();
-        input.read("fighters", UUIDUtil.CODEC.listOf()).ifPresent(fighters::addAll);
-        visiting = input.read("visiting", UUIDUtil.CODEC).orElse(null);
+        if (tag.contains("fighters")) {
+            UUIDUtil.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("fighters")).resultOrPartial().ifPresent(fighters::addAll);
+        }
+        visiting = tag.hasUUID("visiting") ? tag.getUUID("visiting") : null;
         bossEvent.setName(getDisplayName());
     }
 

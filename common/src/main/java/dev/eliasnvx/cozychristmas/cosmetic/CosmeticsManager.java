@@ -142,7 +142,7 @@ public final class CosmeticsManager {
         if (player instanceof ServerPlayer serverPlayer) {
             if (!stack.isEmpty() && !ItemStack.matches(previous, stack)) {
                 // heard by the wearer and players nearby, like putting on leather armor
-                player.level().playSound(null, player, SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS,
+                player.level().playSound(null, player, SoundEvents.ARMOR_EQUIP_LEATHER.value(), SoundSource.PLAYERS,
                         EQUIP_SOUND_VOLUME, EQUIP_SOUND_PITCH);
             }
             CosmeticsSyncPayload.sendToTrackingAndSelf(serverPlayer);

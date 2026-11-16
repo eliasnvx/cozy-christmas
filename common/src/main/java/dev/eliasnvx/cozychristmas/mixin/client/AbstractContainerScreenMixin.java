@@ -1,7 +1,7 @@
 package dev.eliasnvx.cozychristmas.mixin.client;
 
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticsPanel;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -24,8 +24,8 @@ public abstract class AbstractContainerScreenMixin {
     @Final
     protected AbstractContainerMenu menu;
 
-    @Inject(method = "extractTooltip", at = @At("HEAD"), cancellable = true)
-    private void cozychristmas$cosmeticsTooltips(GuiGraphicsExtractor g, int mouseX, int mouseY, CallbackInfo ci) {
+    @Inject(method = "renderTooltip", at = @At("HEAD"), cancellable = true)
+    private void cozychristmas$cosmeticsTooltips(GuiGraphics g, int mouseX, int mouseY, CallbackInfo ci) {
         if (CosmeticsPanel.tooltip((AbstractContainerScreen<?>) (Object) this, g, hoveredSlot, menu.getCarried(), mouseX, mouseY)) {
             ci.cancel();
         }

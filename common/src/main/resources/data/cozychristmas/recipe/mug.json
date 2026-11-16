@@ -6,7 +6,9 @@
     " B "
   ],
   "key": {
-    "B": "minecraft:brick"
+    "B": {
+      "item": "minecraft:brick"
+    }
   },
   "result": {
     "id": "cozychristmas:mug",

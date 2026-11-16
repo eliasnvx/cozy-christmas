@@ -1,14 +1,12 @@
 package dev.eliasnvx.cozychristmas.gametest;
 
-import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
+import dev.eliasnvx.cozychristmas.workshop.SantaTrades;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -17,7 +15,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.trading.TradeSet;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -40,10 +37,10 @@ public final class HeadPieceGameTests {
 
     /** Each piece is worn on the head, comes out of its crafting grid, and Santa may stock it; two of them dye. */
     public static void headPiecesCraftAndTrade(GameTestHelper helper) {
-        ItemStack wool = new ItemStack(Items.WOOL.white());
+        ItemStack wool = new ItemStack(Items.WHITE_WOOL);
         ItemStack string = new ItemStack(Items.STRING);
-        ItemStack green = new ItemStack(Items.WOOL.green());
-        ItemStack red = new ItemStack(Items.WOOL.red());
+        ItemStack green = new ItemStack(Items.GREEN_WOOL);
+        ItemStack red = new ItemStack(Items.RED_WOOL);
         ItemStack bone = new ItemStack(Items.BONE);
         ItemStack none = ItemStack.EMPTY;
         assertCrafts(helper, CozyItems.EAR_WARMERS.get(), CraftingInput.of(3, 2,
@@ -54,7 +51,7 @@ public final class HeadPieceGameTests {
                 List.of(bone, none, bone, red, red, red)));
 
         for (Item dyeable : List.of(CozyItems.EAR_WARMERS.get(), CozyItems.ELF_HAT.get())) {
-            ItemStack dyed = craft(helper, CraftingInput.of(2, 1, List.of(new ItemStack(dyeable), new ItemStack(Items.DYE.blue()))));
+            ItemStack dyed = craft(helper, CraftingInput.of(2, 1, List.of(new ItemStack(dyeable), new ItemStack(Items.BLUE_DYE))));
             DyedItemColor color = dyed.get(DataComponents.DYED_COLOR);
             // both carry alpha, which crafting and the dye's color don't agree on
             helper.assertTrue(dyed.is(dyeable) && color != null
@@ -62,11 +59,8 @@ public final class HeadPieceGameTests {
                     "blue " + dyeable + ", got " + dyed + " " + color);
         }
 
-        TradeSet goods = helper.getLevel().registryAccess().lookupOrThrow(Registries.TRADE_SET)
-                .getOrThrow(ResourceKey.create(Registries.TRADE_SET, CozyChristmas.id("santa/goods"))).value();
         for (String piece : List.of("ear_warmers", "elf_hat", "antler_headband")) {
-            helper.assertTrue(goods.trades().stream().anyMatch(trade -> trade.is(CozyChristmas.id("santa/goods/" + piece))),
-                    "Santa's goods offer " + piece);
+            helper.assertTrue(SantaTrades.GOODS.has(piece), "Santa's goods offer " + piece);
         }
         helper.succeed();
     }
@@ -99,7 +93,7 @@ public final class HeadPieceGameTests {
     private static ItemStack craft(GameTestHelper helper, CraftingInput grid) {
         Optional<ItemStack> result = helper.getLevel().getServer().getRecipeManager()
                 .getRecipeFor(RecipeType.CRAFTING, grid, helper.getLevel())
-                .map(recipe -> recipe.value().assemble(grid));
+                .map(recipe -> recipe.value().assemble(grid, helper.getLevel().registryAccess()));
         return result.orElse(ItemStack.EMPTY);
     }
 }

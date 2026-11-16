@@ -7,13 +7,14 @@ import dev.eliasnvx.cozychristmas.reindeer.Reindeer;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /** Draws reindeer; fawns are the same model at half size, without antlers. */
-public final class ReindeerRenderer extends MobRenderer<Reindeer, ReindeerRenderState, ReindeerModel> {
+public final class ReindeerRenderer extends MobRenderer<Reindeer, ReindeerModel> {
 
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(CozyChristmas.id("reindeer"), "main");
-    private static final Identifier TEXTURE = CozyChristmas.id("textures/entity/reindeer.png");
+    /** Also the texture of the sleigh's team. */
+    public static final ResourceLocation TEXTURE = CozyChristmas.id("textures/entity/reindeer.png");
     private static final float SHADOW = 0.7F;
     private static final float FAWN_SCALE = 0.55F;
 
@@ -26,26 +27,14 @@ public final class ReindeerRenderer extends MobRenderer<Reindeer, ReindeerRender
     }
 
     @Override
-    public ReindeerRenderState createRenderState() {
-        return new ReindeerRenderState();
-    }
-
-    @Override
-    public void extractRenderState(Reindeer reindeer, ReindeerRenderState state, float partialTicks) {
-        super.extractRenderState(reindeer, state, partialTicks);
-        state.saddled = reindeer.isSaddled();
-        state.flying = reindeer.isFlying();
-    }
-
-    @Override
-    protected void scale(ReindeerRenderState state, PoseStack poseStack) {
-        if (state.isBaby) {
+    protected void scale(Reindeer reindeer, PoseStack poseStack, float partialTick) {
+        if (reindeer.isBaby()) {
             poseStack.scale(FAWN_SCALE, FAWN_SCALE, FAWN_SCALE);
         }
     }
 
     @Override
-    public Identifier getTextureLocation(ReindeerRenderState state) {
+    public ResourceLocation getTextureLocation(Reindeer reindeer) {
         return TEXTURE;
     }
 }

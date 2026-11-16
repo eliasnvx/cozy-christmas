@@ -7,8 +7,12 @@
     "WWW"
   ],
   "key": {
-    "S": "minecraft:string",
-    "W": "minecraft:brown_wool"
+    "S": {
+      "item": "minecraft:string"
+    },
+    "W": {
+      "item": "minecraft:brown_wool"
+    }
   },
   "result": {
     "id": "cozychristmas:sack",

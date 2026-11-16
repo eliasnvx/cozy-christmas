@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.krampus;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -16,9 +17,16 @@ public class SackBlock extends HorizontalDirectionalBlock {
 
     private static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 14.0, 14.0);
 
+    public static final MapCodec<SackBlock> CODEC = simpleCodec(SackBlock::new);
+
     public SackBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<? extends SackBlock> codec() {
+        return CODEC;
     }
 
     @Override

@@ -15,9 +15,9 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -33,7 +33,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
@@ -98,14 +97,14 @@ public class PresentGoblin extends Monster {
             }
         }.setAlertOthers());
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true,
-                (target, level) -> !hasLoot()));
+                target -> !hasLoot()));
     }
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  EntitySpawnReason reason, @Nullable SpawnGroupData groupData) {
-        if (reason == EntitySpawnReason.STRUCTURE) {
-            setHomeTo(blockPosition(), HOME_RADIUS);
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+        if (reason == MobSpawnType.STRUCTURE) {
+            restrictTo(blockPosition(), HOME_RADIUS);
             setPersistenceRequired();
         }
         return super.finalizeSpawn(level, difficulty, reason, groupData);
@@ -133,19 +132,19 @@ public class PresentGoblin extends Monster {
         setGuaranteedDrop(EquipmentSlot.MAINHAND);
         setPersistenceRequired();
         setTarget(null);
-        swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
+        swing(InteractionHand.MAIN_HAND);
         playSound(CozySounds.PRESENT_GOBLIN_STEAL.get(), 1.0F, STEAL_PITCH);
-        player.sendOverlayMessage(Component.translatable("message.cozychristmas.present_goblin.stole", loot.getHoverName()));
+        player.displayClientMessage(Component.translatable("message.cozychristmas.present_goblin.stole", loot.getHoverName()), true);
         return true;
     }
 
     /** The attack is a snatch when there's something to snatch. */
     @Override
-    public boolean doHurtTarget(ServerLevel level, Entity target) {
+    public boolean doHurtTarget(Entity target) {
         if (target instanceof ServerPlayer player && steal(player)) {
             return true;
         }
-        return super.doHurtTarget(level, target);
+        return super.doHurtTarget(target);
     }
 
     /**
@@ -155,15 +154,15 @@ public class PresentGoblin extends Monster {
      */
     @Override
     public void die(DamageSource source) {
-        if (hasLoot() && !isRemoved() && !dead && level() instanceof ServerLevel level) {
+        if (hasLoot() && !isRemoved() && !dead && level() instanceof ServerLevel) {
             ItemStack loot = getMainHandItem();
             setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            spawnAtLocation(level, loot);
+            spawnAtLocation(loot);
             if (source.getEntity() instanceof ServerPlayer killer && KarmaManager.takeReturnReward(killer)) {
                 KarmaManager.add(killer, CozyConfig.common().karma().returnStolen());
                 PresentDesign[] designs = PresentDesign.values();
-                spawnAtLocation(level, CozyItems.present(designs[getRandom().nextInt(designs.length)]));
-                killer.sendOverlayMessage(Component.translatable("message.cozychristmas.present_goblin.returned"));
+                spawnAtLocation(CozyItems.present(designs[getRandom().nextInt(designs.length)]));
+                killer.displayClientMessage(Component.translatable("message.cozychristmas.present_goblin.returned"), true);
             }
         }
         super.die(source);

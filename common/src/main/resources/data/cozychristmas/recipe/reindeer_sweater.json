@@ -8,8 +8,12 @@
     "WWW"
   ],
   "key": {
-    "W": "#minecraft:wool",
-    "C": "minecraft:leather"
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "C": {
+      "item": "minecraft:leather"
+    }
   },
   "result": {
     "id": "cozychristmas:reindeer_sweater"

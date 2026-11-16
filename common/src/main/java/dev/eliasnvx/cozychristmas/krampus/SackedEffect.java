@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 
 /**
  * In Krampus's sack (SPEC: "puts you in his sack, 2 seconds unable to move"): no walking, no jumping, no getting on
@@ -31,12 +32,16 @@ public class SackedEffect extends MobEffect {
     }
 
     @Override
-    public boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
+    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        if (!(entity.level() instanceof ServerLevel)) {
+            return true; // 1.21.1 ticks effects on the client too: the server decides, riding and gliding are synced
+        }
         if (entity.isPassenger()) {
             entity.stopRiding();
         }
-        if (entity.isFallFlying()) {
-            entity.stopFallFlying();
+        // on 1.21.1 only players glide (the elytra flag is set by the player's packet), and only they can stop it
+        if (entity instanceof Player player && player.isFallFlying()) {
+            player.stopFallFlying();
         }
         return true;
     }

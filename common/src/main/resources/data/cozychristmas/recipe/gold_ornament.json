@@ -3,9 +3,15 @@
   "category": "misc",
   "group": "cozychristmas:ornament",
   "ingredients": [
-    "minecraft:glass_pane",
-    "minecraft:gold_nugget",
-    "minecraft:yellow_dye"
+    {
+      "item": "minecraft:glass_pane"
+    },
+    {
+      "item": "minecraft:gold_nugget"
+    },
+    {
+      "item": "minecraft:yellow_dye"
+    }
   ],
   "result": {
     "id": "cozychristmas:gold_ornament",

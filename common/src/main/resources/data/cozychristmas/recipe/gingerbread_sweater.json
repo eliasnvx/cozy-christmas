@@ -8,8 +8,12 @@
     "WWW"
   ],
   "key": {
-    "W": "#minecraft:wool",
-    "C": "cozychristmas:gingerbread_cookie"
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "C": {
+      "item": "cozychristmas:gingerbread_cookie"
+    }
   },
   "result": {
     "id": "cozychristmas:gingerbread_sweater"

@@ -1,0 +1,24 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "cozychristmas:gui/sprites/container/slot/body",
+      "sprite": "cozychristmas:container/slot/body"
+    },
+    {
+      "type": "single",
+      "resource": "cozychristmas:gui/sprites/container/slot/hands",
+      "sprite": "cozychristmas:container/slot/hands"
+    },
+    {
+      "type": "single",
+      "resource": "cozychristmas:gui/sprites/container/slot/head",
+      "sprite": "cozychristmas:container/slot/head"
+    },
+    {
+      "type": "single",
+      "resource": "cozychristmas:gui/sprites/container/slot/neck",
+      "sprite": "cozychristmas:container/slot/neck"
+    }
+  ]
+}

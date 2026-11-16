@@ -9,7 +9,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Locale;
 import java.util.Optional;
@@ -65,16 +65,44 @@ public sealed interface PresentContents permits PresentContents.Surprise, Presen
         }
     }
 
-    record Gift(ItemStackTemplate item, Optional<Giver> from) implements PresentContents {
+    /**
+     * The wrapped stack. {@link ItemStack} is mutable and compares by identity, so the record keeps its own copy,
+     * never hands it out for changes ({@link #create()} copies) and compares by item, count and components like
+     * vanilla's container contents: the component must stay equal after a round trip through the network or a save.
+     */
+    record Gift(ItemStack item, Optional<Giver> from) implements PresentContents {
 
+        /** {@link ItemStack#CODEC} rejects air and a count of 0: an empty gift can't be loaded. */
         static final MapCodec<Gift> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                ItemStackTemplate.CODEC.fieldOf("item").forGetter(Gift::item),
+                ItemStack.CODEC.fieldOf("item").forGetter(Gift::item),
                 Giver.CODEC.optionalFieldOf("from").forGetter(Gift::from)
         ).apply(i, Gift::new));
+
+        public Gift {
+            if (item.isEmpty()) {
+                throw new IllegalArgumentException("A gift can't be empty");
+            }
+            item = item.copy();
+        }
+
+        /** A fresh copy of the wrapped stack. */
+        public ItemStack create() {
+            return item.copy();
+        }
 
         @Override
         public Kind kind() {
             return Kind.GIFT;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return this == other || other instanceof Gift gift && ItemStack.matches(item, gift.item) && from.equals(gift.from);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * (31 * ItemStack.hashItemAndComponents(item) + item.getCount()) + from.hashCode();
         }
     }
 

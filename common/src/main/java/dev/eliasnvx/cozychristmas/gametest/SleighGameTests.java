@@ -15,7 +15,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
@@ -64,12 +63,12 @@ public final class SleighGameTests {
             ChristmasSeason.setClock(fixed(JULY));
             ItemStack present = new ItemStack(CozyBlocks.PRESENT_ITEM.get());
             player.setItemInHand(InteractionHand.MAIN_HAND, present);
-            sleigh.interact(player, InteractionHand.MAIN_HAND, Vec3.ZERO);
+            sleigh.interact(player, InteractionHand.MAIN_HAND);
             helper.assertValueEqual(sleigh.load(), 0, "no loading in July");
             helper.assertValueEqual(present.getCount(), 1, "the present stays in hand");
 
             ChristmasSeason.setClock(fixed(CHRISTMAS_EVE));
-            sleigh.interact(player, InteractionHand.MAIN_HAND, Vec3.ZERO);
+            sleigh.interact(player, InteractionHand.MAIN_HAND);
             helper.assertValueEqual(sleigh.load(), 1, "on Christmas Eve it goes in");
             helper.assertTrue(present.isEmpty(), "the present is used");
             helper.assertTrue(sleigh.helpers().contains(player.getUUID()), "Santa will remember who helped");
@@ -78,7 +77,7 @@ public final class SleighGameTests {
             ItemStack prank = new ItemStack(CozyBlocks.PRESENT_ITEM.get());
             prank.set(CozyComponents.PRESENT_CONTENTS.get(), new PresentContents.Prank(Optional.empty()));
             player.setItemInHand(InteractionHand.MAIN_HAND, prank);
-            sleigh.interact(player, InteractionHand.MAIN_HAND, Vec3.ZERO);
+            sleigh.interact(player, InteractionHand.MAIN_HAND);
             helper.assertValueEqual(sleigh.load(), 1, "no pranks in Santa's sack");
             helper.assertFalse(prank.isEmpty(), "the prank stays in hand");
             helper.succeed();
@@ -141,7 +140,7 @@ public final class SleighGameTests {
             sleigh.advance(level, true);
             helper.assertValueEqual(sleigh.phase(), SleighFlight.Phase.PARKED, "one flight a night");
 
-            santa.interact(player, InteractionHand.MAIN_HAND, Vec3.ZERO);
+            santa.interact(player, InteractionHand.MAIN_HAND);
             helper.assertTrue(player.getInventory().contains(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())),
                     "a thank-you present for the helper");
             helper.assertFalse(santa.owesThanks(player.getUUID()), "thanked once");
@@ -210,11 +209,11 @@ public final class SleighGameTests {
             flight.sleigh.advance(helper.getLevel(), true);
             helper.assertTrue(flight.santa.isPassenger(), "Santa is aboard");
             KarmaManager.set(flight.player, 60);
-            flight.santa.interact(flight.player, InteractionHand.MAIN_HAND, Vec3.ZERO);
+            flight.santa.interact(flight.player, InteractionHand.MAIN_HAND);
             helper.assertTrue(flight.santa.getTradingPlayer() == null, "no trading in the air");
             helper.assertFalse(flight.player.getInventory().contains(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())),
                     "no daily present in the air");
-            helper.assertFalse(flight.santa.hurtServer(helper.getLevel(), helper.getLevel().damageSources().inWall(), 5.0F),
+            helper.assertFalse(flight.santa.hurt(helper.getLevel().damageSources().inWall(), 5.0F),
                     "flying through a hill doesn't hurt him");
             helper.succeed();
         } finally {
@@ -254,11 +253,11 @@ public final class SleighGameTests {
     }
 
     private static <T extends Entity> T spawn(GameTestHelper helper, EntityType<T> type, Vec3 at) {
-        T entity = type.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+        T entity = type.create(helper.getLevel());
         if (entity == null) {
             throw new AssertionError("couldn't create " + type);
         }
-        entity.snapTo(helper.absoluteVec(at), 0.0F, 0.0F);
+        entity.moveTo(helper.absoluteVec(at), 0.0F, 0.0F);
         if (entity instanceof Mob mob) {
             mob.setNoAi(true);
         }

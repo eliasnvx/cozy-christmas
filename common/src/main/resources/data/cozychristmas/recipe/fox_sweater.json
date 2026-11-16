@@ -8,8 +8,12 @@
     "WWW"
   ],
   "key": {
-    "W": "#minecraft:wool",
-    "C": "minecraft:sweet_berries"
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "C": {
+      "item": "minecraft:sweet_berries"
+    }
   },
   "result": {
     "id": "cozychristmas:fox_sweater"

@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.stocking;
 
+import com.mojang.serialization.MapCodec;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.util.Players;
 import net.minecraft.core.BlockPos;
@@ -8,8 +9,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Prediction;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -17,17 +16,19 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -45,7 +46,7 @@ import java.util.Map;
  */
 public class StockingBlock extends BaseEntityBlock {
 
-    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<StockingFill> FILL = EnumProperty.create("fill", StockingFill.class);
     public static final EnumProperty<StockingStyle> STYLE = EnumProperty.create("style", StockingStyle.class);
 
@@ -59,6 +60,8 @@ public class StockingBlock extends BaseEntityBlock {
         SHAPES.put(Direction.WEST, Block.box(12.0, 0.0, 3.0, 16.0, 16.0, 13.0));
     }
 
+    public static final MapCodec<StockingBlock> CODEC = simpleCodec(StockingBlock::new);
+
     public StockingBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(FILL, StockingFill.EMPTY)
@@ -68,6 +71,17 @@ public class StockingBlock extends BaseEntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, FILL, STYLE);
+    }
+
+    @Override
+    protected MapCodec<? extends StockingBlock> codec() {
+        return CODEC;
+    }
+
+    /** {@link BaseEntityBlock} draws nothing by default; the stocking is a block model. */
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Override
@@ -102,11 +116,11 @@ public class StockingBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
-                                     Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
+                                     BlockPos pos, BlockPos neighborPos) {
         return direction == state.getValue(FACING).getOpposite() && !state.canSurvive(level, pos)
                 ? Blocks.AIR.defaultBlockState()
-                : super.updateShape(state, level, ticks, pos, direction, neighborPos, neighborState, random);
+                : super.updateShape(state, direction, neighborState, level, pos, neighborPos);
     }
 
     @Override
@@ -121,21 +135,30 @@ public class StockingBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(player instanceof ServerPlayer server) || !(level.getBlockEntity(pos) instanceof StockingBlockEntity stocking)) {
-            return InteractionResult.SUCCESS;
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
         if (!stocking.isOwner(player) && Players.inPlay(player)) { // creative players may empty any
-            server.sendOverlayMessage(Component.translatable("message.cozychristmas.stocking.not_yours"));
-            return InteractionResult.SUCCESS;
+            server.displayClientMessage(Component.translatable("message.cozychristmas.stocking.not_yours"), true);
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
         ItemStack taken = stocking.takeContents();
         if (taken.isEmpty()) {
-            server.sendOverlayMessage(Component.translatable(StockingBlockEntity.hangsOverFireplace(level, pos, state)
-                    ? "message.cozychristmas.stocking.empty" : "message.cozychristmas.stocking.no_fireplace"));
-            return InteractionResult.SUCCESS;
+            server.displayClientMessage(Component.translatable(StockingBlockEntity.hangsOverFireplace(level, pos, state)
+                    ? "message.cozychristmas.stocking.empty" : "message.cozychristmas.stocking.no_fireplace"), true);
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
-        server.getInventory().placeItemBackInInventory(taken, Prediction.SERVER_ONLY); // drops it if full
+        server.getInventory().placeItemBackInInventory(taken); // drops it if full, tells the client
         level.playSound(null, pos, SoundEvents.BUNDLE_REMOVE_ONE, SoundSource.BLOCKS, 0.8F, 1.0F);
-        return InteractionResult.SUCCESS;
+        return InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    /** Taking the stocking down (not a change of its fill): what it holds and the stocking itself drop. */
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof StockingBlockEntity stocking) {
+            stocking.dropContents();
+        }
+        super.onRemove(state, level, pos, newState, moved);
     }
 
     @Override

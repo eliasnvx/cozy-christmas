@@ -2,7 +2,6 @@ package dev.eliasnvx.cozychristmas.workshop;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.karma.KarmaManager;
 import dev.eliasnvx.cozychristmas.karma.KarmaTier;
@@ -17,25 +16,25 @@ import dev.eliasnvx.cozychristmas.sleigh.SantasSleigh;
 import dev.eliasnvx.cozychristmas.sleigh.SleighFlight;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Prediction;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -49,16 +48,13 @@ import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TradeWithPlayerGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.npc.villager.AbstractVillager;
+import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
-import net.minecraft.world.item.trading.TradeSet;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -73,16 +69,13 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Santa, at home in his workshop. He trades for emeralds (trade sets {@code cozychristmas:santa/goods} and
- * {@code santa/buying}, restocked every game day) and reads the player's karma, which is how players learn it: nice ones
+ * Santa, at home in his workshop. He trades for emeralds ({@link SantaTrades#GOODS} and {@link SantaTrades#BUYING},
+ * restocked every game day) and reads the player's karma, which is how players learn it: nice ones
  * pay {@code workshop.santa.nice_discount} less and in season get a present once a day; naughty ones he turns away.
  * He's neutral: whoever hurts him or an elf, or steals from the warehouse, he goes after ({@link WorkshopAlarm}) for
  * {@code anger_ticks}, and won't trade with them meanwhile.
  */
 public class Santa extends AbstractVillager {
-
-    public static final ResourceKey<TradeSet> GOODS = tradeSet("santa/goods");
-    public static final ResourceKey<TradeSet> BUYING = tradeSet("santa/buying");
 
     /** Santa placed by the workshop stays around it. */
     private static final int HOME_RADIUS = 20;
@@ -116,10 +109,6 @@ public class Santa extends AbstractVillager {
         super(type, level);
     }
 
-    private static ResourceKey<TradeSet> tradeSet(String path) {
-        return ResourceKey.create(Registries.TRADE_SET, CozyChristmas.id(path));
-    }
-
     public static AttributeSupplier.Builder createAttributes(SantaSettings settings) {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, settings.health())
@@ -145,9 +134,9 @@ public class Santa extends AbstractVillager {
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  EntitySpawnReason reason, @Nullable SpawnGroupData groupData) {
-        if (reason == EntitySpawnReason.STRUCTURE) {
-            setHomeTo(blockPosition(), HOME_RADIUS);
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+        if (reason == MobSpawnType.STRUCTURE) {
+            restrictTo(blockPosition(), HOME_RADIUS);
         }
         return super.finalizeSpawn(level, difficulty, reason, groupData);
     }
@@ -193,9 +182,9 @@ public class Santa extends AbstractVillager {
     }
 
     @Override
-    protected void customServerAiStep(ServerLevel level) {
-        super.customServerAiStep(level);
-        if (angryAt == null) {
+    protected void customServerAiStep() {
+        super.customServerAiStep();
+        if (angryAt == null || !(level() instanceof ServerLevel level)) {
             return;
         }
         LivingEntity culprit = level.getEntity(angryAt) instanceof LivingEntity living ? living : null;
@@ -218,9 +207,9 @@ public class Santa extends AbstractVillager {
     }
 
     @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        boolean hurt = super.hurtServer(level, source, damage);
-        if (hurt && source.getEntity() instanceof LivingEntity attacker) {
+    public boolean hurt(DamageSource source, float damage) {
+        boolean hurt = super.hurt(source, damage);
+        if (hurt && level() instanceof ServerLevel level && source.getEntity() instanceof LivingEntity attacker) {
             WorkshopAlarm.raise(level, position(), attacker);
         }
         return hurt;
@@ -243,7 +232,7 @@ public class Santa extends AbstractVillager {
         if (level() instanceof ServerLevel level && player instanceof ServerPlayer visitor) {
             visit(level, visitor);
         }
-        return InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.sidedSuccess(level().isClientSide());
     }
 
     /** A player talks to Santa: refused, given today's present, or let in to trade. */
@@ -273,7 +262,7 @@ public class Santa extends AbstractVillager {
     private void refuse(ServerPlayer visitor, String why) {
         setUnhappyCounter(UNHAPPY_TICKS);
         makeSound(CozySounds.SANTA_NO.get());
-        visitor.sendOverlayMessage(Component.translatable("message.cozychristmas.santa." + why));
+        visitor.displayClientMessage(Component.translatable("message.cozychristmas.santa." + why), true);
     }
 
     /**
@@ -288,10 +277,10 @@ public class Santa extends AbstractVillager {
         PresentDesign[] designs = PresentDesign.values();
         ItemStack present = CozyItems.present(designs[getRandom().nextInt(designs.length)]);
         present.set(CozyComponents.PRESENT_CONTENTS.get(), new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
-        visitor.getInventory().placeItemBackInInventory(present, Prediction.SERVER_ONLY); // drops it if full
+        visitor.getInventory().placeItemBackInInventory(present); // drops it if full
         makeSound(CozySounds.SANTA_GIFT.get());
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.8, getZ(), 8, 0.4, 0.4, 0.4, 0.0);
-        visitor.sendOverlayMessage(Component.translatable("message.cozychristmas.santa.gift"));
+        visitor.displayClientMessage(Component.translatable("message.cozychristmas.santa.gift"), true);
         return true;
     }
 
@@ -318,11 +307,11 @@ public class Santa extends AbstractVillager {
             PresentDesign[] designs = PresentDesign.values();
             ItemStack present = CozyItems.present(designs[getRandom().nextInt(designs.length)]);
             present.set(CozyComponents.PRESENT_CONTENTS.get(), new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
-            visitor.getInventory().placeItemBackInInventory(present, Prediction.SERVER_ONLY);
+            visitor.getInventory().placeItemBackInInventory(present);
             level.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.8, getZ(), 8, 0.4, 0.4, 0.4, 0.0);
         }
         makeSound(CozySounds.SANTA_GIFT.get());
-        visitor.sendOverlayMessage(Component.translatable("message.cozychristmas.santa.thanks"));
+        visitor.displayClientMessage(Component.translatable("message.cozychristmas.santa.thanks"), true);
         return true;
     }
 
@@ -337,10 +326,12 @@ public class Santa extends AbstractVillager {
     }
 
     @Override
-    protected void updateTrades(ServerLevel level) {
-        MerchantOffers offers = getOffers();
-        addOffersFromTradeSet(level, offers, GOODS);
-        addOffersFromTradeSet(level, offers, BUYING);
+    protected void updateTrades() {
+        if (level() instanceof ServerLevel level) { // offers only exist on the server
+            MerchantOffers offers = getOffers();
+            SantaTrades.GOODS.addOffers(level, offers);
+            SantaTrades.BUYING.addOffers(level, offers);
+        }
     }
 
     /** The nice discount lasts one visit, like a villager's hero-of-the-village prices. */
@@ -368,22 +359,32 @@ public class Santa extends AbstractVillager {
     }
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
-        super.addAdditionalSaveData(output);
-        output.putLong(RESTOCK_DAY, restockDay);
-        output.store(OWED_THANKS, UUIDUtil.CODEC.listOf(), List.copyOf(owedThanks));
-        output.store(THANKED, Thanked.CODEC.listOf(), thankedOn.entrySet().stream()
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        MobHome.save(this, tag);
+        tag.putLong(RESTOCK_DAY, restockDay);
+        store(tag, OWED_THANKS, UUIDUtil.CODEC.listOf(), List.copyOf(owedThanks));
+        store(tag, THANKED, Thanked.CODEC.listOf(), thankedOn.entrySet().stream()
                 .map(entry -> new Thanked(entry.getKey(), entry.getValue())).toList());
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        super.readAdditionalSaveData(input);
-        restockDay = input.getLongOr(RESTOCK_DAY, Long.MIN_VALUE);
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        MobHome.load(this, tag);
+        restockDay = tag.contains(RESTOCK_DAY, Tag.TAG_LONG) ? tag.getLong(RESTOCK_DAY) : Long.MIN_VALUE;
         owedThanks.clear();
-        input.read(OWED_THANKS, UUIDUtil.CODEC.listOf()).ifPresent(owedThanks::addAll);
+        read(tag, OWED_THANKS, UUIDUtil.CODEC.listOf()).ifPresent(owedThanks::addAll);
         thankedOn.clear();
-        input.read(THANKED, Thanked.CODEC.listOf()).ifPresent(list -> list.forEach(entry -> thankedOn.put(entry.player(), entry.day())));
+        read(tag, THANKED, Thanked.CODEC.listOf()).ifPresent(list -> list.forEach(entry -> thankedOn.put(entry.player(), entry.day())));
+    }
+
+    private static <T> void store(CompoundTag tag, String key, Codec<T> codec, T value) {
+        codec.encodeStart(NbtOps.INSTANCE, value).result().ifPresent(encoded -> tag.put(key, encoded));
+    }
+
+    private static <T> Optional<T> read(CompoundTag tag, String key, Codec<T> codec) {
+        return tag.contains(key) ? codec.parse(NbtOps.INSTANCE, tag.get(key)).result() : Optional.empty();
     }
 
     /** A helper's last thank-you day, as saved. */
@@ -439,8 +440,8 @@ public class Santa extends AbstractVillager {
 
     /** Flying through a hillside or a tree aboard his sleigh doesn't hurt him. */
     @Override
-    public boolean isInvulnerableTo(ServerLevel level, DamageSource source) {
-        return source.is(DamageTypes.IN_WALL) && getVehicle() instanceof SantasSleigh || super.isInvulnerableTo(level, source);
+    public boolean isInvulnerableTo(DamageSource source) {
+        return source.is(DamageTypes.IN_WALL) && getVehicle() instanceof SantasSleigh || super.isInvulnerableTo(source);
     }
 
     // --- sounds --------------------------------------------------------------------------------------------------

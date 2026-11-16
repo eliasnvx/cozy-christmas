@@ -6,12 +6,12 @@ import dev.eliasnvx.cozychristmas.goblin.PresentGoblin;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
-public final class PresentGoblinRenderer extends HumanoidMobRenderer<PresentGoblin, PresentGoblinRenderState, PresentGoblinModel> {
+public final class PresentGoblinRenderer extends HumanoidMobRenderer<PresentGoblin, PresentGoblinModel> {
 
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(CozyChristmas.id("present_goblin"), "main");
-    private static final Identifier TEXTURE = CozyChristmas.id("textures/entity/present_goblin.png");
+    private static final ResourceLocation TEXTURE = CozyChristmas.id("textures/entity/present_goblin.png");
     private static final float SHADOW = 0.3F;
 
     public PresentGoblinRenderer(EntityRendererProvider.Context context) {
@@ -23,18 +23,7 @@ public final class PresentGoblinRenderer extends HumanoidMobRenderer<PresentGobl
     }
 
     @Override
-    public PresentGoblinRenderState createRenderState() {
-        return new PresentGoblinRenderState();
-    }
-
-    @Override
-    public void extractRenderState(PresentGoblin goblin, PresentGoblinRenderState state, float partialTicks) {
-        super.extractRenderState(goblin, state, partialTicks);
-        state.hasLoot = goblin.hasLoot();
-    }
-
-    @Override
-    public Identifier getTextureLocation(PresentGoblinRenderState state) {
+    public ResourceLocation getTextureLocation(PresentGoblin goblin) {
         return TEXTURE;
     }
 }

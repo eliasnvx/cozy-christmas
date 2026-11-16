@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:ear_warmers"
+        "recipe": "cozychristmas:ear_warmers"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

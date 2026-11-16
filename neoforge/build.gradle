@@ -15,48 +15,63 @@ configurations {
 
 dependencies {
     neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
-    implementation "dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}"
-    implementation "com.geckolib:geckolib-neoforge-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+    modImplementation "dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}"
+    modImplementation "software.bernie.geckolib:geckolib-neoforge-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
 
-    common(project(path: ":common")) { transitive false }
-    shadowBundle(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive false }
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
 
     // REI finds NeoForge plugins by an annotation that only its NeoForge jar has; Curios is NeoForge only
-    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rootProject.rei_version}") { transitive false }
-    compileOnly("maven.modrinth:curios:${rootProject.curios_neoforge_version}") { transitive false }
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rootProject.rei_version}") { transitive false }
+    modCompileOnly("maven.modrinth:curios:${rootProject.curios_neoforge_version}") { transitive false }
 
-    // Compat checks in the dev runs: -Pcompat=true loads JEI, REI, Jade, Serene Seasons and Curios
-    // (or some of them: -Pcompat=jei,jade,seasons,curios; JEI and REI both draw an item list)
+    // Compat checks in the dev runs: -Pcompat=true loads JEI, REI, Jade, Serene Seasons, Snowy Spirit and Curios, or some
+    // of them: -Pcompat=jei,jade,seasons,snowy,curios (JEI and REI both draw an item list)
     def compat = project.findProperty("compat")?.toString()
     if (compat != null) {
         def wanted = { String group -> compat == "true" || compat.split(",")*.trim().contains(group) }
         if (wanted("jei")) {
-            runtimeOnly "mezz.jei:jei-${rootProject.minecraft_version}-neoforge:${rootProject.jei_version}"
+            modRuntimeOnly("mezz.jei:jei-${rootProject.minecraft_version}-neoforge:${rootProject.jei_version}") { transitive false }
+            modRuntimeOnly("net.mezzdev.config:mezz_config-${rootProject.minecraft_version}-neoforge:${rootProject.mezz_config_version}") { transitive false }
         }
         if (wanted("rei")) {
-            runtimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rootProject.rei_version}") { transitive false }
-            runtimeOnly("me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}") { transitive false }
-            runtimeOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
+            modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rootProject.rei_version}") { transitive false }
+            modRuntimeOnly("me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}") { transitive false }
+            modRuntimeOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
         }
         if (wanted("jade")) {
-            runtimeOnly("maven.modrinth:jade:${rootProject.jade_neoforge_version}") { transitive false }
+            modRuntimeOnly("maven.modrinth:jade:${rootProject.jade_neoforge_version}") { transitive false }
         }
         if (wanted("seasons")) {
-            runtimeOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_neoforge_id}") { transitive false }
-            runtimeOnly("maven.modrinth:glitchcore:${rootProject.glitchcore_neoforge_id}") { transitive false }
+            modRuntimeOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_neoforge_id}") { transitive false }
+            modRuntimeOnly("maven.modrinth:glitchcore:${rootProject.glitchcore_neoforge_id}") { transitive false }
+        }
+        if (wanted("snowy")) {
+            modRuntimeOnly("maven.modrinth:snowy-spirit:${rootProject.snowy_spirit_neoforge_id}") { transitive false }
+            modRuntimeOnly("maven.modrinth:moonlight:${rootProject.moonlight_neoforge_id}") { transitive false }
         }
         if (wanted("curios")) {
-            runtimeOnly("maven.modrinth:curios:${rootProject.curios_neoforge_version}") { transitive false }
+            modRuntimeOnly("maven.modrinth:curios:${rootProject.curios_neoforge_version}") { transitive false }
         }
     }
+    shadowBundle(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive false }
 }
 
+// Dev-only check on NeoForge (1.21.1 has no client GameTests): opens run/saves/cozychristmas-check (created flat on the first run),
+// dresses the player, places blocks and mobs, takes screenshots into run/screenshots and quits. ./gradlew :neoforge:runDevCheck
 loom {
     runs {
+        devCheck {
+            client()
+            name "NeoForge Dev Check"
+            property "cozychristmas.devcheck", "true"
+        }
         // Server GameTests: the shared bodies in common/.../gametest, registered by dev/CozyGameTestsNeoForge
         gameTestServer {
             server()
             forgeTemplate("gameTestServer")
+            // The 21.1 template starts a plain dedicated server: switch it into test mode explicitly
+            property "neoforge.gameTestServer", "true"
+            property "neoforge.enabledGameTestNamespaces", "cozychristmas"
             name "NeoForge GameTest Server"
             runDir "build/run/gameTest"
         }
@@ -66,23 +81,25 @@ loom {
 // `build` -> `check` -> GameTests on NeoForge too (Fabric wires runGameTest into build itself)
 tasks.named("check") { dependsOn "runGameTestServer" }
 
-jar {
-    archiveClassifier = "raw"
-}
+// -Pwith_devcheck=true keeps DevCheck and the GameTest glue in the jar (classifier "devcheck"), to run the check in a
+// client installed with the loader's own installer, outside Gradle. Never a release.
+def withDevCheck = project.findProperty("with_devcheck") == "true"
 
 shadowJar {
-    dependsOn jar
-    mainSpec.sourcePaths.clear()
-    from(zipTree(jar.archiveFile))
     configurations = [project.configurations.shadowBundle]
-    archiveClassifier = null
-    archiveVersion = "${project.version}+${rootProject.minecraft_version}-neoforge"
+    archiveClassifier = "dev-shadow"
     exclude "fabric.mod.json"
-    exclude "dev/eliasnvx/cozychristmas/neoforge/dev/**" // the GameTest glue stays out of the released jar
-    exclude "dev/eliasnvx/cozychristmas/gametest/**"
-    exclude "data/cozychristmas/structure/empty.nbt"
     exclude "architectury.common.json"
+    if (!withDevCheck) {
+        exclude "dev/eliasnvx/cozychristmas/neoforge/dev/**" // DevCheck and the GameTest glue stay out of the released jar
+        exclude "dev/eliasnvx/cozychristmas/gametest/**"
+        exclude "data/cozychristmas/structure/empty.nbt"
+    }
     from rootProject.file("LICENSE")
 }
 
-assemble.dependsOn shadowJar
+remapJar {
+    inputFile.set(shadowJar.archiveFile)
+    archiveClassifier = withDevCheck ? "devcheck" : null
+    archiveVersion = "${project.version}+${rootProject.minecraft_version}-neoforge"
+}

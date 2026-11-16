@@ -26,7 +26,7 @@ public class WrappingTableBlock extends Block {
         if (!level.isClientSide()) {
             player.openMenu(state.getMenuProvider(level, pos));
         }
-        return InteractionResult.SUCCESS;
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     @Override

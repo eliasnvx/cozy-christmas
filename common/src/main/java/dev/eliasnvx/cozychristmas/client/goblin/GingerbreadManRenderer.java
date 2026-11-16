@@ -6,13 +6,12 @@ import dev.eliasnvx.cozychristmas.goblin.GingerbreadMan;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
-public final class GingerbreadManRenderer extends HumanoidMobRenderer<GingerbreadMan, HumanoidRenderState, GingerbreadManModel> {
+public final class GingerbreadManRenderer extends HumanoidMobRenderer<GingerbreadMan, GingerbreadManModel> {
 
     public static final ModelLayerLocation LAYER = new ModelLayerLocation(CozyChristmas.id("gingerbread_man"), "main");
-    private static final Identifier TEXTURE = CozyChristmas.id("textures/entity/gingerbread_man.png");
+    private static final ResourceLocation TEXTURE = CozyChristmas.id("textures/entity/gingerbread_man.png");
     private static final float SHADOW = 0.25F;
 
     public GingerbreadManRenderer(EntityRendererProvider.Context context) {
@@ -24,12 +23,7 @@ public final class GingerbreadManRenderer extends HumanoidMobRenderer<Gingerbrea
     }
 
     @Override
-    public HumanoidRenderState createRenderState() {
-        return new HumanoidRenderState();
-    }
-
-    @Override
-    public Identifier getTextureLocation(HumanoidRenderState state) {
+    public ResourceLocation getTextureLocation(GingerbreadMan man) {
         return TEXTURE;
     }
 }

@@ -1,7 +1,8 @@
 package dev.eliasnvx.cozychristmas.fabric.gametest;
 
 import dev.eliasnvx.cozychristmas.gametest.SnowmanGameTests;
-import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 import java.util.Arrays;
@@ -10,46 +11,46 @@ import java.util.Arrays;
  * Fabric glue for the shared {@link SnowmanGameTests} (server GameTests, part of {@code build}). One method per entry
  * of {@link SnowmanGameTests#ALL}; {@link #everySharedTestRegistered} catches a missing one.
  */
-public final class SnowmanGameTestsFabric {
+public final class SnowmanGameTestsFabric implements FabricGameTest {
 
     private static final int SLOW = 100;
 
-    @GameTest(maxTicks = SLOW)
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = SLOW)
     public void iceSnowballsSlowAndChill(GameTestHelper helper) {
         SnowmanGameTests.iceSnowballsSlowAndChill(helper);
     }
 
-    @GameTest(maxTicks = SLOW)
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = SLOW)
     public void snowmenDontHitEachOther(GameTestHelper helper) {
         SnowmanGameTests.snowmenDontHitEachOther(helper);
     }
 
-    @GameTest
+    @GameTest(template = EMPTY_STRUCTURE)
     public void throwsIceSnowballs(GameTestHelper helper) {
         SnowmanGameTests.throwsIceSnowballs(helper);
     }
 
-    @GameTest
+    @GameTest(template = EMPTY_STRUCTURE)
     public void fireHurtsMore(GameTestHelper helper) {
         SnowmanGameTests.fireHurtsMore(helper);
     }
 
-    @GameTest(maxTicks = SLOW)
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = SLOW)
     public void litFireplaceMelts(GameTestHelper helper) {
         SnowmanGameTests.litFireplaceMelts(helper);
     }
 
-    @GameTest(maxTicks = SLOW)
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = SLOW)
     public void dispensersThrow(GameTestHelper helper) {
         SnowmanGameTests.dispensersThrow(helper);
     }
 
-    @GameTest
+    @GameTest(template = EMPTY_STRUCTURE)
     public void spawnInSnowyBiomes(GameTestHelper helper) {
         SnowmanGameTests.spawnInSnowyBiomes(helper);
     }
 
-    @GameTest
+    @GameTest(template = EMPTY_STRUCTURE)
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

@@ -10,9 +10,11 @@
           "name": "cozychristmas:tree_star"
         }
       ],
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      }
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
     }
   ],
   "random_sequence": "cozychristmas:blocks/tree_star"

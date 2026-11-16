@@ -8,8 +8,12 @@
     "WWW"
   ],
   "key": {
-    "W": "#minecraft:wool",
-    "C": "minecraft:honeycomb"
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "C": {
+      "item": "minecraft:honeycomb"
+    }
   },
   "result": {
     "id": "cozychristmas:bee_sweater"

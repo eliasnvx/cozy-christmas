@@ -4,7 +4,7 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 
 /**
@@ -86,7 +86,7 @@ public final class CozySounds {
     }
 
     private static RegistrySupplier<SoundEvent> event(String name) {
-        Identifier id = CozyChristmas.id(name);
+        ResourceLocation id = CozyChristmas.id(name);
         return REGISTER.register(id, () -> SoundEvent.createVariableRangeEvent(id));
     }
 }

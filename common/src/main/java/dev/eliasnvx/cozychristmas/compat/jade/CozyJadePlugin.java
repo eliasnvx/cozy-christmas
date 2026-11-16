@@ -12,7 +12,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
@@ -33,9 +33,9 @@ import snownee.jade.api.config.IPluginConfig;
 @WailaPlugin(CozyChristmas.MOD_ID)
 public final class CozyJadePlugin implements IWailaPlugin {
 
-    private static final Identifier STOCKING = CozyChristmas.id("stocking");
-    private static final Identifier TREE_STAR = CozyChristmas.id("tree_star");
-    private static final Identifier PRESENT = CozyChristmas.id("present");
+    private static final ResourceLocation STOCKING = CozyChristmas.id("stocking");
+    private static final ResourceLocation TREE_STAR = CozyChristmas.id("tree_star");
+    private static final ResourceLocation PRESENT = CozyChristmas.id("present");
 
     @Override
     public void register(IWailaCommonRegistration registration) {
@@ -59,7 +59,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
         INSTANCE;
 
         @Override
-        public Identifier getUid() {
+        public ResourceLocation getUid() {
             return STOCKING;
         }
 
@@ -78,7 +78,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
         INSTANCE;
 
         @Override
-        public Identifier getUid() {
+        public ResourceLocation getUid() {
             return STOCKING;
         }
 
@@ -99,7 +99,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
         INSTANCE;
 
         @Override
-        public Identifier getUid() {
+        public ResourceLocation getUid() {
             return TREE_STAR;
         }
 
@@ -119,7 +119,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
         INSTANCE;
 
         @Override
-        public Identifier getUid() {
+        public ResourceLocation getUid() {
             return TREE_STAR;
         }
 
@@ -138,7 +138,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
         INSTANCE;
 
         @Override
-        public Identifier getUid() {
+        public ResourceLocation getUid() {
             return PRESENT;
         }
 
@@ -157,7 +157,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
         INSTANCE;
 
         @Override
-        public Identifier getUid() {
+        public ResourceLocation getUid() {
             return PRESENT;
         }
 

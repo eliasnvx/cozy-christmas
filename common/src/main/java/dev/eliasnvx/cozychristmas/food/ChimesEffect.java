@@ -27,7 +27,10 @@ public class ChimesEffect extends MobEffect {
     }
 
     @Override
-    public boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
+    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        if (!(entity.level() instanceof ServerLevel level)) {
+            return true;
+        }
         level.playSound(null, entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BELL_BLOCK, SoundSource.AMBIENT,
                 VOLUME, PITCH);
         return true;

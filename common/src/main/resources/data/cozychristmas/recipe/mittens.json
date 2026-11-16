@@ -6,8 +6,12 @@
     "S S"
   ],
   "key": {
-    "W": "#minecraft:wool",
-    "S": "minecraft:string"
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
   },
   "result": {
     "id": "cozychristmas:mittens"

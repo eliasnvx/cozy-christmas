@@ -70,14 +70,14 @@ public final class ToastySetGameTests {
     public static void everySweaterCraftsAndCounts(GameTestHelper helper) {
         Map<String, Item> ingredients = patternIngredients();
         helper.assertValueEqual(CozyItems.sweaters().size(), ingredients.size(), "patterns with a known ingredient");
-        ItemStack wool = new ItemStack(Items.WOOL.white());
+        ItemStack wool = new ItemStack(Items.WHITE_WOOL);
         for (var sweater : CozyItems.sweaters()) {
             String name = sweater.getId().getPath();
             ItemStack pattern = new ItemStack(ingredients.get(name));
             CraftingInput grid = CraftingInput.of(3, 3, List.of(wool, ItemStack.EMPTY, wool, wool, pattern, wool, wool, wool, wool));
             ItemStack result = helper.getLevel().getServer().getRecipeManager()
                     .getRecipeFor(RecipeType.CRAFTING, grid, helper.getLevel())
-                    .map(recipe -> recipe.value().assemble(grid)).orElse(ItemStack.EMPTY);
+                    .map(recipe -> recipe.value().assemble(grid, helper.getLevel().registryAccess())).orElse(ItemStack.EMPTY);
             helper.assertTrue(result.is(sweater.get()), "crafting " + name + ", got " + result);
             helper.assertValueEqual(CosmeticsManager.slotOf(result), CosmeticSlot.BODY, "slot of " + name);
             helper.assertTrue(result.is(CozyTags.SWEATERS) && result.is(CozyTags.TOASTY_SET), name + " is a Toasty sweater");

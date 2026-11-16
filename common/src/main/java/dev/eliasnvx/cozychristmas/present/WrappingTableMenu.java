@@ -17,7 +17,6 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 
 import java.util.Optional;
@@ -42,6 +41,11 @@ public class WrappingTableMenu extends AbstractContainerMenu {
     public static final int RESULT_Y = 36;
     private static final int INVENTORY_X = 8;
     private static final int INVENTORY_Y = 84;
+    /** Vanilla's inventory layout: 18 px slots, the hotbar 4 px below the three rows. */
+    private static final int SLOT_SIZE = 18;
+    private static final int ROW_LENGTH = 9;
+    private static final int INVENTORY_ROWS = 3;
+    private static final int HOTBAR_OFFSET_Y = 58;
 
     private final ContainerLevelAccess access;
     private final Player player;
@@ -88,8 +92,21 @@ public class WrappingTableMenu extends AbstractContainerMenu {
                 super.onTake(taker, present);
             }
         });
-        addStandardInventorySlots(inventory, INVENTORY_X, INVENTORY_Y);
+        addInventorySlots(inventory);
         addDataSlot(design);
+    }
+
+    /** The player's inventory, then the hotbar, as vanilla's container menus lay them out. */
+    private void addInventorySlots(Inventory inventory) {
+        for (int row = 0; row < INVENTORY_ROWS; row++) {
+            for (int column = 0; column < ROW_LENGTH; column++) {
+                addSlot(new Slot(inventory, ROW_LENGTH + row * ROW_LENGTH + column,
+                        INVENTORY_X + column * SLOT_SIZE, INVENTORY_Y + row * SLOT_SIZE));
+            }
+        }
+        for (int column = 0; column < ROW_LENGTH; column++) {
+            addSlot(new Slot(inventory, column, INVENTORY_X + column * SLOT_SIZE, INVENTORY_Y + HOTBAR_OFFSET_Y));
+        }
     }
 
     public static boolean canWrap(ItemStack stack) {
@@ -101,7 +118,7 @@ public class WrappingTableMenu extends AbstractContainerMenu {
         Optional<PresentContents.Giver> from = Optional.of(PresentContents.Giver.of(wrapper));
         PresentContents contents = gift.is(CozyTags.WRAPS_AS_BOOM)
                 ? new PresentContents.Prank(from)
-                : new PresentContents.Gift(ItemStackTemplate.fromNonEmptyStack(gift), from);
+                : new PresentContents.Gift(gift, from);
         ItemStack present = new ItemStack(CozyBlocks.PRESENT_ITEM.get());
         present.set(CozyComponents.PRESENT_CONTENTS.get(), contents);
         present.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(PresentBlock.DESIGN, design));

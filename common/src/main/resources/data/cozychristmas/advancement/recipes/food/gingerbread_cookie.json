@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:gingerbread_cookie"
+        "recipe": "cozychristmas:gingerbread_cookie"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

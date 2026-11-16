@@ -1,0 +1,23 @@
+{
+  "parent": "cozychristmas:block/present_red",
+  "overrides": [
+    {
+      "predicate": {
+        "cozychristmas:design": 1
+      },
+      "model": "cozychristmas:block/present_green"
+    },
+    {
+      "predicate": {
+        "cozychristmas:design": 2
+      },
+      "model": "cozychristmas:block/present_blue"
+    },
+    {
+      "predicate": {
+        "cozychristmas:design": 3
+      },
+      "model": "cozychristmas:block/present_gold"
+    }
+  ]
+}

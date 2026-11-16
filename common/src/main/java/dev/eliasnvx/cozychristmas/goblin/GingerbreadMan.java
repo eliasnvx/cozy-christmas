@@ -6,8 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -65,9 +65,9 @@ public class GingerbreadMan extends Monster {
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  EntitySpawnReason reason, @Nullable SpawnGroupData groupData) {
-        if (reason == EntitySpawnReason.STRUCTURE) {
-            setHomeTo(blockPosition(), HOME_RADIUS);
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+        if (reason == MobSpawnType.STRUCTURE) {
+            restrictTo(blockPosition(), HOME_RADIUS);
             setPersistenceRequired();
         }
         return super.finalizeSpawn(level, difficulty, reason, groupData);

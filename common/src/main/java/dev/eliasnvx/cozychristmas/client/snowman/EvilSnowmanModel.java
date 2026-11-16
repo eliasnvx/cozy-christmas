@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.client.snowman;
 
-import net.minecraft.client.model.EntityModel;
+import dev.eliasnvx.cozychristmas.snowman.EvilSnowman;
+import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -15,7 +16,7 @@ import net.minecraft.util.Mth;
  * out. It waddles as it walks and swings its right arm over to throw. Texture 128x64, boxes in
  * {@code tools/gen_snowman.py}.
  */
-public final class EvilSnowmanModel extends EntityModel<EvilSnowmanRenderState> {
+public final class EvilSnowmanModel extends HierarchicalModel<EvilSnowman> {
 
     private static final int TEXTURE_WIDTH = 128;
     private static final int TEXTURE_HEIGHT = 64;
@@ -30,14 +31,17 @@ public final class EvilSnowmanModel extends EntityModel<EvilSnowmanRenderState> 
     private static final float WADDLE_RATE = 0.6F;
     private static final float BODY_TURN = 0.25F;
 
+    private final ModelPart root;
     private final ModelPart head;
     private final ModelPart upperBody;
     private final ModelPart lowerBody;
     private final ModelPart rightArm;
     private final ModelPart leftArm;
+    /** 1 right after a throw, down to 0 when the arm is back; taken with the frame's partial tick. */
+    private float throwProgress;
 
     public EvilSnowmanModel(ModelPart root) {
-        super(root);
+        this.root = root;
         head = root.getChild("head");
         upperBody = root.getChild("upper_body");
         lowerBody = root.getChild("lower_body");
@@ -69,17 +73,29 @@ public final class EvilSnowmanModel extends EntityModel<EvilSnowmanRenderState> 
     }
 
     @Override
-    public void setupAnim(EvilSnowmanRenderState state) {
-        super.setupAnim(state);
-        head.yRot = state.yRot * Mth.DEG_TO_RAD;
-        head.xRot = state.xRot * Mth.DEG_TO_RAD;
-        float waddle = Mth.sin(state.walkAnimationPos * WADDLE_RATE) * WADDLE * Math.min(1.0F, state.walkAnimationSpeed);
+    public ModelPart root() {
+        return root;
+    }
+
+    @Override
+    public void prepareMobModel(EvilSnowman snowman, float walkPos, float walkSpeed, float partialTick) {
+        throwProgress = snowman.throwProgress(partialTick);
+    }
+
+    @Override
+    public void setupAnim(EvilSnowman snowman, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
+        head.yRot = headYaw * Mth.DEG_TO_RAD;
+        head.xRot = headPitch * Mth.DEG_TO_RAD;
+        float waddle = Mth.sin(walkPos * WADDLE_RATE) * WADDLE * Math.min(1.0F, walkSpeed);
         lowerBody.zRot = waddle;
         upperBody.zRot = -waddle;
-        upperBody.yRot = state.yRot * Mth.DEG_TO_RAD * BODY_TURN;
+        upperBody.yRot = headYaw * Mth.DEG_TO_RAD * BODY_TURN;
         head.zRot = waddle * 0.5F;
-        if (state.throwProgress > 0.0F) {
-            float swing = 1.0F - state.throwProgress;
+        // 1.21.1 models keep last frame's pose: the throwing arm starts from its rest pose every frame
+        rightArm.zRot = ARM_RAISE;
+        rightArm.xRot = 0.0F;
+        if (throwProgress > 0.0F) {
+            float swing = 1.0F - throwProgress;
             rightArm.zRot += Mth.sin(swing * Mth.PI) * THROW_LIFT;
             rightArm.xRot = Mth.sin(swing * Mth.TWO_PI) * THROW_WHIP;
         }

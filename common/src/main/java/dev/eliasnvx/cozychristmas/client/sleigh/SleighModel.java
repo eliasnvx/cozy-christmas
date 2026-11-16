@@ -1,13 +1,16 @@
 package dev.eliasnvx.cozychristmas.client.sleigh;
 
-import net.minecraft.client.model.EntityModel;
+import dev.eliasnvx.cozychristmas.config.CozyConfig;
+import dev.eliasnvx.cozychristmas.sleigh.SantasSleigh;
+import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.Mth;
 
 /**
  * Santa's sleigh: a red body with gold trim on gold runners curling up at the front, a green seat at the back, the
@@ -15,7 +18,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
  * between the reindeer. Forward is -z. Texture 256x128: one patch per material, shared by every box of it; the patches
  * are painted by {@code tools/gen_sleigh.py}.
  */
-public final class SleighModel extends EntityModel<SleighRenderState> {
+public final class SleighModel extends HierarchicalModel<SantasSleigh> {
 
     private static final int RED_U = 0;
     private static final int RED_V = 0;
@@ -32,11 +35,13 @@ public final class SleighModel extends EntityModel<SleighRenderState> {
     /** The sack's size empty-ish and full. */
     private static final float SACK_MIN = 0.45F;
 
+    private final ModelPart root;
     private final ModelPart sack;
     private final ModelPart shaft;
 
     public SleighModel(ModelPart root) {
-        super(root, RenderTypes::entityCutout);
+        super(RenderType::entityCutout);
+        this.root = root;
         sack = root.getChild("sack");
         shaft = root.getChild("shaft");
     }
@@ -77,13 +82,19 @@ public final class SleighModel extends EntityModel<SleighRenderState> {
     }
 
     @Override
-    public void setupAnim(SleighRenderState state) {
-        super.setupAnim(state);
-        sack.visible = state.load > 0.0F;
-        float size = SACK_MIN + (1.0F - SACK_MIN) * state.load;
+    public ModelPart root() {
+        return root;
+    }
+
+    @Override
+    public void setupAnim(SantasSleigh sleigh, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
+        // how full the sack is, 0 (no sack) to 1
+        float load = Mth.clamp(sleigh.load() / (float) CozyConfig.common().workshop().sleigh().capacity(), 0.0F, 1.0F);
+        sack.visible = load > 0.0F;
+        float size = SACK_MIN + (1.0F - SACK_MIN) * load;
         sack.xScale = size;
         sack.yScale = size;
         sack.zScale = size;
-        shaft.visible = state.harnessed;
+        shaft.visible = sleigh.isHarnessed();
     }
 }

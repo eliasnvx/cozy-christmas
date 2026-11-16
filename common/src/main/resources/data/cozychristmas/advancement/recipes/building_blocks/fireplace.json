@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:fireplace"
+        "recipe": "cozychristmas:fireplace"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

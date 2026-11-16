@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:hot_cocoa"
+        "recipe": "cozychristmas:hot_cocoa"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

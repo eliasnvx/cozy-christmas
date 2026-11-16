@@ -1,36 +1,36 @@
 package dev.eliasnvx.cozychristmas.client.cosmetic;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.player.PlayerModel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.util.ARGB;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.PlayerModelType;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/** Draws everything a player wears. Added to every player renderer on both loaders. */
-public final class CosmeticLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
+/**
+ * Draws everything a player wears. Added to every player renderer on both loaders. Like leather armor, the dyed base
+ * is drawn first and the overlay right after it on the same faces.
+ */
+public final class CosmeticLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
-    /** The base texture first, then the overlay on the same faces (like leather armor and its overlay). */
-    private static final int BASE_ORDER = 0;
-    private static final int OVERLAY_ORDER = 1;
     private static final int WHITE = 0xFFFFFFFF;
 
     /** Baked models by shape: [fit, over armor][wide, slim]. */
     private final Map<CosmeticShape, CosmeticModel[][]> models = new EnumMap<>(CosmeticShape.class);
+    /** Filled per draw; no render states in 1.21.1. */
+    private final PlayerPose state = new PlayerPose();
 
-    public CosmeticLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent, EntityModelSet modelSet) {
+    public CosmeticLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent, EntityModelSet modelSet) {
         super(parent);
         for (CosmeticShape shape : CosmeticShape.values()) {
             CosmeticModel[][] baked = new CosmeticModel[2][2];
@@ -38,7 +38,7 @@ public final class CosmeticLayer extends RenderLayer<AvatarRenderState, PlayerMo
                 for (int arms = 0; arms < 2; arms++) {
                     // the armor size has wide arms on every skin (see CosmeticShape#layer)
                     boolean slim = arms == 1 && size == 0;
-                    baked[size][arms] = new CosmeticModel(modelSet.bakeLayer(shape.layer(size == 1, slim)), slim);
+                    baked[size][arms] = new CosmeticModel(shape.bake(modelSet, size == 1, slim), slim);
                 }
             }
             models.put(shape, baked);
@@ -46,13 +46,20 @@ public final class CosmeticLayer extends RenderLayer<AvatarRenderState, PlayerMo
     }
 
     @Override
-    public void submit(PoseStack poseStack, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
-        CosmeticRenderData data = ((CosmeticRenderStateAccess) state).cozychristmas$getCosmetics();
-        if (data == null || state.isInvisible) {
+    public void render(PoseStack poseStack, MultiBufferSource buffers, int light, AbstractClientPlayer player, float limbSwing,
+                       float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
+        if (player.isInvisible()) {
             return;
         }
-        int overlay = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
-        int arms = state.skin.model() == PlayerModelType.SLIM ? 1 : 0;
+        state.capture(player, limbSwing, limbSwingAmount, ageInTicks);
+        CosmeticRenderData data = CosmeticRenderData.capture(player, state);
+        if (data == null) {
+            return;
+        }
+        state.cosmetics = data;
+        int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0F);
+        int arms = state.slim ? 1 : 0;
+        PlayerModel<AbstractClientPlayer> parent = getParentModel();
         List<CosmeticRenderData.Worn> worn = data.worn();
         for (int i = 0; i < worn.size(); i++) {
             CosmeticRenderData.Worn item = worn.get(i);
@@ -60,27 +67,20 @@ public final class CosmeticLayer extends RenderLayer<AvatarRenderState, PlayerMo
             if (look == null) {
                 continue;
             }
-            int size = armorShows(state, item.slot().armor()) ? 1 : 0;
+            int size = armorShows(player, item.slot().armor()) ? 1 : 0;
             CosmeticModel model = models.get(look.shape())[size][arms];
-            collector.order(BASE_ORDER).submitModel(model, state, poseStack, look.base(), light, overlay,
-                    ARGB.opaque(look.baseColor(item.dye())), null, state.outlineColor);
+            model.poseLike(parent);
+            model.setupAnim(state);
+            model.renderToBuffer(poseStack, buffers.getBuffer(look.base()), light, overlay,
+                    FastColor.ARGB32.opaque(look.baseColor(item.dye())));
             if (look.overlay() != null) {
-                collector.order(OVERLAY_ORDER).submitModel(model, state, poseStack, look.overlay(), light, overlay,
-                        WHITE, null, state.outlineColor);
+                model.renderToBuffer(poseStack, buffers.getBuffer(look.overlay()), light, overlay, WHITE);
             }
         }
     }
 
     /** Whether vanilla draws an armor model in this slot (the same check as its armor layer). */
-    private static boolean armorShows(AvatarRenderState state, EquipmentSlot slot) {
-        ItemStack stack = switch (slot) {
-            case HEAD -> state.headEquipment;
-            case CHEST -> state.chestEquipment;
-            case LEGS -> state.legsEquipment;
-            case FEET -> state.feetEquipment;
-            default -> ItemStack.EMPTY;
-        };
-        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
-        return equippable != null && equippable.slot() == slot && equippable.assetId().isPresent();
+    private static boolean armorShows(Player player, EquipmentSlot slot) {
+        return player.getItemBySlot(slot).getItem() instanceof ArmorItem armor && armor.getEquipmentSlot() == slot;
     }
 }

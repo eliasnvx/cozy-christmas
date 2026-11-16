@@ -1,6 +1,8 @@
 package dev.eliasnvx.cozychristmas.cosmetic;
 
 import dev.architectury.networking.NetworkManager;
+import dev.architectury.platform.Platform;
+import dev.architectury.utils.Env;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.platform.PlatformHelper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -33,8 +35,16 @@ public record CosmeticsSyncPayload(int entityId, CosmeticInventory cosmetics) im
         return new CosmeticsSyncPayload(player.getId(), CosmeticsManager.get(player));
     }
 
+    /**
+     * Architectury 13: the receiver is registered on the client; a dedicated server only registers the payload type.
+     * The handler uses common classes only, so referencing it on the server is safe.
+     */
     public static void register() {
-        NetworkManager.registerS2C(TYPE, STREAM_CODEC, CosmeticsSyncPayload::handle);
+        if (Platform.getEnvironment() == Env.CLIENT) {
+            NetworkManager.registerReceiver(NetworkManager.s2c(), TYPE, STREAM_CODEC, CosmeticsSyncPayload::handle);
+        } else {
+            NetworkManager.registerS2CPayloadType(TYPE, STREAM_CODEC);
+        }
     }
 
     /** Receiver (client side). Uses only common classes, so it is safe to register everywhere. */
@@ -62,8 +72,14 @@ public record CosmeticsSyncPayload(int entityId, CosmeticInventory cosmetics) im
     public static void sendToTrackingAndSelf(ServerPlayer player) {
         Packet<? super ClientGamePacketListener> packet = (Packet<? super ClientGamePacketListener>)
                 NetworkManager.toPacket(NetworkManager.s2c(), of(player), player.registryAccess());
-        ((ServerLevel) player.level()).getChunkSource()
-                .sendToTrackingPlayersFiltered(player, packet, CosmeticsSyncPayload::canReceive);
+        // 1.21.1 has no filtered tracking broadcast; players in view of the chunk are a superset of the trackers, and
+        // the receiver ignores entity ids it doesn't know
+        for (ServerPlayer watcher : ((ServerLevel) player.level()).getChunkSource().chunkMap
+                .getPlayers(player.chunkPosition(), false)) {
+            if (watcher != player && canReceive(watcher)) {
+                watcher.connection.send(packet);
+            }
+        }
         if (canReceive(player)) {
             player.connection.send(packet);
         }

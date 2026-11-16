@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:present_sweater"
+        "recipe": "cozychristmas:present_sweater"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

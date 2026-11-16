@@ -151,7 +151,7 @@ public final class KarmaManager {
 
     /** Game days from the overworld clock: sleeping skips the night but not the day count, so it can't wash karma. */
     private static long today(ServerPlayer player) {
-        return today(player.level());
+        return today(player.serverLevel());
     }
 
     private static int decayPerDay() {

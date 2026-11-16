@@ -55,7 +55,7 @@ public final class KarmaRules {
 
     /** The player to blame for hurting a protected mob, or null. A projectile's damage counts as its shooter's deed. */
     private static @Nullable ServerPlayer culprit(LivingEntity victim, DamageSource source) {
-        if (victim.level().isClientSide() || !victim.is(CozyTags.KARMA_PROTECTED)) {
+        if (victim.level().isClientSide() || !victim.getType().is(CozyTags.KARMA_PROTECTED)) {
             return null;
         }
         return source.getEntity() instanceof ServerPlayer player ? player : null;

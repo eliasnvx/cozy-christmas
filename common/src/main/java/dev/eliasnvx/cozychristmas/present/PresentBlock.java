@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.present;
 
+import com.mojang.serialization.MapCodec;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.workshop.WorkshopAlarm;
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -42,6 +44,8 @@ public class PresentBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = Shapes.or(Block.box(2.0, 0.0, 2.0, 14.0, 10.0, 14.0),
             Block.box(5.0, 10.0, 5.0, 11.0, 13.0, 11.0));
 
+    public static final MapCodec<PresentBlock> CODEC = simpleCodec(PresentBlock::new);
+
     public PresentBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(DESIGN, PresentDesign.RED).setValue(TICKING, false));
@@ -50,6 +54,17 @@ public class PresentBlock extends BaseEntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(DESIGN, TICKING);
+    }
+
+    @Override
+    protected MapCodec<? extends PresentBlock> codec() {
+        return CODEC;
+    }
+
+    /** {@link BaseEntityBlock} draws nothing by default; the block model is the present (the ticking one too). */
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Override
@@ -72,18 +87,18 @@ public class PresentBlock extends BaseEntityBlock {
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (player instanceof ServerPlayer thief && level.getBlockEntity(pos) instanceof PresentBlockEntity present
                 && present.isWorkshopStock()) {
-            WorkshopAlarm.theft(thief.level(), pos, thief);
+            WorkshopAlarm.theft(thief.serverLevel(), pos, thief);
         }
         return super.playerWillDestroy(level, pos, state, player);
     }
 
     /** Blowing up the warehouse is theft too, by whoever lit the TNT or fired the shot. */
     @Override
-    protected void onExplosionHit(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion,
+    protected void onExplosionHit(BlockState state, Level level, BlockPos pos, Explosion explosion,
                                   BiConsumer<ItemStack, BlockPos> drops) {
-        if (explosion.getIndirectSourceEntity() instanceof ServerPlayer thief
+        if (level instanceof ServerLevel server && explosion.getIndirectSourceEntity() instanceof ServerPlayer thief
                 && level.getBlockEntity(pos) instanceof PresentBlockEntity present && present.isWorkshopStock()) {
-            WorkshopAlarm.theft(level, pos, thief);
+            WorkshopAlarm.theft(server, pos, thief);
         }
         super.onExplosionHit(state, level, pos, explosion, drops);
     }
@@ -94,6 +109,6 @@ public class PresentBlock extends BaseEntityBlock {
         if (player instanceof ServerPlayer opener && level.getBlockEntity(pos) instanceof PresentBlockEntity present) {
             present.open(opener);
         }
-        return InteractionResult.SUCCESS;
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 }

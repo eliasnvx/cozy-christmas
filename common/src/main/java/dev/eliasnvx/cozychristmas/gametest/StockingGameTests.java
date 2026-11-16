@@ -199,7 +199,7 @@ public final class StockingGameTests {
         helper.setBlock(fireplace, CozyBlocks.FIREPLACE.get().defaultBlockState().setValue(FireplaceBlock.FACING, Direction.SOUTH));
         helper.setBlock(fireplace.above(), Blocks.BRICKS);
         helper.setBlock(stocking, CozyBlocks.STOCKING.get().defaultBlockState().setValue(StockingBlock.FACING, Direction.SOUTH));
-        StockingBlockEntity entity = helper.getBlockEntity(stocking, StockingBlockEntity.class);
+        StockingBlockEntity entity = helper.<StockingBlockEntity>getBlockEntity(stocking);
         entity.hang(owner, new ItemStack(CozyBlocks.STOCKING_ITEM.get()), StockingBlockEntity.morning(helper.getLevel()) - 1);
         return entity;
     }

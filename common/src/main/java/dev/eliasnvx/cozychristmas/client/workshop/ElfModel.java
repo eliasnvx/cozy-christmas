@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.client.workshop;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.eliasnvx.cozychristmas.workshop.Elf;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -15,7 +16,7 @@ import net.minecraft.world.entity.HumanoidArm;
  * texture 64x64 ({@code tools/gen_workshop_mobs.py} paints it on the same box layout). Humanoid so the vanilla
  * held-item layer shows the present it carries; carrying, both arms reach forward under it.
  */
-public final class ElfModel extends HumanoidModel<ElfRenderState> {
+public final class ElfModel extends HumanoidModel<Elf> {
 
     private static final int TEXTURE_WIDTH = 64;
     private static final int TEXTURE_HEIGHT = 64;
@@ -33,6 +34,9 @@ public final class ElfModel extends HumanoidModel<ElfRenderState> {
     private static final float CARRY_INWARD = 0.25F;
     private static final float HAT_BEND = -0.55F;
 
+    /** Set in {@link #setupAnim} for the held-item layer that runs right after it in the same frame. */
+    private boolean carrying;
+
     public ElfModel(ModelPart root) {
         super(root);
     }
@@ -40,7 +44,7 @@ public final class ElfModel extends HumanoidModel<ElfRenderState> {
     public static LayerDefinition createLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
-        PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create()
+        root.addOrReplaceChild("head", CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-3.0F, -6.0F, -3.0F, 6, 6, 6)
                         .texOffs(24, 0).addBox(-5.0F, -4.0F, -0.5F, 2, 3, 1)
                         .texOffs(24, 4).addBox(3.0F, -4.0F, -0.5F, 2, 3, 1)
@@ -48,10 +52,11 @@ public final class ElfModel extends HumanoidModel<ElfRenderState> {
                         .texOffs(30, 3).addBox(5.0F, -5.0F, -0.5F, 1, 2, 1)
                         .texOffs(34, 0).addBox(-0.5F, -3.0F, -4.0F, 1, 1, 1),
                 PartPose.offset(0.0F, NECK, 0.0F));
-        PartDefinition hat = head.addOrReplaceChild("hat", CubeListBuilder.create()
+        // 1.21.1 HumanoidModel takes the hat from the root (26.3: a head child) and copies the head's pose onto it
+        PartDefinition hat = root.addOrReplaceChild("hat", CubeListBuilder.create()
                         .texOffs(0, 12).addBox(-3.5F, -7.0F, -3.5F, 7, 2, 7)
                         .texOffs(0, 21).addBox(-2.5F, -9.0F, -2.5F, 5, 2, 5),
-                PartPose.ZERO);
+                PartPose.offset(0.0F, NECK, 0.0F));
         hat.addOrReplaceChild("hat_tip", CubeListBuilder.create()
                         .texOffs(20, 21).addBox(-1.5F, -3.0F, -1.5F, 3, 3, 3)
                         .texOffs(32, 21).addBox(-1.0F, -5.0F, -1.0F, 2, 2, 2),
@@ -74,9 +79,18 @@ public final class ElfModel extends HumanoidModel<ElfRenderState> {
     }
 
     @Override
-    public void setupAnim(ElfRenderState state) {
-        super.setupAnim(state);
-        if (state.carrying) {
+    public void setupAnim(Elf elf, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
+        super.setupAnim(elf, walkPos, walkSpeed, ageInTicks, headYaw, headPitch);
+        // 1.21.1 HumanoidModel moves the parts to a player's positions: back to ours
+        restorePosition(head);
+        restorePosition(body);
+        restorePosition(rightArm);
+        restorePosition(leftArm);
+        restorePosition(rightLeg);
+        restorePosition(leftLeg);
+        hat.copyFrom(head);
+        carrying = elf.isCarryingPresent();
+        if (carrying) {
             rightArm.xRot = CARRY_ARMS;
             leftArm.xRot = CARRY_ARMS;
             rightArm.yRot = -CARRY_INWARD;
@@ -84,10 +98,17 @@ public final class ElfModel extends HumanoidModel<ElfRenderState> {
         }
     }
 
+    private static void restorePosition(ModelPart part) {
+        PartPose pose = part.getInitialPose();
+        part.x = pose.x;
+        part.y = pose.y;
+        part.z = pose.z;
+    }
+
     @Override
-    public void translateToHand(ElfRenderState state, HumanoidArm arm, PoseStack pose) {
-        super.translateToHand(state, arm, pose);
-        pose.translate(state.carrying ? (arm == HumanoidArm.RIGHT ? CARRY_SHIFT : -CARRY_SHIFT) : 0.0F, HAND_SHIFT, 0.0F);
+    public void translateToHand(HumanoidArm arm, PoseStack pose) {
+        super.translateToHand(arm, pose);
+        pose.translate(carrying ? (arm == HumanoidArm.RIGHT ? CARRY_SHIFT : -CARRY_SHIFT) : 0.0F, HAND_SHIFT, 0.0F);
         pose.scale(HELD_SCALE, HELD_SCALE, HELD_SCALE);
     }
 }

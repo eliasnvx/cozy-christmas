@@ -7,9 +7,15 @@
     "# #"
   ],
   "key": {
-    "P": "minecraft:paper",
-    "S": "minecraft:string",
-    "#": "#minecraft:planks"
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "S": {
+      "item": "minecraft:string"
+    },
+    "#": {
+      "tag": "minecraft:planks"
+    }
   },
   "result": {
     "id": "cozychristmas:wrapping_table"

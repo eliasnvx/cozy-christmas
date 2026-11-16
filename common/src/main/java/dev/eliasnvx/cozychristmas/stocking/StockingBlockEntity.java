@@ -12,7 +12,8 @@ import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -24,8 +25,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -62,7 +61,7 @@ public class StockingBlockEntity extends BlockEntity {
 
     /** The morning of the day-night clock: the day number turns at sunrise. */
     public static long morning(Level level) {
-        return Math.floorDiv(level.getOverworldClockTime(), TICKS_PER_DAY);
+        return Math.floorDiv(level.getDayTime(), TICKS_PER_DAY);
     }
 
     /** Hung by {@code player}: theirs, filled from the next morning on. */
@@ -153,13 +152,16 @@ public class StockingBlockEntity extends BlockEntity {
         return level.getBlockState(wall.below()).is(CozyTags.FIREPLACES) || level.getBlockState(wall.below(2)).is(CozyTags.FIREPLACES);
     }
 
-    /** Taking the stocking down: what it holds and the stocking itself (unless a creative player took it down). */
-    @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        super.preRemoveSideEffects(pos, state);
+    /**
+     * Taking the stocking down: what it holds and the stocking itself (unless a creative player took it down).
+     * Called by {@link StockingBlock#onRemove} on the server, before the block entity goes.
+     */
+    void dropContents() {
         if (level != null) {
-            Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, contents);
-            Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, hung);
+            Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, contents);
+            Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, hung);
+            contents = ItemStack.EMPTY;
+            hung = ItemStack.EMPTY;
         }
     }
 
@@ -169,26 +171,28 @@ public class StockingBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        owner = input.read(OWNER, UUIDUtil.CODEC).orElse(null);
-        ownerName = input.getStringOr(OWNER_NAME, "");
-        contents = input.read(CONTENTS, ItemStack.CODEC).orElse(ItemStack.EMPTY);
-        hung = input.read(HUNG, ItemStack.CODEC).orElse(ItemStack.EMPTY);
-        lastMorning = input.getLongOr(LAST_MORNING, NEVER);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        owner = tag.hasUUID(OWNER) ? tag.getUUID(OWNER) : null;
+        ownerName = tag.getString(OWNER_NAME);
+        contents = ItemStack.parseOptional(registries, tag.getCompound(CONTENTS));
+        hung = ItemStack.parseOptional(registries, tag.getCompound(HUNG));
+        lastMorning = tag.contains(LAST_MORNING) ? tag.getLong(LAST_MORNING) : NEVER;
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.storeNullable(OWNER, UUIDUtil.CODEC, owner);
-        output.putString(OWNER_NAME, ownerName);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        if (owner != null) {
+            tag.putUUID(OWNER, owner);
+        }
+        tag.putString(OWNER_NAME, ownerName);
         if (!contents.isEmpty()) {
-            output.store(CONTENTS, ItemStack.CODEC, contents);
+            tag.put(CONTENTS, contents.save(registries));
         }
         if (!hung.isEmpty()) {
-            output.store(HUNG, ItemStack.CODEC, hung);
+            tag.put(HUNG, hung.save(registries));
         }
-        output.putLong(LAST_MORNING, lastMorning);
+        tag.putLong(LAST_MORNING, lastMorning);
     }
 }

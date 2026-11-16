@@ -1,7 +1,10 @@
 package dev.eliasnvx.cozychristmas.food;
 
 import dev.eliasnvx.cozychristmas.registry.CozyEffects;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -17,7 +20,7 @@ public class TangerineItem extends Item {
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
-        if (level instanceof ServerLevel && Tangerine.isMidnight(level.getOverworldClockTime())) {
+        if (level instanceof ServerLevel && Tangerine.isMidnight(level.getDayTime())) {
             ringIn(entity);
         }
         return super.finishUsingItem(stack, level, entity);
@@ -25,8 +28,10 @@ public class TangerineItem extends Item {
 
     /** The bell strikes twelve for {@code entity}, unless it is already striking. */
     public static void ringIn(LivingEntity entity) {
-        if (!entity.hasEffect(CozyEffects.CHIMES.asHolder())) {
-            entity.addEffect(new MobEffectInstance(CozyEffects.CHIMES.asHolder(), Tangerine.CHIMES_DURATION, 0,
+        // the registry's own holder: entities key their effects by holder identity
+        Holder<MobEffect> chimes = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(CozyEffects.CHIMES.get());
+        if (!entity.hasEffect(chimes)) {
+            entity.addEffect(new MobEffectInstance(chimes, Tangerine.CHIMES_DURATION, 0,
                     false, false, false));
         }
     }

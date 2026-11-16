@@ -12,9 +12,9 @@
           "type": "minecraft:item",
           "name": "minecraft:coal",
           "weight": 12,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 4,
@@ -27,9 +27,9 @@
           "type": "minecraft:item",
           "name": "minecraft:emerald",
           "weight": 8,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 2,
@@ -42,9 +42,9 @@
           "type": "minecraft:item",
           "name": "minecraft:gold_ingot",
           "weight": 8,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 2,
@@ -57,9 +57,9 @@
           "type": "minecraft:item",
           "name": "minecraft:iron_ingot",
           "weight": 8,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 3,
@@ -72,9 +72,9 @@
           "type": "minecraft:item",
           "name": "minecraft:diamond",
           "weight": 3,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 1,
@@ -85,11 +85,11 @@
         },
         {
           "type": "minecraft:item",
-          "name": "minecraft:iron_chain",
+          "name": "minecraft:chain",
           "weight": 6,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 1,
@@ -102,9 +102,9 @@
           "type": "minecraft:item",
           "name": "minecraft:book",
           "weight": 4,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:enchant_randomly"
+              "function": "minecraft:enchant_randomly"
             }
           ]
         },
@@ -112,9 +112,9 @@
           "type": "minecraft:item",
           "name": "cozychristmas:gingerbread_cookie",
           "weight": 5,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 2,
@@ -127,9 +127,9 @@
           "type": "minecraft:item",
           "name": "cozychristmas:ice_snowball",
           "weight": 4,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 2,
@@ -142,9 +142,9 @@
           "type": "minecraft:item",
           "name": "minecraft:stick",
           "weight": 5,
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:set_count",
+              "function": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 2,

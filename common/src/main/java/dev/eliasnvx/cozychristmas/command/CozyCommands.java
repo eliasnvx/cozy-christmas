@@ -31,7 +31,7 @@ public final class CozyCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context,
                                 Commands.CommandSelection selection) {
         dispatcher.register(Commands.literal(CozyChristmas.MOD_ID)
-                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("karma")
                         .then(Commands.literal("get")
                                 .then(Commands.argument("targets", EntityArgument.players())

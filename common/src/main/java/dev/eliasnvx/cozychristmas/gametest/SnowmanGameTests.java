@@ -13,12 +13,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biome;
@@ -75,7 +75,7 @@ public final class SnowmanGameTests {
         dropBall(helper, WARM_PIG, null);
         var settings = CozyConfig.common().evilSnowman().iceSnowball();
         helper.succeedWhen(() -> {
-            helper.assertTrue(cold.hasEffect(MobEffects.SLOWNESS) && warm.hasEffect(MobEffects.SLOWNESS), "both pigs are slowed");
+            helper.assertTrue(cold.hasEffect(MobEffects.MOVEMENT_SLOWDOWN) && warm.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "both pigs are slowed");
             helper.assertTrue(settings.damage() == 0.0 || cold.getHealth() < health, "the ice hurts");
             helper.assertTrue(settings.chillTicks() == 0 || cold.getTicksFrozen() > 0, "the bare pig is chilled");
             helper.assertValueEqual(warm.getTicksFrozen(), 0, "leather boots keep the cold out");
@@ -90,7 +90,7 @@ public final class SnowmanGameTests {
         helper.runAfterDelay(SETTLE_TICKS, () -> {
             helper.assertTrue(ball.isRemoved(), "the ball landed");
             helper.assertValueEqual(other.getHealth(), other.getMaxHealth(), "the other snowman is unhurt");
-            helper.assertFalse(other.hasEffect(MobEffects.SLOWNESS), "and not slowed");
+            helper.assertFalse(other.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "and not slowed");
             helper.succeed();
         });
     }
@@ -109,8 +109,8 @@ public final class SnowmanGameTests {
         EvilSnowman hit = snowman(helper, SNOWMAN);
         EvilSnowman burnt = snowman(helper, OTHER_SNOWMAN);
         ServerLevel level = helper.getLevel();
-        hit.hurtServer(level, level.damageSources().generic(), 1.0F);
-        burnt.hurtServer(level, level.damageSources().onFire(), 1.0F);
+        hit.hurt(level.damageSources().generic(), 1.0F);
+        burnt.hurt(level.damageSources().onFire(), 1.0F);
         helper.assertValueEqual(hit.getMaxHealth() - hit.getHealth(), 1.0F, "a plain hit");
         helper.assertValueEqual(burnt.getMaxHealth() - burnt.getHealth(), CozyConfig.common().evilSnowman().fireDamage(1.0F), "fire");
         helper.succeed();
@@ -133,25 +133,24 @@ public final class SnowmanGameTests {
 
     public static void dispensersThrow(GameTestHelper helper) {
         helper.setBlock(DISPENSER, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.UP));
-        DispenserBlockEntity dispenser = helper.getBlockEntity(DISPENSER, DispenserBlockEntity.class);
+        DispenserBlockEntity dispenser = helper.<DispenserBlockEntity>getBlockEntity(DISPENSER);
         dispenser.setItem(0, new ItemStack(CozyItems.ICE_SNOWBALL.get()));
         helper.setBlock(DISPENSER.east(), Blocks.REDSTONE_BLOCK);
         helper.succeedWhen(() -> helper.assertFalse(balls(helper).isEmpty(), "the dispenser threw an ice snowball"));
     }
 
-    /** Natural spawns sit in the biome's environment attribute on 26.3 (see GoblinGameTests#spawnInSnowyBiomes). */
+    /** The loader's biome modification lands in the biome's spawn settings (see GoblinGameTests#spawnInSnowyBiomes). */
     public static void spawnInSnowyBiomes(GameTestHelper helper) {
         Biome biome = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.SNOWY_PLAINS).value();
-        MobSpawnSettings spawns = biome.getAttributes().applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS,
-                EnvironmentAttributes.NATURAL_MOB_SPAWNS.defaultValue());
-        boolean snowmen = CozyConfig.common().evilSnowman().spawnWeight() == 0 || spawns.getMobsInCategory(MobCategory.MONSTER)
-                .unwrap().stream().anyMatch(weighted -> weighted.value().type() == CozyEntities.EVIL_SNOWMAN.get());
+        MobSpawnSettings spawns = biome.getMobSettings();
+        boolean snowmen = CozyConfig.common().evilSnowman().spawnWeight() == 0 || spawns.getMobs(MobCategory.MONSTER)
+                .unwrap().stream().anyMatch(spawner -> spawner.type == CozyEntities.EVIL_SNOWMAN.get());
         helper.assertTrue(snowmen, "evil snowmen in the snowy plains' monster spawns");
         helper.succeed();
     }
 
     private static Pig pig(GameTestHelper helper, Vec3 at) {
-        Pig pig = helper.spawn(EntityTypes.PIG, at);
+        Pig pig = helper.spawn(EntityType.PIG, at);
         pig.setNoAi(true);
         return pig;
     }
@@ -167,8 +166,8 @@ public final class SnowmanGameTests {
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), String.format(
                 Locale.ROOT, "fillbiome %d %d %d %d %d %d minecraft:snowy_plains", Math.min(from.getX(), to.getX()), from.getY(),
                 Math.min(from.getZ(), to.getZ()), Math.max(from.getX(), to.getX()), to.getY(), Math.max(from.getZ(), to.getZ())));
-        helper.assertFalse(helper.getLevel().environmentAttributes().getValue(EnvironmentAttributes.SNOW_GOLEM_MELTS,
-                helper.absoluteVec(SNOWMAN)), "the snowy plains don't melt snowmen");
+        helper.assertFalse(helper.getLevel().getBiome(BlockPos.containing(helper.absoluteVec(SNOWMAN))).is(BiomeTags.SNOW_GOLEM_MELTS),
+                "the snowy plains don't melt snowmen");
     }
 
     private static EvilSnowman snowman(GameTestHelper helper, Vec3 at) {

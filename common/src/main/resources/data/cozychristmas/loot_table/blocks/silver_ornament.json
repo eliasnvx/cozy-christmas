@@ -10,9 +10,11 @@
           "name": "cozychristmas:silver_ornament"
         }
       ],
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      }
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
     }
   ],
   "random_sequence": "cozychristmas:blocks/silver_ornament"

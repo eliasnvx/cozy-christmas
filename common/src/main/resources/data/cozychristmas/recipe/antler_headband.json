@@ -6,8 +6,12 @@
     "RRR"
   ],
   "key": {
-    "B": "minecraft:bone",
-    "R": "minecraft:red_wool"
+    "B": {
+      "item": "minecraft:bone"
+    },
+    "R": {
+      "item": "minecraft:red_wool"
+    }
   },
   "result": {
     "id": "cozychristmas:antler_headband"

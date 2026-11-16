@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:mittens"
+        "recipe": "cozychristmas:mittens"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

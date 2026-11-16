@@ -3,21 +3,21 @@ package dev.eliasnvx.cozychristmas.client.present;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.util.ARGB;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 
 /**
  * A flake of paper confetti: thrown out fast, slowed hard by the air, then it tumbles and sways down. The sprites are
  * white shapes tinted with a festive color each, so one texture set gives every color.
  */
-public class ConfettiParticle extends SingleQuadParticle {
+public class ConfettiParticle extends TextureSheetParticle {
 
     private static final int[] COLORS = {0xE8323C, 0xF2C230, 0x2FA84F, 0x2F7DE1, 0xF27AB8, 0xFFFFFF, 0x9B59D9};
+    private static final float CHANNEL = 255.0F;
     private static final float GRAVITY = 0.25F;
     private static final float AIR_DRAG = 0.88F;
     private static final int MIN_LIFETIME = 60;
@@ -31,19 +31,20 @@ public class ConfettiParticle extends SingleQuadParticle {
     private final float spin;
     private final float swayPhase;
 
-    ConfettiParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd,
-                     TextureAtlasSprite sprite, RandomSource random) {
-        super(level, x, y, z, sprite);
+    ConfettiParticle(ClientLevel level, double x, double y, double z, double xd, double yd, double zd, SpriteSet sprites) {
+        super(level, x, y, z);
         // the velocity constructor would randomize and renormalize the burst; take it as sent
         this.xd = xd;
         this.yd = yd;
         this.zd = zd;
+        pickSprite(sprites);
         this.gravity = GRAVITY;
         this.friction = AIR_DRAG;
         this.lifetime = MIN_LIFETIME + random.nextInt(EXTRA_LIFETIME);
         this.quadSize = MIN_SIZE + random.nextFloat() * EXTRA_SIZE;
         int color = COLORS[random.nextInt(COLORS.length)];
-        setColor(ARGB.redFloat(color), ARGB.greenFloat(color), ARGB.blueFloat(color));
+        setColor(FastColor.ARGB32.red(color) / CHANNEL, FastColor.ARGB32.green(color) / CHANNEL,
+                FastColor.ARGB32.blue(color) / CHANNEL);
         this.roll = random.nextFloat() * Mth.TWO_PI;
         this.oRoll = roll;
         this.spin = (random.nextFloat() * 2.0F - 1.0F) * MAX_SPIN;
@@ -67,15 +68,15 @@ public class ConfettiParticle extends SingleQuadParticle {
     }
 
     @Override
-    protected Layer getLayer() {
-        return Layer.TRANSLUCENT;
+    public ParticleRenderType getRenderType() {
+        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
 
     public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType> {
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
-                                       double xd, double yd, double zd, RandomSource random) {
-            return new ConfettiParticle(level, x, y, z, xd, yd, zd, sprites.get(random), random);
+                                       double xd, double yd, double zd) {
+            return new ConfettiParticle(level, x, y, z, xd, yd, zd, sprites);
         }
     }
 }

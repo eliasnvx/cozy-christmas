@@ -17,12 +17,11 @@ import dev.eliasnvx.cozychristmas.workshop.Santa;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
@@ -77,7 +76,7 @@ public final class WorkshopGameTests {
         Elf elf = helper.spawn(CozyEntities.ELF.get(), HELPER);
         ServerPlayer player = TestPlayers.survival(helper, PLAYER);
         try {
-            elf.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1.0F);
+            elf.hurt(helper.getLevel().damageSources().playerAttack(player), 1.0F);
             helper.assertTrue(santa.isAngryAt(player), "Santa goes after whoever hurt an elf");
             helper.assertTrue(elf.isFleeingFrom(player), "the elf runs from them");
             helper.assertValueEqual(KarmaManager.get(player), CozyConfig.common().karma().hurtProtected(),
@@ -190,7 +189,7 @@ public final class WorkshopGameTests {
         reindeer.setTamed(true);
         reindeer.refreshFlight(true);
         helper.assertFalse(reindeer.canFly(), "no flying without a saddle");
-        reindeer.setItemSlot(EquipmentSlot.SADDLE, new ItemStack(Items.SADDLE));
+        reindeer.equipSaddle(new ItemStack(Items.SADDLE), null);
         helper.assertValueEqual(reindeer.canFly(), CozyConfig.common().reindeer().flight().allows(true), "flight in season");
         reindeer.refreshFlight(false);
         helper.assertValueEqual(reindeer.canFly(), CozyConfig.common().reindeer().flight().allows(false),
@@ -202,7 +201,7 @@ public final class WorkshopGameTests {
     public static void flyingReindeerIsAFlyingVehicle(GameTestHelper helper) {
         Reindeer reindeer = helper.spawn(CozyEntities.REINDEER.get(), HELPER);
         reindeer.setTamed(true);
-        reindeer.setItemSlot(EquipmentSlot.SADDLE, new ItemStack(Items.SADDLE));
+        reindeer.equipSaddle(new ItemStack(Items.SADDLE), null);
         reindeer.refreshFlight(true);
         helper.assertValueEqual(reindeer.isFlyingVehicle(), reindeer.canFly(), "a reindeer that may fly is a flying vehicle");
         reindeer.refreshFlight(false);
@@ -230,10 +229,10 @@ public final class WorkshopGameTests {
         ServerPlayer player = TestPlayers.survival(helper, PLAYER);
         BlockPos at = BlockPos.containing(PLAYER).east();
         helper.setBlock(at, CozyBlocks.PRESENT.get());
-        PresentBlockEntity present = helper.getBlockEntity(at, PresentBlockEntity.class);
+        PresentBlockEntity present = helper.<PresentBlockEntity>getBlockEntity(at);
         present.setWorkshopStock(true);
         KarmaManager.set(player, 60);
-        helper.runAfterDelay(12, () -> { // past a check (every 10 ticks), within Fabric's 20
+        helper.runAfterDelay(12, () -> { // past a check (every 10 ticks)
             try {
                 helper.assertValueEqual(present.contents(), PresentContents.SURPRISE, "still undecided with a player beside it");
                 helper.succeed();
@@ -249,7 +248,7 @@ public final class WorkshopGameTests {
         try {
             BlockPos at = BlockPos.containing(PLAYER).east(3);
             helper.setBlock(at, CozyBlocks.PRESENT.get());
-            helper.getBlockEntity(at, PresentBlockEntity.class).setWorkshopStock(true);
+            helper.<PresentBlockEntity>getBlockEntity(at).setWorkshopStock(true);
             int karma = KarmaManager.get(player);
             Vec3 blast = Vec3.atCenterOf(helper.absolutePos(at));
             PrimedTnt tnt = new PrimedTnt(helper.getLevel(), blast.x, blast.y, blast.z, player);
@@ -271,13 +270,13 @@ public final class WorkshopGameTests {
         helper.assertTrue(registries.lookupOrThrow(Registries.STRUCTURE_SET)
                 .get(ResourceKey.create(Registries.STRUCTURE_SET, CozyChristmas.id("santas_workshop"))).isPresent(), "structure set");
         for (String piece : List.of("plaza", "hall", "house", "warehouse", "stable")) {
-            Identifier id = CozyChristmas.id("workshop/" + piece);
+            ResourceLocation id = CozyChristmas.id("workshop/" + piece);
             helper.assertTrue(registries.lookupOrThrow(Registries.TEMPLATE_POOL)
                     .get(ResourceKey.create(Registries.TEMPLATE_POOL, id)).isPresent(), "template pool " + id);
-            Optional<StructureTemplate> template = helper.getLevel().getServer().getStructureTemplateManager().get(id);
+            Optional<StructureTemplate> template = helper.getLevel().getServer().getStructureManager().get(id);
             helper.assertTrue(template.isPresent() && template.get().getSize().getX() > 0, "template " + id);
         }
-        StructureTemplate hall = helper.getLevel().getServer().getStructureTemplateManager()
+        StructureTemplate hall = helper.getLevel().getServer().getStructureManager()
                 .getOrCreate(CozyChristmas.id("workshop/hall"));
         helper.assertValueEqual(hall.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), Blocks.CRAFTING_TABLE).size(), 4,
                 "workbenches in the hall");
@@ -286,14 +285,14 @@ public final class WorkshopGameTests {
 
     private static PresentBlockEntity presentAt(GameTestHelper helper, BlockPos pos, boolean stock) {
         helper.setBlock(pos, CozyBlocks.PRESENT.get());
-        PresentBlockEntity present = helper.getBlockEntity(pos, PresentBlockEntity.class);
+        PresentBlockEntity present = helper.<PresentBlockEntity>getBlockEntity(pos);
         present.setContents(new PresentContents.Surprise(PresentOutcome.COAL)); // no boom near the test player
         present.setWorkshopStock(stock);
         return present;
     }
 
     private static ItemStack findPresent(ServerPlayer player) {
-        for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
+        for (ItemStack stack : player.getInventory().items) {
             if (stack.is(CozyBlocks.PRESENT_ITEM.get())) {
                 return stack;
             }

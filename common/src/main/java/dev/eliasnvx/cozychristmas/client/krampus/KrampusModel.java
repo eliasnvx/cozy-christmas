@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.client.krampus;
 
+import dev.eliasnvx.cozychristmas.krampus.Krampus;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -16,7 +17,7 @@ import net.minecraft.util.Mth;
  * (the arm swings over and the chain stretches toward the target), both hands grab forward for the sack, both arms go
  * up for the roar that calls goblins. Texture 128x64, boxes in {@code tools/gen_krampus.py}.
  */
-public final class KrampusModel extends HumanoidModel<KrampusRenderState> {
+public final class KrampusModel extends HumanoidModel<Krampus> {
 
     private static final int TEXTURE_WIDTH = 128;
     private static final int TEXTURE_HEIGHT = 64;
@@ -38,6 +39,10 @@ public final class KrampusModel extends HumanoidModel<KrampusRenderState> {
     private final ModelPart tongue;
     private final ModelPart tail;
     private final ModelPart chain;
+    /** Each 1 as the move starts, down to 0 as it ends; taken with the frame's partial tick in {@link #prepareMobModel}. */
+    private float lashProgress;
+    private float sackProgress;
+    private float roarProgress;
 
     public KrampusModel(ModelPart root) {
         super(root);
@@ -54,7 +59,8 @@ public final class KrampusModel extends HumanoidModel<KrampusRenderState> {
                         .texOffs(32, 0).addBox(-2.0F, -4.0F, -7.0F, 4, 3, 3)      // muzzle
                         .texOffs(46, 0).addBox(-1.0F, -1.0F, -6.0F, 2, 4, 1),     // goatee
                 PartPose.ZERO);
-        head.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+        // 1.21.1 HumanoidModel takes the (empty) hat from the root and copies the head's pose onto it
+        root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
         head.addOrReplaceChild("tongue", CubeListBuilder.create().texOffs(52, 0).addBox(-1.0F, 0.0F, -0.5F, 2, 7, 1),
                 PartPose.offsetAndRotation(0.0F, -1.5F, -6.5F, 0.15F, 0.0F, 0.0F));
         for (int side = -1; side <= 1; side += 2) {
@@ -117,29 +123,39 @@ public final class KrampusModel extends HumanoidModel<KrampusRenderState> {
     }
 
     @Override
-    public void setupAnim(KrampusRenderState state) {
-        super.setupAnim(state);
+    public void prepareMobModel(Krampus krampus, float walkPos, float walkSpeed, float partialTick) {
+        super.prepareMobModel(krampus, walkPos, walkSpeed, partialTick);
+        lashProgress = krampus.lashProgress(partialTick);
+        sackProgress = krampus.sackProgress(partialTick);
+        roarProgress = krampus.roarProgress(partialTick);
+    }
+
+    /** His rest pose matches a player's, so the positions 1.21.1 {@link HumanoidModel} sets are already his. */
+    @Override
+    public void setupAnim(Krampus krampus, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
+        super.setupAnim(krampus, walkPos, walkSpeed, ageInTicks, headYaw, headPitch);
         rightLeg.xRot += THIGH;
         leftLeg.xRot += THIGH;
-        tongue.zRot = Mth.sin(state.ageInTicks * 0.1F) * TONGUE_SWAY;
-        tail.zRot = Mth.sin(state.ageInTicks * 0.07F + 1.0F) * TAIL_SWAY;
-        if (state.roarProgress > 0.0F) {
-            float raise = Mth.sin((1.0F - state.roarProgress) * Mth.PI);
+        tongue.zRot = Mth.sin(ageInTicks * 0.1F) * TONGUE_SWAY;
+        tail.zRot = Mth.sin(ageInTicks * 0.07F + 1.0F) * TAIL_SWAY;
+        chain.yScale = 1.0F; // 1.21.1 never resets a part's scale on its own
+        if (roarProgress > 0.0F) {
+            float raise = Mth.sin((1.0F - roarProgress) * Mth.PI);
             rightArm.xRot = -2.7F * raise;
             leftArm.xRot = -2.7F * raise;
             rightArm.zRot = 0.4F * raise;
             leftArm.zRot = -0.4F * raise;
             head.xRot = -0.6F * raise;
         }
-        if (state.sackProgress > 0.0F) {
-            float grab = Mth.sin((1.0F - state.sackProgress) * Mth.PI);
+        if (sackProgress > 0.0F) {
+            float grab = Mth.sin((1.0F - sackProgress) * Mth.PI);
             rightArm.xRot = -1.5F * grab;
             leftArm.xRot = -1.5F * grab;
             rightArm.yRot = 0.3F * grab;
             leftArm.yRot = -0.3F * grab;
         }
-        if (state.lashProgress > 0.0F) {
-            float t = 1.0F - state.lashProgress;
+        if (lashProgress > 0.0F) {
+            float t = 1.0F - lashProgress;
             // up overhead, a whip forward, and the chain stretches out toward the target as the arm comes down
             if (t < LASH_WIND_UP) {
                 leftArm.xRot = Mth.lerp(t / LASH_WIND_UP, leftArm.xRot, LASH_OVERHEAD);
@@ -151,5 +167,6 @@ public final class KrampusModel extends HumanoidModel<KrampusRenderState> {
             float reach = t < LASH_WIND_UP ? 0.0F : (t - LASH_WIND_UP) / (1.0F - LASH_WIND_UP);
             chain.yScale = 1.0F + CHAIN_STRETCH * Mth.sin(reach * Mth.PI);
         }
+        hat.copyFrom(head);
     }
 }

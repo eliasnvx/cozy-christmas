@@ -10,11 +10,10 @@ import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.random.WeightedList;
-import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -26,7 +25,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -75,7 +74,7 @@ public final class GoblinGameTests {
             player.getInventory().setItem(SWORD_SLOT, new ItemStack(Items.IRON_SWORD));
             player.getInventory().setItem(STICK_SLOT, new ItemStack(Items.STICK, STICKS));
             float health = player.getHealth();
-            helper.assertTrue(goblin.doHurtTarget(helper.getLevel(), player), "the snatch counts as a hit");
+            helper.assertTrue(goblin.doHurtTarget(player), "the snatch counts as a hit");
             helper.assertValueEqual(player.getHealth(), health, "a snatch doesn't hurt");
             ItemStack loot = goblin.getMainHandItem();
             boolean tookSword = loot.is(Items.IRON_SWORD) && player.getInventory().getItem(SWORD_SLOT).isEmpty();
@@ -112,7 +111,7 @@ public final class GoblinGameTests {
             player.getInventory().setItem(0, new ItemStack(Items.DIAMOND, 5));
             helper.assertTrue(goblin.steal(player), "the goblin steals the diamonds");
             int karma = KarmaManager.get(player);
-            goblin.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1000.0F);
+            goblin.hurt(helper.getLevel().damageSources().playerAttack(player), 1000.0F);
             helper.assertTrue(goblin.isDeadOrDying(), "the goblin dies");
             AABB around = goblin.getBoundingBox().inflate(3.0);
             List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, around);
@@ -149,16 +148,16 @@ public final class GoblinGameTests {
     public static void lootComesBackWhateverTheRules(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survival(helper, PLAYER);
         var rules = helper.getLevel().getGameRules();
-        boolean mobDrops = rules.get(GameRules.MOB_DROPS);
+        boolean mobDrops = rules.getBoolean(GameRules.RULE_DOMOBLOOT);
         try {
-            rules.set(GameRules.MOB_DROPS, false, helper.getLevel().getServer());
+            rules.getRule(GameRules.RULE_DOMOBLOOT).set(false, helper.getLevel().getServer());
             PresentGoblin first = helper.spawn(CozyEntities.PRESENT_GOBLIN.get(), GOBLIN);
             player.getInventory().setItem(0, new ItemStack(Items.DIAMOND, 5));
             helper.assertTrue(first.steal(player), "the goblin steals the diamonds");
-            first.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1000.0F);
+            first.hurt(helper.getLevel().damageSources().playerAttack(player), 1000.0F);
             helper.assertTrue(dropped(helper, first, stack -> stack.is(Items.DIAMOND) && stack.getCount() == 5),
                     "the diamonds come back with mob loot off");
-            rules.set(GameRules.MOB_DROPS, true, helper.getLevel().getServer());
+            rules.getRule(GameRules.RULE_DOMOBLOOT).set(true, helper.getLevel().getServer());
 
             PresentGoblin second = helper.spawn(CozyEntities.PRESENT_GOBLIN.get(), GOBLIN.add(0.0, 0.0, 3.0));
             ItemStack sword = new ItemStack(Items.IRON_SWORD);
@@ -166,25 +165,31 @@ public final class GoblinGameTests {
                     .getOrThrow(Enchantments.VANISHING_CURSE), 1);
             player.getInventory().setItem(0, sword);
             helper.assertTrue(second.steal(player), "the goblin steals the cursed sword");
-            second.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1000.0F);
+            second.hurt(helper.getLevel().damageSources().playerAttack(player), 1000.0F);
             helper.assertTrue(dropped(helper, second, stack -> stack.is(Items.IRON_SWORD)), "the cursed sword comes back");
             helper.succeed();
         } finally {
-            rules.set(GameRules.MOB_DROPS, mobDrops, helper.getLevel().getServer());
+            rules.getRule(GameRules.RULE_DOMOBLOOT).set(mobDrops, helper.getLevel().getServer());
             TestPlayers.remove(helper, player);
         }
     }
 
-    /** Feeding goblins junk and killing them mustn't mint karma and presents: the reward is once a game day. */
+    /**
+     * Feeding goblins junk and killing them mustn't mint karma and presents: the reward is once a game day. Mob loot is
+     * off: a goblin's own loot table drops a present one kill in ten, which would look like a second reward.
+     */
     public static void returningLootRewardsOnceADay(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+        var rules = helper.getLevel().getGameRules();
+        boolean mobDrops = rules.getBoolean(GameRules.RULE_DOMOBLOOT);
+        rules.getRule(GameRules.RULE_DOMOBLOOT).set(false, helper.getLevel().getServer());
         try {
             int karma = KarmaManager.get(player);
             for (int round = 0; round < 2; round++) {
                 PresentGoblin goblin = helper.spawn(CozyEntities.PRESENT_GOBLIN.get(), GOBLIN.add(0.0, 0.0, round * 3.0));
                 player.getInventory().setItem(0, new ItemStack(Items.COBBLESTONE, 64));
                 helper.assertTrue(goblin.steal(player), "the goblin steals the cobblestone");
-                goblin.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1000.0F);
+                goblin.hurt(helper.getLevel().damageSources().playerAttack(player), 1000.0F);
                 helper.assertTrue(dropped(helper, goblin, stack -> stack.is(Items.COBBLESTONE)), "the cobblestone comes back");
                 helper.assertValueEqual(dropped(helper, goblin, stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())), round == 0,
                         "a present only the first time today, round " + round);
@@ -193,6 +198,7 @@ public final class GoblinGameTests {
                     "karma for returned loot once a day");
             helper.succeed();
         } finally {
+            rules.getRule(GameRules.RULE_DOMOBLOOT).set(mobDrops, helper.getLevel().getServer());
             TestPlayers.remove(helper, player);
         }
     }
@@ -218,8 +224,8 @@ public final class GoblinGameTests {
     /** Structure, set, pool and template are there; the camp has its fire, presents and chest; it spawns both mobs. */
     public static void goblinCampDataLoads(GameTestHelper helper) {
         var registries = helper.getLevel().registryAccess();
-        Identifier id = CozyChristmas.id("goblin_camp");
-        Structure camp = registries.lookupOrThrow(Registries.STRUCTURE).getValueOrThrow(ResourceKey.create(Registries.STRUCTURE, id));
+        ResourceLocation id = CozyChristmas.id("goblin_camp");
+        Structure camp = registries.lookupOrThrow(Registries.STRUCTURE).getOrThrow(ResourceKey.create(Registries.STRUCTURE, id)).value();
         helper.assertTrue(registries.lookupOrThrow(Registries.STRUCTURE_SET)
                 .get(ResourceKey.create(Registries.STRUCTURE_SET, id)).isPresent(), "structure set");
         helper.assertTrue(registries.lookupOrThrow(Registries.TEMPLATE_POOL)
@@ -227,7 +233,7 @@ public final class GoblinGameTests {
         StructureSpawnOverride monsters = camp.spawnOverrides().get(MobCategory.MONSTER);
         helper.assertTrue(monsters != null && spawns(monsters, CozyEntities.PRESENT_GOBLIN.get())
                 && spawns(monsters, CozyEntities.GINGERBREAD_MAN.get()), "the camp spawns goblins and gingerbread men");
-        StructureTemplate template = helper.getLevel().getServer().getStructureTemplateManager()
+        StructureTemplate template = helper.getLevel().getServer().getStructureManager()
                 .getOrCreate(CozyChristmas.id("goblin_camp/camp"));
         StructurePlaceSettings settings = new StructurePlaceSettings();
         helper.assertValueEqual(template.filterBlocks(BlockPos.ZERO, settings, Blocks.CAMPFIRE).size(), 1, "the camp fire");
@@ -238,30 +244,28 @@ public final class GoblinGameTests {
     }
 
     /**
-     * 26.3 keeps natural spawns in the biome's environment attribute {@code gameplay/natural_mob_spawns}, no longer in
-     * the biome itself; this checks that the loader's biome modification still lands there (goblins at night,
-     * reindeer herds, both in the snowy taiga by default).
+     * The loader's biome modification lands in the biome's spawn settings (goblins at night, reindeer herds, both in the
+     * snowy taiga by default).
      */
     public static void spawnInSnowyBiomes(GameTestHelper helper) {
         Biome biome = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.SNOWY_TAIGA).value();
-        MobSpawnSettings spawns = biome.getAttributes().applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS,
-                EnvironmentAttributes.NATURAL_MOB_SPAWNS.defaultValue());
+        MobSpawnSettings spawns = biome.getMobSettings();
         boolean goblins = CozyConfig.common().goblins().presentGoblin().spawnWeight() == 0
-                || spawns(spawns.getMobsInCategory(MobCategory.MONSTER), CozyEntities.PRESENT_GOBLIN.get());
+                || spawns(spawns.getMobs(MobCategory.MONSTER), CozyEntities.PRESENT_GOBLIN.get());
         boolean reindeer = CozyConfig.common().reindeer().spawnWeight() == 0
-                || spawns(spawns.getMobsInCategory(MobCategory.CREATURE), CozyEntities.REINDEER.get());
+                || spawns(spawns.getMobs(MobCategory.CREATURE), CozyEntities.REINDEER.get());
         helper.assertTrue(goblins && reindeer, "goblins " + goblins + ", reindeer " + reindeer + "; monsters "
-                + names(spawns.getMobsInCategory(MobCategory.MONSTER)) + ", creatures "
-                + names(spawns.getMobsInCategory(MobCategory.CREATURE)));
+                + names(spawns.getMobs(MobCategory.MONSTER)) + ", creatures "
+                + names(spawns.getMobs(MobCategory.CREATURE)));
         helper.succeed();
     }
 
-    private static String names(WeightedList<MobSpawnSettings.SpawnerData> spawns) {
-        return spawns.unwrap().stream().map(weighted -> EntityType.getKey(weighted.value().type()).toString()).toList().toString();
+    private static String names(WeightedRandomList<MobSpawnSettings.SpawnerData> spawns) {
+        return spawns.unwrap().stream().map(spawner -> EntityType.getKey(spawner.type).toString()).toList().toString();
     }
 
-    private static boolean spawns(WeightedList<MobSpawnSettings.SpawnerData> spawns, EntityType<?> type) {
-        return spawns.unwrap().stream().anyMatch(weighted -> weighted.value().type() == type);
+    private static boolean spawns(WeightedRandomList<MobSpawnSettings.SpawnerData> spawns, EntityType<?> type) {
+        return spawns.unwrap().stream().anyMatch(spawner -> spawner.type == type);
     }
 
     private static boolean spawns(StructureSpawnOverride override, EntityType<?> type) {

@@ -30,7 +30,7 @@ public final class WorkshopAlarm {
             return;
         }
         KarmaManager.add(thief, CozyConfig.common().karma().stealPresent());
-        thief.sendOverlayMessage(Component.translatable("message.cozychristmas.workshop.theft"));
+        thief.displayClientMessage(Component.translatable("message.cozychristmas.workshop.theft"), true);
         raise(level, Vec3.atCenterOf(pos), thief);
     }
 

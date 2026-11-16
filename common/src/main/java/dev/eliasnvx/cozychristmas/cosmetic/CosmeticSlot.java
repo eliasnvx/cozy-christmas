@@ -6,7 +6,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EquipmentSlot;
 
@@ -31,14 +31,14 @@ public enum CosmeticSlot implements StringRepresentable {
             ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
 
     private final String name = name().toLowerCase(Locale.ROOT);
-    private final Identifier id = CozyChristmas.id(name);
+    private final ResourceLocation id = CozyChristmas.id(name);
     private final EquipmentSlot armor;
 
     CosmeticSlot(EquipmentSlot armor) {
         this.armor = armor;
     }
 
-    public Identifier id() {
+    public ResourceLocation id() {
         return id;
     }
 

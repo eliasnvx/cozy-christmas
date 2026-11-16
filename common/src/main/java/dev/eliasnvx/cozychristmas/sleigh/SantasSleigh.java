@@ -11,6 +11,9 @@ import dev.eliasnvx.cozychristmas.stocking.StockingBlockEntity;
 import dev.eliasnvx.cozychristmas.workshop.Santa;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -27,8 +30,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -110,7 +111,7 @@ public class SantasSleigh extends Entity {
 
     /** Between dusk and the last of the night by the day-night clock: Santa flies then. */
     public static boolean isNight(Level level) {
-        long time = Math.floorMod(level.getOverworldClockTime(), TICKS_PER_DAY);
+        long time = Math.floorMod(level.getDayTime(), TICKS_PER_DAY);
         return time >= DUSK && time < DAWN;
     }
 
@@ -193,7 +194,7 @@ public class SantasSleigh extends Entity {
             return false;
         }
         Santa santa = nearbySanta(level);
-        if (santa == null || !santa.startRiding(this, true, true)) {
+        if (santa == null || !santa.startRiding(this, true)) {
             return false;
         }
         departedMorning = morning;
@@ -302,7 +303,7 @@ public class SantasSleigh extends Entity {
     }
 
     @Override
-    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+    public InteractionResult interact(Player player, InteractionHand hand) {
         if (phase().isFlying()) {
             return InteractionResult.PASS;
         }
@@ -313,19 +314,19 @@ public class SantasSleigh extends Entity {
         }
         int capacity = settings().capacity();
         if (!ChristmasSeason.isWorkshopDelivery()) {
-            server.sendOverlayMessage(Component.translatable("message.cozychristmas.sleigh.not_yet"));
+            server.displayClientMessage(Component.translatable("message.cozychristmas.sleigh.not_yet"), true);
         } else if (!present) {
-            server.sendOverlayMessage(Component.translatable("message.cozychristmas.sleigh.status", load(), capacity));
+            server.displayClientMessage(Component.translatable("message.cozychristmas.sleigh.status", load(), capacity), true);
         } else if (isPrank(stack)) {
-            server.sendOverlayMessage(Component.translatable("message.cozychristmas.sleigh.prank"));
+            server.displayClientMessage(Component.translatable("message.cozychristmas.sleigh.prank"), true);
         } else if (!loadPresent(server)) {
-            server.sendOverlayMessage(Component.translatable("message.cozychristmas.sleigh.full"));
+            server.displayClientMessage(Component.translatable("message.cozychristmas.sleigh.full"), true);
         } else {
             stack.consume(1, player);
             KarmaManager.rewardGift(server);
-            server.sendOverlayMessage(Component.translatable("message.cozychristmas.sleigh.loaded", load(), capacity));
+            server.displayClientMessage(Component.translatable("message.cozychristmas.sleigh.loaded", load(), capacity), true);
         }
-        return InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.CONSUME;
     }
 
     private static boolean isPrank(ItemStack stack) {
@@ -340,8 +341,8 @@ public class SantasSleigh extends Entity {
 
     /** Nothing hurts it; a creative player's hit removes it (and lets Santa out). */
     @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
-        if (source.getEntity() instanceof Player player && player.isCreative()) {
+    public boolean hurt(DamageSource source, float amount) {
+        if (!level().isClientSide() && source.getEntity() instanceof Player player && player.isCreative()) {
             ejectPassengers();
             discard();
             return true;
@@ -355,28 +356,33 @@ public class SantasSleigh extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        origin = input.read(ORIGIN, Vec3.CODEC).orElse(null);
-        originYaw = input.getFloatOr(ORIGIN_YAW, getYRot());
-        entityData.set(DATA_PHASE, input.getIntOr(PHASE, 0));
-        phaseTick = input.getIntOr(PHASE_TICK, 0);
-        entityData.set(DATA_LOAD, input.getIntOr(LOAD, 0));
-        departedMorning = input.getLongOr(DEPARTED, NEVER);
+    protected void readAdditionalSaveData(CompoundTag tag) {
+        origin = tag.contains(ORIGIN) ? Vec3.CODEC.parse(NbtOps.INSTANCE, tag.get(ORIGIN)).result().orElse(null) : null;
+        originYaw = tag.contains(ORIGIN_YAW, Tag.TAG_FLOAT) ? tag.getFloat(ORIGIN_YAW) : getYRot();
+        entityData.set(DATA_PHASE, tag.getInt(PHASE)); // missing: 0, parked
+        phaseTick = tag.getInt(PHASE_TICK);
+        entityData.set(DATA_LOAD, tag.getInt(LOAD));
+        departedMorning = tag.contains(DEPARTED, Tag.TAG_LONG) ? tag.getLong(DEPARTED) : NEVER;
         helpers.clear();
-        input.read(HELPERS, UUIDUtil.CODEC.listOf()).ifPresent(helpers::addAll);
+        if (tag.contains(HELPERS)) {
+            UUIDUtil.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get(HELPERS)).result().ifPresent(helpers::addAll);
+        }
         noPhysics = phase().isFlying();
     }
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
+    protected void addAdditionalSaveData(CompoundTag tag) {
         if (phase().isFlying()) { // parked, where it stands is the origin (and a saved template mustn't carry it)
-            output.storeNullable(ORIGIN, Vec3.CODEC, origin);
-            output.putFloat(ORIGIN_YAW, originYaw);
+            if (origin != null) {
+                Vec3.CODEC.encodeStart(NbtOps.INSTANCE, origin).result().ifPresent(encoded -> tag.put(ORIGIN, encoded));
+            }
+            tag.putFloat(ORIGIN_YAW, originYaw);
         }
-        output.putInt(PHASE, phase().ordinal());
-        output.putInt(PHASE_TICK, phaseTick);
-        output.putInt(LOAD, load());
-        output.putLong(DEPARTED, departedMorning);
-        output.store(HELPERS, UUIDUtil.CODEC.listOf(), List.copyOf(helpers));
+        tag.putInt(PHASE, phase().ordinal());
+        tag.putInt(PHASE_TICK, phaseTick);
+        tag.putInt(LOAD, load());
+        tag.putLong(DEPARTED, departedMorning);
+        UUIDUtil.CODEC.listOf().encodeStart(NbtOps.INSTANCE, List.copyOf(helpers)).result()
+                .ifPresent(encoded -> tag.put(HELPERS, encoded));
     }
 }

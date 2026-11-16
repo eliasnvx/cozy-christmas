@@ -11,7 +11,8 @@ import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
 import dev.eliasnvx.cozychristmas.stocking.StockingBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,8 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -129,19 +128,20 @@ public class TreeStarBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        owner = input.read(OWNER, UUIDUtil.CODEC).orElse(null);
-        ownerName = input.getStringOr(OWNER_NAME, "");
-        lastMorning = input.getLongOr(LAST_MORNING, NEVER);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        owner = tag.hasUUID(OWNER) ? tag.getUUID(OWNER) : null;
+        ownerName = tag.getString(OWNER_NAME);
+        lastMorning = tag.contains(LAST_MORNING) ? tag.getLong(LAST_MORNING) : NEVER;
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.storeNullable(OWNER, UUIDUtil.CODEC, owner);
-        output.putString(OWNER_NAME, ownerName);
-        output.putLong(LAST_MORNING, lastMorning);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        if (owner != null) {
+            tag.putUUID(OWNER, owner);
+        }
+        tag.putString(OWNER_NAME, ownerName);
+        tag.putLong(LAST_MORNING, lastMorning);
     }
-
 }

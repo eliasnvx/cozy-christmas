@@ -1,38 +1,30 @@
 package dev.eliasnvx.cozychristmas.neoforge.dev;
 
 import dev.eliasnvx.cozychristmas.CozyChristmas;
+import dev.eliasnvx.cozychristmas.gametest.CompatGameTests;
 import dev.eliasnvx.cozychristmas.gametest.CosmeticSlotGameTests;
 import dev.eliasnvx.cozychristmas.gametest.FoodGameTests;
-import dev.eliasnvx.cozychristmas.gametest.TreeGameTests;
-import dev.eliasnvx.cozychristmas.gametest.CompatGameTests;
-import dev.eliasnvx.cozychristmas.gametest.SleighGameTests;
-import dev.eliasnvx.cozychristmas.neoforge.compat.CuriosSlots;
-import net.neoforged.fml.ModList;
 import dev.eliasnvx.cozychristmas.gametest.GameTestEntry;
-import dev.eliasnvx.cozychristmas.gametest.KarmaGameTests;
-import dev.eliasnvx.cozychristmas.gametest.PresentGameTests;
 import dev.eliasnvx.cozychristmas.gametest.GoblinGameTests;
 import dev.eliasnvx.cozychristmas.gametest.HeadPieceGameTests;
+import dev.eliasnvx.cozychristmas.gametest.KarmaGameTests;
 import dev.eliasnvx.cozychristmas.gametest.KrampusGameTests;
+import dev.eliasnvx.cozychristmas.gametest.PresentGameTests;
+import dev.eliasnvx.cozychristmas.gametest.SleighGameTests;
 import dev.eliasnvx.cozychristmas.gametest.SnowmanGameTests;
 import dev.eliasnvx.cozychristmas.gametest.StockingGameTests;
 import dev.eliasnvx.cozychristmas.gametest.ToastySetGameTests;
+import dev.eliasnvx.cozychristmas.gametest.TreeGameTests;
 import dev.eliasnvx.cozychristmas.gametest.WorkshopGameTests;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.gametest.framework.FunctionGameTestInstance;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.gametest.framework.TestData;
-import net.minecraft.gametest.framework.TestEnvironmentDefinition;
-import net.minecraft.resources.Identifier;
+import dev.eliasnvx.cozychristmas.neoforge.compat.CuriosSlots;
+import net.minecraft.gametest.framework.GameTestGenerator;
+import net.minecraft.gametest.framework.TestFunction;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Registers the shared GameTests ({@link KarmaGameTests}, {@link CosmeticSlotGameTests}, {@link ToastySetGameTests},
@@ -40,20 +32,26 @@ import java.util.function.Consumer;
  * {@link StockingGameTests}, {@link SnowmanGameTests}, {@link KrampusGameTests}, {@link FoodGameTests},
  * {@link TreeGameTests}, {@link CompatGameTests}, {@link SleighGameTests}) on NeoForge; with Curios installed only {@link CuriosGameTest}.
  * Started by {@code CozyChristmasNeoForge} only when GameTests are enabled ({@code ./gradlew :neoforge:runGameTestServer},
- * part of {@code build}); not in the released jar.
+ * part of {@code build}); not in the released jar. Public because the game test registry invokes {@link #tests()}
+ * reflectively.
  */
 public final class CozyGameTestsNeoForge {
 
     /** 8x8x8 of air like Fabric's default, {@code data/cozychristmas/structure/empty.nbt} (dev only, like this class). */
-    private static final Identifier EMPTY_STRUCTURE = CozyChristmas.id("empty");
+    private static final String EMPTY_STRUCTURE = CozyChristmas.id("empty").toString();
     private static final int MAX_TICKS = 100;
+    private static final long SETUP_TICKS = 0L;
 
     private CozyGameTestsNeoForge() {
     }
 
     public static void register(IEventBus modBus) {
-        DeferredRegister<Consumer<GameTestHelper>> functions = DeferredRegister.create(Registries.TEST_FUNCTION, CozyChristmas.MOD_ID);
-        List<DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>>> holders = new ArrayList<>();
+        modBus.addListener((RegisterGameTestsEvent event) -> event.register(CozyGameTestsNeoForge.class));
+    }
+
+    /** One test function per shared test, all in the {@code cozychristmas} batch. */
+    @GameTestGenerator
+    public static List<TestFunction> tests() {
         List<GameTestEntry> entries = new ArrayList<>();
         if (ModList.get().isLoaded(CuriosSlots.MOD_ID)) {
             // -Pcompat=curios: only the Curios check; Curios can't sync its slots to the shared tests' mock players
@@ -66,17 +64,9 @@ public final class CozyGameTestsNeoForge {
                 entries.addAll(tests);
             }
         }
-        for (GameTestEntry entry : entries) {
-            holders.add(functions.register(entry.name(), entry::body));
-        }
-        functions.register(modBus);
-
-        modBus.addListener((RegisterGameTestsEvent event) -> {
-            Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(CozyChristmas.id("default"));
-            for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> holder : holders) {
-                event.registerTest(holder.getId(), new FunctionGameTestInstance(holder.unwrapKey().orElseThrow(),
-                        new TestData<>(environment, EMPTY_STRUCTURE, MAX_TICKS, 0, true)));
-            }
-        });
+        return entries.stream()
+                .map(entry -> new TestFunction(CozyChristmas.MOD_ID, CozyChristmas.MOD_ID + "." + entry.name(), EMPTY_STRUCTURE,
+                        MAX_TICKS, SETUP_TICKS, true, entry.body()))
+                .toList();
     }
 }

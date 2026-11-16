@@ -4,10 +4,8 @@ import dev.eliasnvx.cozychristmas.compat.catgirl.CatgirlEars;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticInventory;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
-import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,9 +18,9 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Per-player render data, attached to the player's render state during extraction. One instance per entity is reused
- * across frames: the worn list is rebuilt only when the (immutable) inventory snapshot changes, and the smoothed
- * motion is updated in place, so extraction does not allocate.
+ * Per-player render data, captured by the cosmetic layer each frame. One instance per entity is reused across frames:
+ * the worn list is rebuilt only when the (immutable) inventory snapshot changes, and the smoothed motion is updated in
+ * place, so capturing does not allocate.
  */
 public final class CosmeticRenderData {
 
@@ -37,7 +35,7 @@ public final class CosmeticRenderData {
     public record Worn(CosmeticSlot slot, Item item, int dye) {
     }
 
-    private static final Map<Entity, CosmeticRenderData> CACHE = new WeakHashMap<>();
+    private static final Map<Player, CosmeticRenderData> CACHE = new WeakHashMap<>();
 
     private @Nullable CosmeticInventory source;
     private List<Worn> worn = List.of();
@@ -51,16 +49,13 @@ public final class CosmeticRenderData {
         this.phase = (entityId * GOLDEN_ANGLE) % Mth.TWO_PI;
     }
 
-    /** Called from the render state extraction mixin. Returns null if nothing is worn. */
-    public static @Nullable CosmeticRenderData capture(Entity entity, AvatarRenderState state) {
-        if (!(entity instanceof Player player)) {
-            return null;
-        }
+    /** Called from the cosmetic layer once per frame per player. Returns null if nothing is worn. */
+    public static @Nullable CosmeticRenderData capture(Player player, PlayerPose state) {
         CosmeticInventory inventory = CosmeticsManager.looks(player);
         if (inventory.isEmpty()) {
             return null;
         }
-        CosmeticRenderData data = CACHE.computeIfAbsent(entity, e -> new CosmeticRenderData(e.getId()));
+        CosmeticRenderData data = CACHE.computeIfAbsent(player, p -> new CosmeticRenderData(p.getId()));
         if (data.source != inventory) {
             data.rebuild(inventory);
         }
@@ -70,9 +65,8 @@ public final class CosmeticRenderData {
     }
 
     /** The data a model's {@code setupAnim} reads; never null. */
-    public static CosmeticRenderData of(AvatarRenderState state) {
-        CosmeticRenderData data = ((CosmeticRenderStateAccess) state).cozychristmas$getCosmetics();
-        return data == null ? STILL : data;
+    public static CosmeticRenderData of(PlayerPose state) {
+        return state.cosmetics;
     }
 
     private void rebuild(CosmeticInventory inventory) {
@@ -93,7 +87,7 @@ public final class CosmeticRenderData {
         return dyed == null ? -1 : dyed.rgb() & 0xFFFFFF;
     }
 
-    private void updateMotion(AvatarRenderState state) {
+    private void updateMotion(PlayerPose state) {
         if (Float.isNaN(lastAge)) {
             lastAge = state.ageInTicks;
             return;

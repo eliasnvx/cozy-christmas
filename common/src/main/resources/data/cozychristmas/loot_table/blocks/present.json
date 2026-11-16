@@ -7,9 +7,9 @@
         {
           "type": "minecraft:item",
           "name": "cozychristmas:present",
-          "modifier": [
+          "functions": [
             {
-              "type": "minecraft:copy_components",
+              "function": "minecraft:copy_components",
               "source": "block_entity",
               "include": [
                 "cozychristmas:present_contents",
@@ -17,7 +17,7 @@
               ]
             },
             {
-              "type": "minecraft:copy_state",
+              "function": "minecraft:copy_state",
               "block": "cozychristmas:present",
               "properties": [
                 "design"

@@ -11,8 +11,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -48,14 +48,14 @@ public final class KrampusVisits {
     public static boolean mayVisit(ServerLevel level, ServerPlayer player) {
         KrampusVisitSettings visits = CozyConfig.common().krampus().visits();
         return Players.inPlay(player) && level.dimension() == Level.OVERWORLD && level.getDifficulty() != Difficulty.PEACEFUL
-                && visits.mayVisit(KarmaManager.get(player), level.isDarkOutside(), ChristmasSeason.isActive(),
+                && visits.mayVisit(KarmaManager.get(player), !level.isDay(), ChristmasSeason.isActive(),
                 KarmaManager.today(level), KarmaManager.lastKrampusVisit(player));
     }
 
     /** Sends him to {@code player} now, whatever the rules say. Returns him, or null if there was no room nearby. */
     public static @Nullable Krampus visit(ServerLevel level, ServerPlayer player) {
         KrampusVisitSettings visits = CozyConfig.common().krampus().visits();
-        Krampus krampus = CozyEntities.KRAMPUS.get().create(level, EntitySpawnReason.EVENT);
+        Krampus krampus = CozyEntities.KRAMPUS.get().create(level);
         if (krampus == null) {
             return null;
         }
@@ -63,8 +63,8 @@ public final class KrampusVisits {
         if (spot == null) {
             return null;
         }
-        krampus.snapTo(spot.x, spot.y, spot.z, level.getRandom().nextFloat() * 360.0F, 0.0F);
-        krampus.finalizeSpawn(level, level.getCurrentDifficultyAt(krampus.blockPosition()), EntitySpawnReason.EVENT, null);
+        krampus.moveTo(spot.x, spot.y, spot.z, level.getRandom().nextFloat() * 360.0F, 0.0F);
+        krampus.finalizeSpawn(level, level.getCurrentDifficultyAt(krampus.blockPosition()), MobSpawnType.EVENT, null);
         krampus.visit(player);
         level.addFreshEntity(krampus);
         KarmaManager.markKrampusVisit(player);

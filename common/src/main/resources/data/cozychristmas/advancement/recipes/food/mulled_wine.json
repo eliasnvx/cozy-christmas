@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:mulled_wine"
+        "recipe": "cozychristmas:mulled_wine"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

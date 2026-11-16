@@ -2,6 +2,7 @@ package dev.eliasnvx.cozychristmas.cold;
 
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
 import dev.eliasnvx.cozychristmas.registry.CozyEffects;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
@@ -16,7 +17,7 @@ public final class Cold {
     }
 
     public static boolean isKeptWarm(LivingEntity entity) {
-        return ToastySet.keepsWarm(entity) || entity.hasEffect(CozyEffects.WARM.asHolder());
+        return ToastySet.keepsWarm(entity) || entity.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(CozyEffects.WARM.get()));
     }
 
     /**

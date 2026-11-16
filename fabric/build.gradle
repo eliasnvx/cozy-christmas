@@ -14,78 +14,109 @@ configurations {
 }
 
 dependencies {
-    implementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
-    implementation "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
-    implementation "com.geckolib:geckolib-fabric-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    modImplementation "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
+    modImplementation "software.bernie.geckolib:geckolib-fabric-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
 
-    common(project(path: ":common")) { transitive false }
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
 
-    // Optional: -Pcatgirl_jar=<path to a Catgirl & Catboy Mod Fabric jar> puts that mod into the dev runs and client
-    // tests, to check the ear warmers on its cat ears (compat.catgirl). It isn't published yet, so there's no coordinate.
-    if (project.hasProperty("catgirl_jar")) {
-        runtimeOnly files(project.property("catgirl_jar"))
-    }
-
-    // Compat checks in the dev client and the client GameTests: -Pcompat=true loads JEI, REI, Jade and Serene Seasons
-    // (JEI and REI both draw an item list: -Pcompat=jei or -Pcompat=rei picks one, plus jade and seasons)
+    // Compat checks in the dev runs and GameTests: -Pcompat=true loads JEI, REI, Jade, Serene Seasons and Snowy Spirit, or
+    // some of them: -Pcompat=jei,jade,seasons,snowy (JEI and REI both draw an item list)
     def compat = project.findProperty("compat")?.toString()
     if (compat != null) {
         def wanted = { String group -> compat == "true" || compat.split(",")*.trim().contains(group) }
         if (wanted("jei")) {
-            runtimeOnly "mezz.jei:jei-${rootProject.minecraft_version}-fabric:${rootProject.jei_version}"
+            modRuntimeOnly("mezz.jei:jei-${rootProject.minecraft_version}-fabric:${rootProject.jei_version}") { transitive false }
+            modRuntimeOnly("net.mezzdev.config:mezz_config-${rootProject.minecraft_version}-fabric:${rootProject.mezz_config_version}") { transitive false }
         }
         if (wanted("rei")) {
-            runtimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${rootProject.rei_version}") { transitive false }
-            runtimeOnly("me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}") { transitive false }
-            runtimeOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
+            modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${rootProject.rei_version}") { transitive false }
+            modRuntimeOnly("me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}") { transitive false }
+            modRuntimeOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
         }
         if (wanted("jade")) {
-            runtimeOnly("maven.modrinth:jade:${rootProject.jade_fabric_version}") { transitive false }
+            modRuntimeOnly("maven.modrinth:jade:${rootProject.jade_fabric_version}") { transitive false }
         }
         if (wanted("seasons")) {
-            runtimeOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_fabric_id}") { transitive false }
-            runtimeOnly("maven.modrinth:glitchcore:${rootProject.glitchcore_fabric_id}") { transitive false }
+            modRuntimeOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_fabric_id}") { transitive false }
+            modRuntimeOnly("maven.modrinth:glitchcore:${rootProject.glitchcore_fabric_id}") { transitive false }
+        }
+        if (wanted("snowy")) {
+            modRuntimeOnly("maven.modrinth:snowy-spirit:${rootProject.snowy_spirit_fabric_id}") { transitive false }
+            modRuntimeOnly("maven.modrinth:moonlight:${rootProject.moonlight_fabric_id}") { transitive false }
         }
     }
     shadowBundle(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 }
 
-// Server GameTests: shared bodies in common/.../gametest, Fabric glue in src/gametest. They run as part of `build`
-// via the generated `runGameTest` task (Fabric skips the EULA check for test servers).
-// Client GameTests (src/gametest): screenshots of the cosmetics in a real client window. Not part of `build`;
-// run manually: ./gradlew :fabric:runClientGameTest (screenshots in build/run/clientGameTest/screenshots)
+// Server GameTests: shared bodies in common/.../gametest (the cosmetic slot dupe checks), Fabric glue in src/gametest.
+// They run as part of `build` via the generated `runGameTest` task.
 fabricApi {
     configureTests {
         createSourceSet = true
         modId = "cozychristmas-test"
         enableGameTests = true
-        enableClientGameTests = true
+        enableClientGameTests = false // 1.21.1 Fabric API has no client GameTest API
     }
 }
 
-// The compat client test (CompatLookClientTest) opens JEI's and REI's views through their APIs; the gametest source
-// set exists once configureTests above has run
-dependencies {
-    gametestCompileOnly("mezz.jei:jei-${rootProject.minecraft_version}-common-api:${rootProject.jei_version}") { transitive false }
-    gametestCompileOnly("me.shedaniel:RoughlyEnoughItems-api:${rootProject.rei_version}") { transitive false }
-    gametestCompileOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
+// Dev-only check in a real client (1.21.1 has no client GameTest API): the shared DevCheck, started from src/gametest.
+// Opens build/run/devCheck/saves/cozychristmas-check (created flat on the first run), dresses the player, places blocks and
+// mobs, takes screenshots into build/run/devCheck/screenshots and quits. ./gradlew :fabric:runDevCheck [-Pcompat=true]
+loom {
+    runs {
+        devCheck {
+            client()
+            name "Fabric Dev Check"
+            source sourceSets.gametest
+            runDir "build/run/devCheck"
+            property "cozychristmas.devcheck", "true"
+        }
+    }
 }
 
-jar {
-    archiveClassifier = "raw"
+// The same DevCheck against the release jar in a production-like client: real Fabric Loader with intermediary names and
+// the dependencies' release jars, as players run it. DevCheck isn't in the release jar, so it comes as a second mod
+// built from src/gametest plus the shared gametest package. ./gradlew :fabric:runProdDevCheck [-Pcompat=true];
+// files in build/run/prodDevCheck
+configurations {
+    prodMods { transitive = false }
+}
+dependencies {
+    prodMods "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    prodMods "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
+    prodMods "software.bernie.geckolib:geckolib-fabric-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+    if (project.findProperty("compat") == "true") {
+        prodMods "mezz.jei:jei-${rootProject.minecraft_version}-fabric:${rootProject.jei_version}"
+        prodMods "maven.modrinth:jade:${rootProject.jade_fabric_version}"
+    }
+}
+def devCheckJar = tasks.register("devCheckJar", Jar) {
+    from sourceSets.gametest.output
+    from(project(":common").sourceSets.main.output) { include "dev/eliasnvx/cozychristmas/gametest/**" }
+    archiveClassifier = "devcheck-dev"
+}
+def remapDevCheckJar = tasks.register("remapDevCheckJar", net.fabricmc.loom.task.RemapJarTask) {
+    inputFile = devCheckJar.flatMap { it.archiveFile }
+    archiveClassifier = "devcheck"
+}
+tasks.register("runProdDevCheck", net.fabricmc.loom.task.prod.ClientProductionRunTask) {
+    mods.from(remapJar, remapDevCheckJar, configurations.prodMods)
+    jvmArgs.add("-Dcozychristmas.devcheck=true")
+    runDir = layout.buildDirectory.dir("run/prodDevCheck")
 }
 
 shadowJar {
-    dependsOn jar
-    mainSpec.sourcePaths.clear()
-    from(zipTree(jar.archiveFile))
     configurations = [project.configurations.shadowBundle]
-    archiveClassifier = null
-    archiveVersion = "${project.version}+${rootProject.minecraft_version}-fabric"
+    archiveClassifier = "dev-shadow"
     exclude "architectury.common.json"
     exclude "dev/eliasnvx/cozychristmas/gametest/**" // shared GameTest bodies stay out of the released jar
     from rootProject.file("LICENSE")
 }
 
-assemble.dependsOn shadowJar
+remapJar {
+    inputFile.set(shadowJar.archiveFile)
+    archiveClassifier = null
+    archiveVersion = "${project.version}+${rootProject.minecraft_version}-fabric"
+}

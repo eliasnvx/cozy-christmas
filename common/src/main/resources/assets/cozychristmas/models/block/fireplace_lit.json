@@ -307,8 +307,10 @@
         "angle": 45,
         "rescale": true
       },
-      "shade_direction_override": "up",
-      "light_emission": 15
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15
+      }
     },
     {
       "from": [
@@ -351,8 +353,10 @@
         "angle": -45,
         "rescale": true
       },
-      "shade_direction_override": "up",
-      "light_emission": 15
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15
+      }
     }
   ]
 }

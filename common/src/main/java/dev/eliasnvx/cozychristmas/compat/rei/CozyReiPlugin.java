@@ -15,7 +15,6 @@ import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
 import me.shedaniel.rei.api.client.registry.screen.ExclusionZones;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
-import me.shedaniel.rei.api.common.display.DisplaySerializer;
 import me.shedaniel.rei.api.common.display.basic.BasicDisplay;
 import me.shedaniel.rei.api.common.util.EntryIngredients;
 import me.shedaniel.rei.api.common.util.EntryStacks;
@@ -83,11 +82,6 @@ public class CozyReiPlugin implements REIClientPlugin {
         @Override
         public CategoryIdentifier<?> getCategoryIdentifier() {
             return WRAPPING;
-        }
-
-        @Override
-        public DisplaySerializer<? extends WrappingDisplay> getSerializer() {
-            return null;
         }
     }
 

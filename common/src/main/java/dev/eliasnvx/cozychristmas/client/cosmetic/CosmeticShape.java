@@ -3,14 +3,15 @@ package dev.eliasnvx.cozychristmas.client.cosmetic;
 import dev.architectury.registry.client.level.entity.EntityModelLayerRegistry;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.compat.catgirl.CatgirlEars;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.model.player.PlayerModel;
 
 import java.util.Locale;
 
@@ -84,6 +85,10 @@ public enum CosmeticShape {
     public static final String EAR_WARMERS_SIDES = "ear_warmers_sides";
     public static final String EAR_WARMERS_CAT_LEFT = "ear_warmers_cat_left";
     public static final String EAR_WARMERS_CAT_RIGHT = "ear_warmers_cat_right";
+    /** The headbands' parts that {@link #bake} scales up over a helmet ({@link #BAND_OVER_ARMOR_XZ}). */
+    private static final String ANTLER_HEADBAND_BAND = "antler_headband";
+    private static final String KRAMPUS_HORNS_BAND = "krampus_horns";
+    private static final String[] BANDS = {EAR_WARMERS_BAND, EAR_WARMERS_SIDES, ANTLER_HEADBAND_BAND, KRAMPUS_HORNS_BAND};
     /** The elf hat's cone segments are {@code elf_hat_0} (on the crown) to {@code elf_hat_5}, each a child of the last. */
     public static final String ELF_HAT_PREFIX = "elf_hat_";
     public static final int ELF_HAT_SEGMENTS = ELF_HAT_WIDTHS.length;
@@ -119,15 +124,34 @@ public enum CosmeticShape {
         }
     }
 
+    /**
+     * Bakes one size of this shape. 1.21.1's part poses have no scale, so the headbands' scale over a helmet is set on
+     * the baked parts here; nothing resets it afterwards (the cosmetic model only copies the wearer's main parts).
+     */
+    public ModelPart bake(EntityModelSet models, boolean overArmor, boolean slim) {
+        ModelPart root = models.bakeLayer(layer(overArmor, slim));
+        if (overArmor) {
+            ModelPart head = root.getChild("head");
+            for (String part : BANDS) {
+                if (head.hasChild(part)) {
+                    ModelPart band = head.getChild(part);
+                    band.xScale = BAND_OVER_ARMOR_XZ;
+                    band.yScale = BAND_OVER_ARMOR_Y;
+                    band.zScale = BAND_OVER_ARMOR_XZ;
+                }
+            }
+        }
+        return root;
+    }
+
     private boolean hasSlimArms(boolean overArmor, boolean slim) {
         return hasArms && slim && !overArmor;
     }
 
     private LayerDefinition definition(boolean overArmor, boolean slim) {
         // the player's parts at their rest poses, without any cubes: ours are added as children
-        MeshDefinition mesh = PlayerModel.createMesh(CubeDeformation.NONE, slim);
+        MeshDefinition mesh = emptyPlayerMesh(slim);
         PartDefinition root = mesh.getRoot();
-        root.clearRecursively();
         switch (this) {
             case SWEATER -> sweater(root, overArmor ? SWEATER_OVER_ARMOR : SWEATER_FIT, slim);
             case POMPOM_HAT -> pompomHat(root, overArmor ? HAT_OVER_ARMOR : HAT_FIT);
@@ -135,10 +159,36 @@ public enum CosmeticShape {
             case MITTENS -> mittens(root, overArmor ? MITTENS_OVER_ARMOR : MITTENS_FIT, slim);
             case EAR_WARMERS -> earWarmers(root, overArmor);
             case ELF_HAT -> elfHat(root, overArmor ? HAT_OVER_ARMOR : HAT_FIT);
-            case ANTLER_HEADBAND -> antlerHeadband(root, overArmor);
-            case KRAMPUS_HORNS -> krampusHorns(root, overArmor);
+            case ANTLER_HEADBAND -> antlerHeadband(root);
+            case KRAMPUS_HORNS -> krampusHorns(root);
         }
         return LayerDefinition.create(mesh, textureWidth, textureHeight);
+    }
+
+    /**
+     * The player mesh's parts with their pivots and no boxes (1.21.1 can't clear a mesh's cubes). Slim meshes put the
+     * arms where slim skins have them (half a pixel lower); the wearer's pose is copied over them anyway.
+     */
+    private static MeshDefinition emptyPlayerMesh(boolean slim) {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        for (String name : new String[]{"head", "hat", "body", "jacket", "ear", "cloak"}) {
+            pivot(root, name, PartPose.ZERO);
+        }
+        float armY = slim ? 2.5F : 2.0F;
+        pivot(root, "right_arm", PartPose.offset(-5.0F, armY, 0.0F));
+        pivot(root, "right_sleeve", PartPose.offset(-5.0F, armY, 0.0F));
+        pivot(root, "left_arm", PartPose.offset(5.0F, armY, 0.0F));
+        pivot(root, "left_sleeve", PartPose.offset(5.0F, armY, 0.0F));
+        pivot(root, "right_leg", PartPose.offset(-1.9F, 12.0F, 0.0F));
+        pivot(root, "right_pants", PartPose.offset(-1.9F, 12.0F, 0.0F));
+        pivot(root, "left_leg", PartPose.offset(1.9F, 12.0F, 0.0F));
+        pivot(root, "left_pants", PartPose.offset(1.9F, 12.0F, 0.0F));
+        return mesh;
+    }
+
+    private static void pivot(PartDefinition parent, String name, PartPose pose) {
+        parent.addOrReplaceChild(name, CubeListBuilder.create(), pose);
     }
 
     private static void sweater(PartDefinition root, float inflate, boolean slim) {
@@ -203,10 +253,6 @@ public enum CosmeticShape {
         return ELF_HAT_BEND[segment];
     }
 
-    private static PartPose band(boolean overArmor) {
-        return overArmor ? PartPose.ZERO.scaled(BAND_OVER_ARMOR_XZ, BAND_OVER_ARMOR_Y, BAND_OVER_ARMOR_XZ) : PartPose.ZERO;
-    }
-
     /** The band over the top of the head, just above the hat layer (top -8.5, sides ±4.5). */
     private static CubeListBuilder bandTop(CubeListBuilder builder, float z) {
         return builder.texOffs(0, 0).addBox(-5.5F, -9.6F, z, 11, 1, 1);
@@ -224,10 +270,10 @@ public enum CosmeticShape {
      */
     private static void earWarmers(PartDefinition root, boolean overArmor) {
         PartDefinition head = root.getChild("head");
-        head.addOrReplaceChild(EAR_WARMERS_BAND, bandTop(CubeListBuilder.create(), -0.5F), band(overArmor));
+        head.addOrReplaceChild(EAR_WARMERS_BAND, bandTop(CubeListBuilder.create(), -0.5F), PartPose.ZERO);
         head.addOrReplaceChild(EAR_WARMERS_SIDES, bandSides(CubeListBuilder.create(), -0.5F)
                 .texOffs(0, 8).addBox(4.5F, -5.0F, -2.0F, 2, 4, 4)
-                .texOffs(0, 8).addBox(-6.5F, -5.0F, -2.0F, 2, 4, 4), band(overArmor));
+                .texOffs(0, 8).addBox(-6.5F, -5.0F, -2.0F, 2, 4, 4), PartPose.ZERO);
         float lift = overArmor ? CatgirlEars.HELMET_LIFT : 0.0F;
         // the band over the top would stick out past the muffs: between cat ears it only joins them
         head.addOrReplaceChild(EAR_WARMERS_CAT_BAND, CubeListBuilder.create()
@@ -269,9 +315,9 @@ public enum CosmeticShape {
      * A band with two antlers, set a little behind the middle of the head: behind where cat ears stand, as a reindeer's
      * antlers are behind its ears.
      */
-    private static void krampusHorns(PartDefinition root, boolean overArmor) {
-        PartDefinition piece = root.getChild("head").addOrReplaceChild("krampus_horns",
-                bandSides(bandTop(CubeListBuilder.create(), -1.0F), -1.0F), band(overArmor));
+    private static void krampusHorns(PartDefinition root) {
+        PartDefinition piece = root.getChild("head").addOrReplaceChild(KRAMPUS_HORNS_BAND,
+                bandSides(bandTop(CubeListBuilder.create(), -1.0F), -1.0F), PartPose.ZERO);
         int[][] segments = {{0, 4, 2, 3}, {8, 4, 2, 3}, {16, 4, 1, 3}, {20, 4, 1, 2}};
         float[] curl = {-0.35F, -0.6F, -0.7F, -0.8F};
         for (int side = -1; side <= 1; side += 2) {
@@ -288,9 +334,9 @@ public enum CosmeticShape {
         }
     }
 
-    private static void antlerHeadband(PartDefinition root, boolean overArmor) {
-        PartDefinition piece = root.getChild("head").addOrReplaceChild("antler_headband",
-                bandSides(bandTop(CubeListBuilder.create(), 1.0F), 1.0F), band(overArmor));
+    private static void antlerHeadband(PartDefinition root) {
+        PartDefinition piece = root.getChild("head").addOrReplaceChild(ANTLER_HEADBAND_BAND,
+                bandSides(bandTop(CubeListBuilder.create(), 1.0F), 1.0F), PartPose.ZERO);
         for (int side = -1; side <= 1; side += 2) {
             PartDefinition antler = piece.addOrReplaceChild(side < 0 ? "left_antler" : "right_antler", CubeListBuilder.create()
                     .texOffs(0, 2).addBox(-0.5F, -6.0F, -0.5F, 1, 6, 1),

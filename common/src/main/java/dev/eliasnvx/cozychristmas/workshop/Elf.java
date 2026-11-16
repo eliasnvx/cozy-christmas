@@ -10,17 +10,18 @@ import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
 import dev.eliasnvx.cozychristmas.sleigh.SantasSleigh;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -38,7 +39,6 @@ import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -65,7 +65,6 @@ public class Elf extends PathfinderMob {
     private static final double WALK = 1.0;
     private static final double RUN = 1.4;
     private static final int FLEE_TICKS = 300;
-    private static final double TEMPT_RANGE = 10.0;
     /** How far an elf will carry a present to Santa's sleigh. */
     private static final double SLEIGH_SEARCH = 40.0;
 
@@ -80,8 +79,7 @@ public class Elf extends PathfinderMob {
     public static AttributeSupplier.Builder createAttributes(ElfSettings settings) {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, settings.health())
-                .add(Attributes.MOVEMENT_SPEED, settings.speed())
-                .add(Attributes.TEMPT_RANGE, TEMPT_RANGE);
+                .add(Attributes.MOVEMENT_SPEED, settings.speed()); // 1.21.1's TemptGoal reaches 10 blocks, as 26.3's tempt_range
     }
 
     @Override
@@ -108,11 +106,23 @@ public class Elf extends PathfinderMob {
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  EntitySpawnReason reason, @Nullable SpawnGroupData groupData) {
-        if (reason == EntitySpawnReason.STRUCTURE) {
-            setHomeTo(blockPosition(), HOME_RADIUS);
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+        if (reason == MobSpawnType.STRUCTURE) {
+            restrictTo(blockPosition(), HOME_RADIUS);
         }
         return super.finalizeSpawn(level, difficulty, reason, groupData);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        MobHome.save(this, tag);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        MobHome.load(this, tag);
     }
 
     /** Elves belong to the workshop; they don't wander off and vanish. */
@@ -140,17 +150,17 @@ public class Elf extends PathfinderMob {
     }
 
     @Override
-    protected void customServerAiStep(ServerLevel level) {
-        super.customServerAiStep(level);
-        if (culprit != null && (level.getGameTime() >= fleeUntil || !culprit.isAlive())) {
+    protected void customServerAiStep() {
+        super.customServerAiStep();
+        if (culprit != null && (level().getGameTime() >= fleeUntil || !culprit.isAlive())) {
             culprit = null;
         }
     }
 
     @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        boolean hurt = super.hurtServer(level, source, damage);
-        if (hurt && source.getEntity() instanceof LivingEntity attacker) {
+    public boolean hurt(DamageSource source, float damage) {
+        boolean hurt = super.hurt(source, damage);
+        if (hurt && level() instanceof ServerLevel level && source.getEntity() instanceof LivingEntity attacker) {
             WorkshopAlarm.raise(level, position(), attacker);
         }
         return hurt;
@@ -167,7 +177,7 @@ public class Elf extends PathfinderMob {
         SantasSleigh sleigh = loadingSleigh(CarryPresentGoal.SLEIGH_REACH + 1.0);
         boolean loaded = sleigh != null && sleigh.loadPresent(null);
         setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-        swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
+        swing(InteractionHand.MAIN_HAND);
         playSound(SoundEvents.WOOL_PLACE, 0.8F, 1.2F);
         return loaded;
     }
@@ -243,7 +253,7 @@ public class Elf extends PathfinderMob {
             stand = null;
             for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-range, -SEARCH_HEIGHT, -range),
                     origin.offset(range, SEARCH_HEIGHT, range))) {
-                if (!isWithinHome(pos) || !level().getBlockState(pos).is(CozyTags.ELF_WORKSTATIONS)) {
+                if (!isWithinRestriction(pos) || !level().getBlockState(pos).is(CozyTags.ELF_WORKSTATIONS)) {
                     continue;
                 }
                 BlockPos spot = standingSpot(pos);
@@ -322,7 +332,7 @@ public class Elf extends PathfinderMob {
             worked++;
             if (--nextSwing <= 0) {
                 nextSwing = 8 + getRandom().nextInt(8);
-                swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
+                swing(InteractionHand.MAIN_HAND);
                 if (getRandom().nextInt(3) == 0) {
                     playSound(CozySounds.ELF_WORK.get(), 0.6F, 0.9F + getRandom().nextFloat() * 0.3F);
                 }
@@ -397,7 +407,7 @@ public class Elf extends PathfinderMob {
             double bestDistance = Double.MAX_VALUE;
             for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-PILE_RANGE, -PILE_HEIGHT, -PILE_RANGE),
                     origin.offset(PILE_RANGE, PILE_HEIGHT, PILE_RANGE))) {
-                if (isWithinHome(pos) && level().getBlockState(pos).is(CozyBlocks.PRESENT.get())) {
+                if (isWithinRestriction(pos) && level().getBlockState(pos).is(CozyBlocks.PRESENT.get())) {
                     double distance = pos.distSqr(origin);
                     if (distance < bestDistance) {
                         bestDistance = distance;

@@ -10,7 +10,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.BlockAttachedEntity;
@@ -52,7 +51,7 @@ public final class PresentBoom {
         float radius = (float) (boom.radius() / 2.0);
         level.explode(null, source, new Calculator(boom), center.x, center.y, center.z, radius, false,
                 boom.breaksBlocks() ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE,
-                CozyParticles.CONFETTI.get(), CozyParticles.CONFETTI.get(), WeightedList.of(),
+                CozyParticles.CONFETTI.get(), CozyParticles.CONFETTI.get(),
                 BuiltInRegistries.SOUND_EVENT.wrapAsHolder(CozySounds.PRESENT_BOOM.get()));
 
         level.sendParticles(CozyParticles.CONFETTI.get(), center.x, center.y, center.z, CONFETTI,
@@ -73,8 +72,9 @@ public final class PresentBoom {
         }
 
         @Override
-        public float getEntityDamageAmount(Explosion explosion, Entity entity, float seenPercent) {
-            return boom.damageAt(entity.position().distanceTo(explosion.center())) * seenPercent;
+        public float getEntityDamageAmount(Explosion explosion, Entity entity) {
+            Vec3 center = explosion.center();
+            return boom.damageAt(entity.position().distanceTo(center)) * Explosion.getSeenPercent(center, entity);
         }
 
         @Override

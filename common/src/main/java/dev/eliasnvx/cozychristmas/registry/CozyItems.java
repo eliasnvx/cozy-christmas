@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.registry;
 
+import dev.architectury.core.item.ArchitecturySpawnEggItem;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
@@ -13,13 +14,19 @@ import dev.eliasnvx.cozychristmas.present.PresentDesign;
 import dev.eliasnvx.cozychristmas.tree.OrnamentColor;
 import dev.eliasnvx.cozychristmas.snowman.IceSnowballItem;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
@@ -27,14 +34,15 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.item.ToolMaterial;
-import net.minecraft.world.item.component.AttackRange;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.item.component.BlockItemStateProperties;
-import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.DyedItemColor;
-import net.minecraft.world.item.component.TypedEntityData;
-import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,13 +61,26 @@ public final class CozyItems {
     private static final List<DyeColor> CREATIVE_DYES =
             List.of(DyeColor.GREEN, DyeColor.WHITE, DyeColor.LIGHT_BLUE, DyeColor.YELLOW, DyeColor.BLACK);
 
-    /** The chain hits like an iron sword plus one, slower, and reaches 5 blocks instead of 3. */
-    private static final float CHAIN_DAMAGE = 4.0F;
+    /**
+     * The chain hits like an iron sword plus one, slower, and reaches 5 blocks instead of 3. 1.21.1 has no
+     * {@code attack_range} component: the reach is an entity interaction range bonus while held (creative's own +2
+     * stacks on it, so 7 there instead of 26.x's 6.5).
+     */
+    private static final int CHAIN_DAMAGE = 4;
     private static final float CHAIN_SPEED = -3.0F;
     private static final int CHAIN_DURABILITY = 500;
-    private static final float CHAIN_REACH = 5.0F;
-    private static final float CHAIN_CREATIVE_REACH = 6.5F;
-    private static final float CHAIN_HITBOX_MARGIN = 0.125F;
+    private static final double CHAIN_REACH_BONUS = 2.0;
+    /** A sword's tool rules, as vanilla's SwordItem gives them (cobwebs, sword-efficient blocks, two wear per block). */
+    private static final float SWORD_COBWEB_SPEED = 15.0F;
+    private static final float SWORD_EFFICIENT_SPEED = 1.5F;
+    private static final float SWORD_DEFAULT_SPEED = 1.0F;
+    private static final int SWORD_WEAR_PER_BLOCK = 2;
+    private static final Tool SWORD_TOOL = new Tool(List.of(Tool.Rule.minesAndDrops(List.of(Blocks.COBWEB), SWORD_COBWEB_SPEED),
+            Tool.Rule.overrideSpeed(BlockTags.SWORD_EFFICIENT, SWORD_EFFICIENT_SPEED)), SWORD_DEFAULT_SPEED, SWORD_WEAR_PER_BLOCK);
+    /** Spawn egg textures show the mob itself, so the egg tint colors are white. */
+    private static final int SPAWN_EGG_TINT = 0xFFFFFF;
+    /** Dyeing in a crafting grid stores the color without alpha. */
+    private static final int RGB_MASK = 0xFFFFFF;
 
     /** SPEC food values. Item definitions like vanilla's: the client builds the same items, so not in the config. */
     private static final int DRINK_STACK = 16;
@@ -92,22 +113,23 @@ public final class CozyItems {
     public static final RegistrySupplier<Item> ELF_HAT = dyeable("elf_hat", CosmeticSlot.HEAD);
     public static final RegistrySupplier<Item> ANTLER_HEADBAND = wearable("antler_headband", CosmeticSlot.HEAD);
 
-    public static final RegistrySupplier<Item> SANTA_SPAWN_EGG = spawnEgg("santa_spawn_egg", CozyEntities.SANTA_KEY);
-    public static final RegistrySupplier<Item> ELF_SPAWN_EGG = spawnEgg("elf_spawn_egg", CozyEntities.ELF_KEY);
-    public static final RegistrySupplier<Item> REINDEER_SPAWN_EGG = spawnEgg("reindeer_spawn_egg", CozyEntities.REINDEER_KEY);
-    public static final RegistrySupplier<Item> PRESENT_GOBLIN_SPAWN_EGG = spawnEgg("present_goblin_spawn_egg", CozyEntities.PRESENT_GOBLIN_KEY);
-    public static final RegistrySupplier<Item> GINGERBREAD_MAN_SPAWN_EGG = spawnEgg("gingerbread_man_spawn_egg", CozyEntities.GINGERBREAD_MAN_KEY);
-    public static final RegistrySupplier<Item> EVIL_SNOWMAN_SPAWN_EGG = spawnEgg("evil_snowman_spawn_egg", CozyEntities.EVIL_SNOWMAN_KEY);
+    public static final RegistrySupplier<Item> SANTA_SPAWN_EGG = spawnEgg("santa_spawn_egg", CozyEntities.SANTA);
+    public static final RegistrySupplier<Item> ELF_SPAWN_EGG = spawnEgg("elf_spawn_egg", CozyEntities.ELF);
+    public static final RegistrySupplier<Item> REINDEER_SPAWN_EGG = spawnEgg("reindeer_spawn_egg", CozyEntities.REINDEER);
+    public static final RegistrySupplier<Item> PRESENT_GOBLIN_SPAWN_EGG = spawnEgg("present_goblin_spawn_egg", CozyEntities.PRESENT_GOBLIN);
+    public static final RegistrySupplier<Item> GINGERBREAD_MAN_SPAWN_EGG = spawnEgg("gingerbread_man_spawn_egg", CozyEntities.GINGERBREAD_MAN);
+    public static final RegistrySupplier<Item> EVIL_SNOWMAN_SPAWN_EGG = spawnEgg("evil_snowman_spawn_egg", CozyEntities.EVIL_SNOWMAN);
 
-    public static final RegistrySupplier<Item> KRAMPUS_SPAWN_EGG = spawnEgg("krampus_spawn_egg", CozyEntities.KRAMPUS_KEY);
+    public static final RegistrySupplier<Item> KRAMPUS_SPAWN_EGG = spawnEgg("krampus_spawn_egg", CozyEntities.KRAMPUS);
     /** SPEC: Krampus's horns, a trophy only he drops. Worn on the head, no bonus. */
     public static final RegistrySupplier<Item> KRAMPUS_HORNS = register("krampus_horns", props -> new Item(props.stacksTo(1)
             .rarity(Rarity.EPIC).component(CozyComponents.COSMETIC.get(), new Cosmetic(CosmeticSlot.HEAD))));
     /** SPEC: Krampus's chain, his other drop: an iron weapon with a long reach that drags what it hits closer. */
     public static final RegistrySupplier<Item> KRAMPUS_CHAIN = register("krampus_chain", props -> new KrampusChainItem(props
-            .sword(ToolMaterial.IRON, CHAIN_DAMAGE, CHAIN_SPEED).durability(CHAIN_DURABILITY).rarity(Rarity.RARE)
-            .component(DataComponents.ATTACK_RANGE, new AttackRange(0.0F, CHAIN_REACH, 0.0F, CHAIN_CREATIVE_REACH,
-                    CHAIN_HITBOX_MARGIN, 1.0F))));
+            .durability(CHAIN_DURABILITY).rarity(Rarity.RARE).component(DataComponents.TOOL, SWORD_TOOL).attributes(SwordItem.createAttributes(Tiers.IRON, CHAIN_DAMAGE, CHAIN_SPEED)
+                    .withModifierAdded(Attributes.ENTITY_INTERACTION_RANGE, new AttributeModifier(
+                            CozyChristmas.id("krampus_chain_reach"), CHAIN_REACH_BONUS, AttributeModifier.Operation.ADD_VALUE),
+                            EquipmentSlotGroup.MAINHAND))));
 
     /** Evil snowmen drop them; thrown, they hurt, slow and chill. Stacks like snowballs. */
     public static final RegistrySupplier<Item> ICE_SNOWBALL = register("ice_snowball", props -> new IceSnowballItem(props.stacksTo(16)));
@@ -119,20 +141,16 @@ public final class CozyItems {
     /** Brick mug; hot cocoa comes in it and leaves it behind. */
     public static final RegistrySupplier<Item> MUG = register("mug", Item::new);
     /** SPEC: cocoa with marshmallows, 6 food, warms: thaws freezing and keeps it off for a while ({@code warm}). */
-    public static final RegistrySupplier<Item> HOT_COCOA = register("hot_cocoa", props -> new Item(props.stacksTo(DRINK_STACK)
-            .component(DataComponents.FOOD, new FoodProperties.Builder().nutrition(6).saturationModifier(0.5F).alwaysEdible().build())
-            // resolved late: our effect may be registered after the items on some loaders
-            .delayedComponent(DataComponents.CONSUMABLE, registries -> Consumables.defaultDrink()
-                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(
-                            registries.lookupOrThrow(Registries.MOB_EFFECT).getOrThrow(CozyEffects.WARM_KEY), WARM_TICKS)))
-                    .build())
-            .usingConvertsTo(MUG.get())));
+    // effects are registered before items on both loaders, so the warm effect's holder is there when this is built
+    public static final RegistrySupplier<Item> HOT_COCOA = register("hot_cocoa", props -> new Drink(props.stacksTo(DRINK_STACK)
+            .food(new FoodProperties.Builder().nutrition(6).saturationModifier(0.5F).alwaysEdible()
+                    .effect(new MobEffectInstance(CozyEffects.holder(CozyEffects.WARM), WARM_TICKS), 1.0F)
+                    .usingConvertsTo(MUG.get()).build())));
     /** SPEC: mulled wine, Regeneration I for 10 s. In a glass bottle, given back. */
-    public static final RegistrySupplier<Item> MULLED_WINE = register("mulled_wine", props -> new Item(props.stacksTo(DRINK_STACK)
-            .food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).alwaysEdible().build(), Consumables.defaultDrink()
-                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.REGENERATION,
-                            MULLED_WINE_REGENERATION_TICKS))).build())
-            .usingConvertsTo(Items.GLASS_BOTTLE)));
+    public static final RegistrySupplier<Item> MULLED_WINE = register("mulled_wine", props -> new Drink(props.stacksTo(DRINK_STACK)
+            .food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).alwaysEdible()
+                    .effect(new MobEffectInstance(MobEffects.REGENERATION, MULLED_WINE_REGENERATION_TICKS), 1.0F)
+                    .usingConvertsTo(Items.GLASS_BOTTLE).build())));
     /** Raw: fall from dark oak leaves ({@code food.chestnut_leaves}), roasted on a campfire. Not food yet. */
     public static final RegistrySupplier<Item> CHESTNUTS = register("chestnuts", Item::new);
     /** SPEC: 5 food, roasted on a campfire. */
@@ -200,7 +218,7 @@ public final class CozyItems {
     /** The item as one dye in a crafting grid makes it. */
     public static ItemStack dyed(Item item, DyeColor dye) {
         ItemStack stack = new ItemStack(item);
-        stack.set(DataComponents.DYED_COLOR, new DyedItemColor(dye.getTextureDiffuseColor()));
+        stack.set(DataComponents.DYED_COLOR, new DyedItemColor(dye.getTextureDiffuseColor() & RGB_MASK, true));
         return stack;
     }
 
@@ -211,11 +229,9 @@ public final class CozyItems {
         return stack;
     }
 
-    private static RegistrySupplier<Item> spawnEgg(String name, ResourceKey<EntityType<?>> entity) {
-        return register(name, props -> new SpawnEggItem(
-                // resolved late: on NeoForge items may be built before entity types are registered
-                props.delayedComponent(DataComponents.ENTITY_DATA, context -> TypedEntityData.of(
-                        context.lookupOrThrow(Registries.ENTITY_TYPE).getOrThrow(entity).value(), new CompoundTag()))));
+    /** Architectury's egg looks its entity type up late (NeoForge builds items in its own registry event). */
+    private static RegistrySupplier<Item> spawnEgg(String name, RegistrySupplier<? extends EntityType<? extends Mob>> entity) {
+        return register(name, props -> new ArchitecturySpawnEggItem(entity, SPAWN_EGG_TINT, SPAWN_EGG_TINT, props));
     }
 
     private static RegistrySupplier<Item> sweater(String name) {
@@ -235,7 +251,43 @@ public final class CozyItems {
     }
 
     public static RegistrySupplier<Item> register(String name, Function<Item.Properties, Item> factory) {
-        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, CozyChristmas.id(name));
-        return REGISTER.register(name, () -> factory.apply(new Item.Properties().setId(key)));
+        return REGISTER.register(name, () -> factory.apply(new Item.Properties()));
+    }
+
+    /** A food that is drunk: 1.21.1 has no consumable component, the item says how it's used and heard. */
+    private static final class Drink extends Item {
+
+        private Drink(Properties properties) {
+            super(properties);
+        }
+
+        @Override
+        public UseAnim getUseAnimation(ItemStack stack) {
+            return UseAnim.DRINK;
+        }
+
+        /**
+         * 1.21.1 hands the mug or bottle back to players only ({@code Player#eat}); 26.3's {@code use_remainder} leaves it
+         * for whatever drank, so do that for everything else.
+         */
+        @Override
+        public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity drinker) {
+            FoodProperties food = stack.get(DataComponents.FOOD);
+            ItemStack left = super.finishUsingItem(stack, level, drinker);
+            if (food != null && !(drinker instanceof Player) && left.isEmpty()) {
+                return food.usingConvertsTo().map(ItemStack::copy).orElse(left);
+            }
+            return left;
+        }
+
+        @Override
+        public SoundEvent getDrinkingSound() {
+            return SoundEvents.GENERIC_DRINK;
+        }
+
+        @Override
+        public SoundEvent getEatingSound() {
+            return SoundEvents.GENERIC_DRINK;
+        }
     }
 }

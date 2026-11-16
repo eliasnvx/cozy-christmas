@@ -7,8 +7,8 @@ import dev.eliasnvx.cozychristmas.client.present.PresentRenderer;
 import dev.eliasnvx.cozychristmas.client.present.WrappingTableScreen;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyMenus;
-import net.minecraft.client.renderer.entity.player.AvatarRenderer;
-import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.resources.PlayerSkin;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -21,9 +21,8 @@ public final class CozyChristmasNeoForgeClient {
     public CozyChristmasNeoForgeClient(IEventBus modBus) {
         CozyChristmasClient.init();
         modBus.addListener((EntityRenderersEvent.AddLayers event) -> {
-            for (PlayerModelType skin : event.getSkins()) {
-                AvatarRenderer<?> renderer = event.getPlayerRenderer(skin);
-                if (renderer != null) {
+            for (PlayerSkin.Model skin : event.getSkins()) {
+                if (event.getSkin(skin) instanceof PlayerRenderer renderer) {
                     renderer.addLayer(new CosmeticLayer(renderer, event.getEntityModels()));
                 }
             }

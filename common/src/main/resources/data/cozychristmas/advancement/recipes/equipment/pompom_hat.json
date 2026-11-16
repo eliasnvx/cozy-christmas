@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:pompom_hat"
+        "recipe": "cozychristmas:pompom_hat"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

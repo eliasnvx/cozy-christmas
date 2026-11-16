@@ -4,7 +4,7 @@ import dev.architectury.event.events.common.TickEvent;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -24,7 +24,7 @@ public final class ToastySet {
             CosmeticSlot.HANDS);
 
     /** The speed bonus modifier. Transient: it's recomputed every tick, never saved. */
-    public static final Identifier SNOW_SPEED_ID = CozyChristmas.id("toasty_snow_speed");
+    public static final ResourceLocation SNOW_SPEED_ID = CozyChristmas.id("toasty_snow_speed");
 
     private ToastySet() {
     }

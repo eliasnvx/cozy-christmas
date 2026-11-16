@@ -5,9 +5,6 @@
   "name": "Cozy Christmas GameTests",
   "environment": "*",
   "entrypoints": {
-    "client": [
-      "dev.eliasnvx.cozychristmas.fabric.gametest.ClientTestExit"
-    ],
     "fabric-gametest": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.KarmaGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticSlotGameTestsFabric",
@@ -23,28 +20,8 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.TreeGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.CompatGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.SleighGameTestsFabric"
-    ],
-    "fabric-client-gametest": [
-      "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.PresentsLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.WorkshopLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.HeadPiecesLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.GoblinsLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.StockingsLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.SnowmenLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.KrampusLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.FoodLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.TreeLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.CompatLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.SleighLookClientTest"
-    ],
-    "jei_mod_plugin": [
-      "dev.eliasnvx.cozychristmas.fabric.gametest.TestJeiPlugin"
     ]
   },
-  "mixins": [
-    "cozychristmas-test.mixins.json"
-  ],
   "depends": {
     "cozychristmas": "*"
   }

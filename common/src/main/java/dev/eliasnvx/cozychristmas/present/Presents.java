@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -46,7 +47,7 @@ public final class Presents {
                 }
             }
             case PresentContents.Gift gift -> {
-                Block.popResource(level, pos, gift.item().create());
+                Block.popResource(level, pos, gift.create());
                 paperBurst(level, pos, CozySounds.PRESENT_OPEN.get());
                 gift.from().ifPresent(giver -> thankGiver(level, giver, opener));
             }
@@ -69,7 +70,7 @@ public final class Presents {
     /** Torn wrapping paper and the opening sound. */
     private static void paperBurst(ServerLevel level, BlockPos pos, SoundEvent sound) {
         Vec3 center = Vec3.atCenterOf(pos);
-        level.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, Items.PAPER), center.x, center.y, center.z,
+        level.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.PAPER)), center.x, center.y, center.z,
                 PAPER_BITS, PAPER_SPREAD, PAPER_SPREAD, PAPER_SPREAD, PAPER_SPEED);
         level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
     }

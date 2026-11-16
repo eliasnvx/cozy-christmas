@@ -8,15 +8,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityEvent;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -25,11 +24,10 @@ import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.animal.golem.SnowGolem;
+import net.minecraft.world.entity.animal.SnowGolem;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -77,9 +75,11 @@ public class EvilSnowman extends Monster implements RangedAttackMob {
     }
 
     /** Monster rules (dark enough, not peaceful) under the open sky: no snowmen in caves. */
-    public static boolean checkEvilSnowmanSpawnRules(EntityType<? extends Mob> type, ServerLevelAccessor level,
-                                                     EntitySpawnReason reason, BlockPos pos, RandomSource random) {
-        return Monster.checkSurfaceMonstersSpawnRules(type, level, reason, pos, random);
+    public static boolean checkEvilSnowmanSpawnRules(EntityType<? extends Monster> type, ServerLevelAccessor level,
+                                                     MobSpawnType reason, BlockPos pos, RandomSource random) {
+        // 26.3's Monster#checkSurfaceMonstersSpawnRules, which 1.21.1 doesn't have
+        return Monster.checkMonsterSpawnRules(type, level, reason, pos, random)
+                && (MobSpawnType.isSpawner(reason) || level.canSeeSky(pos));
     }
 
     @Override
@@ -103,16 +103,11 @@ public class EvilSnowman extends Monster implements RangedAttackMob {
         double dx = target.getX() - getX();
         double dz = target.getZ() - getZ();
         double arc = Math.sqrt(dx * dx + dz * dz) * ARC;
-        ItemStack ball = new ItemStack(CozyItems.ICE_SNOWBALL.get());
-        Projectile.spawnProjectile(new IceSnowball(server, this, ball), server, ball, projectile -> projectile.shoot(
-                dx, target.getEyeY() - 1.1 + arc - projectile.getY(), dz, THROW_POWER, rangedAttackUncertainty(server)));
+        IceSnowball projectile = new IceSnowball(server, this, new ItemStack(CozyItems.ICE_SNOWBALL.get()));
+        projectile.shoot(dx, target.getEyeY() - 1.1 + arc - projectile.getY(), dz, THROW_POWER, THROW_INACCURACY);
+        server.addFreshEntity(projectile);
         playSound(CozySounds.EVIL_SNOWMAN_THROW.get(), 1.0F, 0.4F / (getRandom().nextFloat() * 0.4F + 0.8F));
         server.broadcastEntityEvent(this, THROW_EVENT);
-    }
-
-    @Override
-    public float rangedAttackUncertainty(Level level) {
-        return THROW_INACCURACY;
     }
 
     @Override
@@ -141,10 +136,10 @@ public class EvilSnowman extends Monster implements RangedAttackMob {
     public void aiStep() {
         super.aiStep();
         if (level() instanceof ServerLevel server && isAlive()) {
-            if (server.environmentAttributes().getValue(EnvironmentAttributes.SNOW_GOLEM_MELTS, position())) {
-                hurtServer(server, damageSources().onFire(), BIOME_MELT_DAMAGE);
+            if (server.getBiome(blockPosition()).is(BiomeTags.SNOW_GOLEM_MELTS)) {
+                hurt(damageSources().onFire(), BIOME_MELT_DAMAGE);
             } else if ((tickCount + getId()) % HEAT_CHECK_INTERVAL == 0 && nearHeat(server)) {
-                hurtServer(server, damageSources().inFire(), HEAT_DAMAGE);
+                hurt(damageSources().inFire(), HEAT_DAMAGE);
             }
         }
     }
@@ -167,10 +162,10 @@ public class EvilSnowman extends Monster implements RangedAttackMob {
 
     /** Fire, lava and heat hurt {@code fire_multiplier} times as much, and the snowman drips. */
     @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+    public boolean hurt(DamageSource source, float amount) {
         boolean fire = source.is(DamageTypeTags.IS_FIRE);
-        boolean hurt = super.hurtServer(level, source, fire ? settings().fireDamage(amount) : amount);
-        if (hurt && fire) {
+        boolean hurt = super.hurt(source, fire ? settings().fireDamage(amount) : amount);
+        if (hurt && fire && level() instanceof ServerLevel level) {
             level.sendParticles(ParticleTypes.FALLING_WATER, getX(), getY() + getBbHeight() * 0.6, getZ(), MELT_PARTICLES,
                     getBbWidth() * 0.4, getBbHeight() * 0.25, getBbWidth() * 0.4, 0.0);
             playSound(CozySounds.EVIL_SNOWMAN_MELT.get(), 0.6F, 1.0F + (getRandom().nextFloat() - 0.5F) * 0.4F);

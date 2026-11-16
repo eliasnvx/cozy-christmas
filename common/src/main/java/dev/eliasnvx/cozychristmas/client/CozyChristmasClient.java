@@ -3,6 +3,10 @@ package dev.eliasnvx.cozychristmas.client;
 import dev.architectury.event.events.client.ClientTooltipEvent;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
 import dev.architectury.registry.client.particle.ParticleProviderRegistry;
+import dev.architectury.registry.client.rendering.ColorHandlerRegistry;
+import dev.architectury.registry.client.rendering.RenderTypeRegistry;
+import dev.architectury.registry.item.ItemPropertiesRegistry;
+import dev.architectury.registry.registries.RegistrySupplier;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticLooks;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticShape;
@@ -20,7 +24,9 @@ import dev.eliasnvx.cozychristmas.client.workshop.SantaRenderer;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
+import dev.eliasnvx.cozychristmas.present.PresentBlock;
 import dev.eliasnvx.cozychristmas.present.PresentContents;
+import dev.eliasnvx.cozychristmas.present.PresentDesign;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozyEntities;
@@ -30,13 +36,24 @@ import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import dev.eliasnvx.cozychristmas.tree.OrnamentBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -47,12 +64,18 @@ import java.util.List;
  */
 public final class CozyChristmasClient {
 
+    /** The present item's model override predicate (models/item/present.json): the design's ordinal. */
+    private static final ResourceLocation PRESENT_DESIGN = CozyChristmas.id("design");
+
     private CozyChristmasClient() {
     }
 
     public static void init() {
         CosmeticShape.registerLayers();
         CosmeticLooks.registerDefaults();
+        registerItemTints();
+        registerBlockRenderTypes();
+        CozyBlocks.PRESENT_ITEM.listen(item -> ItemPropertiesRegistry.register(item, PRESENT_DESIGN, new PresentDesignProperty()));
         ClientTooltipEvent.ITEM.register(CozyChristmasClient::appendTooltip);
         ParticleProviderRegistry.register(CozyParticles.CONFETTI, sprites -> new ConfettiParticle.Provider(sprites));
         ElfRenderer.registerLayers();
@@ -77,6 +100,54 @@ public final class CozyChristmasClient {
         EntityRendererRegistry.register(CozyEntities.SANTAS_SLEIGH, SleighRenderer::new);
 
         CozyChristmas.LOGGER.info("{} client initialized", CozyChristmas.MOD_ID);
+    }
+
+    /**
+     * 1.21.1 has no item model tints in data: the dyeable knitwear's grayscale icon layer ({@code layer0}) takes the dye
+     * like leather armor, the white trims ({@code layer1}) stay as drawn. Sweaters, antlers and horns aren't tinted.
+     */
+    private static void registerItemTints() {
+        for (RegistrySupplier<Item> item : CozyItems.dyeable()) {
+            int undyed = item == CozyItems.ELF_HAT ? CozyItems.ELF_GREEN : CozyItems.KNIT_RED;
+            ColorHandlerRegistry.registerItemColors((stack, tintIndex) -> tintIndex != 0 ? -1
+                    : FastColor.ARGB32.opaque(DyedItemColor.getOrDefault(stack, undyed)), item);
+        }
+    }
+
+    /**
+     * 1.21.1 picks a block's render layer in code: blocks with see-through pixels (the fireplace's flames, stockings,
+     * the tree star, ornaments) are cutout. Registered as soon as each block exists (Fabric has them by now, NeoForge
+     * registers them later).
+     */
+    private static void registerBlockRenderTypes() {
+        cutout(CozyBlocks.FIREPLACE);
+        cutout(CozyBlocks.STOCKING);
+        cutout(CozyBlocks.TREE_STAR);
+        CozyBlocks.ORNAMENTS.values().forEach(CozyChristmasClient::cutout);
+    }
+
+    private static void cutout(RegistrySupplier<Block> block) {
+        block.listen(registered -> RenderTypeRegistry.register(RenderType.cutout(), registered));
+    }
+
+    /**
+     * The present's design for its item model overrides. Unclamped: the overrides compare the design's ordinal (1 to
+     * 3), and vanilla clamps property values to 0..1 by default.
+     */
+    private static final class PresentDesignProperty implements ClampedItemPropertyFunction {
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public float call(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+            return unclampedCall(stack, level, entity, seed);
+        }
+
+        @Override
+        public float unclampedCall(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+            BlockItemStateProperties state = stack.get(DataComponents.BLOCK_STATE);
+            PresentDesign design = state == null ? null : state.get(PresentBlock.DESIGN);
+            return design == null ? 0.0F : design.ordinal();
+        }
     }
 
     private static void appendTooltip(ItemStack stack, List<Component> lines, Item.TooltipContext context, TooltipFlag flag) {

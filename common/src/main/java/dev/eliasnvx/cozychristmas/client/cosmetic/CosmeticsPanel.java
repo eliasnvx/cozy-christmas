@@ -7,7 +7,7 @@ import dev.eliasnvx.cozychristmas.cosmetic.menu.CosmeticsContainer;
 import dev.eliasnvx.cozychristmas.cosmetic.menu.CosmeticsLayout;
 import dev.eliasnvx.cozychristmas.mixin.client.AbstractContainerScreenAccessor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -56,7 +56,7 @@ public final class CosmeticsPanel {
         return mouseX >= x && mouseX < x + CosmeticsLayout.WIDTH && mouseY >= y && mouseY < y + CosmeticsLayout.HEIGHT;
     }
 
-    public static void extractBackground(AbstractContainerScreen<?> screen, GuiGraphicsExtractor g) {
+    public static void renderBackground(AbstractContainerScreen<?> screen, GuiGraphics g) {
         if (!visible(screen)) {
             return;
         }
@@ -70,7 +70,7 @@ public final class CosmeticsPanel {
     }
 
     /** The name of a hovered empty cosmetic slot; true when it was shown. */
-    public static boolean tooltip(AbstractContainerScreen<?> screen, GuiGraphicsExtractor g, @Nullable Slot hovered,
+    public static boolean tooltip(AbstractContainerScreen<?> screen, GuiGraphics g, @Nullable Slot hovered,
                                   ItemStack carried, int mouseX, int mouseY) {
         if (!visible(screen) || !carried.isEmpty() || hovered == null || hovered.hasItem()
                 || !(hovered.container instanceof CosmeticsContainer)) {
@@ -80,7 +80,7 @@ public final class CosmeticsPanel {
         if (slot == null) {
             return false;
         }
-        g.setTooltipForNextFrame(Minecraft.getInstance().font, Component.translatable(slot.translationKey()), mouseX, mouseY);
+        g.renderTooltip(Minecraft.getInstance().font, Component.translatable(slot.translationKey()), mouseX, mouseY);
         return true;
     }
 }

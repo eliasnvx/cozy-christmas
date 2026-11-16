@@ -7,8 +7,12 @@
     "GGG"
   ],
   "key": {
-    "G": "minecraft:green_wool",
-    "N": "minecraft:gold_nugget"
+    "G": {
+      "item": "minecraft:green_wool"
+    },
+    "N": {
+      "item": "minecraft:gold_nugget"
+    }
   },
   "result": {
     "id": "cozychristmas:elf_hat"

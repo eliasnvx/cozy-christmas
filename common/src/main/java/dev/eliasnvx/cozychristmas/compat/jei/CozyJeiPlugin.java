@@ -12,7 +12,7 @@ import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
@@ -22,7 +22,7 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
@@ -33,11 +33,11 @@ import java.util.List;
 @JeiPlugin
 public final class CozyJeiPlugin implements IModPlugin {
 
-    static final IRecipeType<RecipeViewerPages.Wrapping> WRAPPING =
-            IRecipeType.create(RecipeViewerPages.wrappingId(), RecipeViewerPages.Wrapping.class);
+    static final RecipeType<RecipeViewerPages.Wrapping> WRAPPING =
+            new RecipeType<>(RecipeViewerPages.wrappingId(), RecipeViewerPages.Wrapping.class);
 
     @Override
-    public Identifier getPluginUid() {
+    public ResourceLocation getPluginUid() {
         return CozyChristmas.id("jei");
     }
 
@@ -72,7 +72,7 @@ public final class CozyJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addCraftingStation(WRAPPING, CozyBlocks.WRAPPING_TABLE_ITEM.get());
+        registration.addRecipeCatalyst(CozyBlocks.WRAPPING_TABLE_ITEM.get(), WRAPPING);
     }
 
     /** Gift over paper, an arrow, the present: the table's own layout. */
@@ -93,7 +93,7 @@ public final class CozyJeiPlugin implements IModPlugin {
         }
 
         @Override
-        public IRecipeType<RecipeViewerPages.Wrapping> getRecipeType() {
+        public RecipeType<RecipeViewerPages.Wrapping> getRecipeType() {
             return WRAPPING;
         }
 
@@ -130,7 +130,7 @@ public final class CozyJeiPlugin implements IModPlugin {
         }
 
         @Override
-        public Identifier getIdentifier(RecipeViewerPages.Wrapping recipe) {
+        public ResourceLocation getRegistryName(RecipeViewerPages.Wrapping recipe) {
             return CozyChristmas.id("wrapping/" + recipe.key());
         }
     }

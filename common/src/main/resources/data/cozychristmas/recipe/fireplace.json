@@ -7,8 +7,12 @@
     "BCB"
   ],
   "key": {
-    "B": "minecraft:bricks",
-    "C": "minecraft:campfire"
+    "B": {
+      "item": "minecraft:bricks"
+    },
+    "C": {
+      "item": "minecraft:campfire"
+    }
   },
   "result": {
     "id": "cozychristmas:fireplace"

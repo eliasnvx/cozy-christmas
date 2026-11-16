@@ -6,7 +6,10 @@ import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
+import dev.eliasnvx.cozychristmas.workshop.MobHome;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -20,8 +23,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -30,14 +33,12 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,7 +84,7 @@ public class Reindeer extends AbstractHorse {
     }
 
     /** Natural spawns: on {@code #cozychristmas:reindeer_spawnable_on} in daylight, like other animals. */
-    public static boolean checkReindeerSpawnRules(EntityType<Reindeer> type, LevelAccessor level, EntitySpawnReason reason,
+    public static boolean checkReindeerSpawnRules(EntityType<Reindeer> type, LevelAccessor level, MobSpawnType reason,
                                                   BlockPos pos, RandomSource random) {
         return level.getBlockState(pos.below()).is(CozyTags.REINDEER_SPAWNABLE_ON) && Animal.isBrightEnoughToSpawn(level, pos);
     }
@@ -103,9 +104,9 @@ public class Reindeer extends AbstractHorse {
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  EntitySpawnReason reason, @Nullable SpawnGroupData groupData) {
-        if (reason == EntitySpawnReason.STRUCTURE) {
-            setHomeTo(blockPosition(), HOME_RADIUS);
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+        if (reason == MobSpawnType.STRUCTURE) {
+            restrictTo(blockPosition(), HOME_RADIUS);
         }
         return super.finalizeSpawn(level, difficulty, reason, groupData);
     }
@@ -159,7 +160,7 @@ public class Reindeer extends AbstractHorse {
         moveRelative((float) settings.flySpeed(), new Vec3(input.x, 0.0, input.z));
         Vec3 motion = getDeltaMovement();
         double targetClimb;
-        if (rider.isJumping()) {
+        if (RiderJumpInput.isJumping(rider)) {
             targetClimb = settings.climbSpeed();
         } else if (input.z > 0.0) {
             double topSpeed = settings.flySpeed() * TOP_SPEED_FACTOR;
@@ -175,11 +176,24 @@ public class Reindeer extends AbstractHorse {
 
     /**
      * A reindeer that may fly is a flying vehicle: otherwise a dedicated server (allow-flight off by default) takes a
-     * rider hovering in the air for a cheat and kicks them after a few seconds.
+     * rider hovering in the air for a cheat and kicks them after a few seconds. (26.3 overrides
+     * {@code Entity#isFlyingVehicle}; 1.21.1 has none, see {@link #getDefaultGravity}.)
      */
-    @Override
     public boolean isFlyingVehicle() {
         return canFly();
+    }
+
+    /**
+     * 1.21.1's stand-in for {@code isFlyingVehicle}: {@code ServerGamePacketListenerImpl} never kicks the rider of a
+     * vehicle without gravity ({@code getMaximumFlyingTicks}). Only on the server and only under a player rider, whose
+     * client moves the reindeer (the server doesn't run its travel then), so its physics stay untouched everywhere.
+     */
+    @Override
+    protected double getDefaultGravity() {
+        if (!level().isClientSide() && isFlyingVehicle() && getControllingPassenger() instanceof Player) {
+            return 0.0;
+        }
+        return super.getDefaultGravity();
     }
 
     /** No jump bar in the air: there the jump key climbs instead. */
@@ -189,7 +203,7 @@ public class Reindeer extends AbstractHorse {
     }
 
     @Override
-    public boolean causeFallDamage(double fallDistance, float damageModifier, DamageSource damageSource) {
+    public boolean causeFallDamage(float fallDistance, float damageModifier, DamageSource damageSource) {
         return !canFly() && super.causeFallDamage(fallDistance, damageModifier, damageSource);
     }
 
@@ -219,7 +233,7 @@ public class Reindeer extends AbstractHorse {
         }
         if (!isTamed()) {
             makeMad();
-            return InteractionResult.SUCCESS;
+            return InteractionResult.sidedSuccess(level().isClientSide());
         }
         return super.mobInteract(player, hand);
     }
@@ -230,19 +244,18 @@ public class Reindeer extends AbstractHorse {
             return InteractionResult.SUCCESS;
         }
         carrot.consume(1, player);
-        playEatingSound();
+        playEatSound();
         rewardFeeding(player);
         if (getRandom().nextFloat() < CozyConfig.common().reindeer().tameChance()) {
             tameWithName(player);
         } else {
             level().broadcastEntityEvent(this, (byte) 6); // smoke, like a failed horse taming
         }
-        return InteractionResult.SUCCESS_SERVER;
+        return InteractionResult.CONSUME;
     }
 
-    /** Vanilla's is empty for animals; horses play theirs inside their eating handler. */
-    @Override
-    protected void playEatingSound() {
+    /** Horses play theirs inside their eating handler, which taming skips. */
+    private void playEatSound() {
         SoundEvent sound = getEatingSound();
         if (sound != null) {
             makeSound(sound);
@@ -251,7 +264,7 @@ public class Reindeer extends AbstractHorse {
 
     @Override
     public boolean tameWithName(Player player) {
-        clearHome(); // a tamed reindeer goes with its owner
+        clearRestriction(); // a tamed reindeer goes with its owner
         return super.tameWithName(player);
     }
 
@@ -274,7 +287,7 @@ public class Reindeer extends AbstractHorse {
 
     @Override
     public @Nullable AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        Reindeer baby = CozyEntities.REINDEER.get().create(level, EntitySpawnReason.BREEDING);
+        Reindeer baby = CozyEntities.REINDEER.get().create(level);
         if (baby != null && partner instanceof AbstractHorse parent) {
             setOffspringAttributes(parent, baby);
         }
@@ -284,15 +297,17 @@ public class Reindeer extends AbstractHorse {
     // --- saving and sounds ---------------------------------------------------------------------------------------
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
-        super.addAdditionalSaveData(output);
-        output.putLong(LAST_FED_DAY, lastFedDay);
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        MobHome.save(this, tag);
+        tag.putLong(LAST_FED_DAY, lastFedDay);
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        super.readAdditionalSaveData(input);
-        lastFedDay = input.getLongOr(LAST_FED_DAY, Long.MIN_VALUE);
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        MobHome.load(this, tag);
+        lastFedDay = tag.contains(LAST_FED_DAY, Tag.TAG_LONG) ? tag.getLong(LAST_FED_DAY) : Long.MIN_VALUE;
     }
 
     @Override

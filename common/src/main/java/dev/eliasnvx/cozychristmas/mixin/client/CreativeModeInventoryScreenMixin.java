@@ -3,7 +3,7 @@ package dev.eliasnvx.cozychristmas.mixin.client;
 import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticsPanel;
 import dev.eliasnvx.cozychristmas.cosmetic.menu.CosmeticMenuSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.menu.CosmeticsLayout;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.world.inventory.Slot;
@@ -41,15 +41,16 @@ public abstract class CreativeModeInventoryScreenMixin {
     }
 
     @Inject(method = "hasClickedOutside", at = @At("RETURN"), cancellable = true)
-    private void cozychristmas$panelIsInside(double mouseX, double mouseY, int left, int top, CallbackInfoReturnable<Boolean> cir) {
+    private void cozychristmas$panelIsInside(double mouseX, double mouseY, int left, int top, int button,
+                                             CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ() && CosmeticsPanel.contains((AbstractContainerScreen<?>) (Object) this, mouseX, mouseY)) {
             hasClickedOutside = false;
             cir.setReturnValue(false);
         }
     }
 
-    @Inject(method = "extractBackground", at = @At("TAIL"))
-    private void cozychristmas$cosmeticsPanel(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        CosmeticsPanel.extractBackground((AbstractContainerScreen<?>) (Object) this, g);
+    @Inject(method = "renderBg", at = @At("TAIL"))
+    private void cozychristmas$cosmeticsPanel(GuiGraphics g, float partialTick, int mouseX, int mouseY, CallbackInfo ci) {
+        CosmeticsPanel.renderBackground((AbstractContainerScreen<?>) (Object) this, g);
     }
 }

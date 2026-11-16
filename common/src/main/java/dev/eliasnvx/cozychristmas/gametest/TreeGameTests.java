@@ -113,7 +113,7 @@ public final class TreeGameTests {
             // a star set by a structure has no owner and brings nothing
             helper.setBlock(STAR, Blocks.AIR);
             helper.setBlock(STAR, CozyBlocks.TREE_STAR.get());
-            TreeStarBlockEntity ownerless = helper.getBlockEntity(STAR, TreeStarBlockEntity.class);
+            TreeStarBlockEntity ownerless = helper.<TreeStarBlockEntity>getBlockEntity(STAR);
             helper.assertTrue(ownerless.owner() == null && ownerless.tryGift(helper.getLevel()) == null, "no owner, no present");
 
             // a player putting the star up owns the tree
@@ -141,7 +141,7 @@ public final class TreeGameTests {
             helper.setBlock(SMALL_TREE, Blocks.SPRUCE_LOG);
             helper.setBlock(SMALL_TREE.above(), leaves());
             helper.setBlock(SMALL_STAR, CozyBlocks.TREE_STAR.get());
-            TreeStarBlockEntity second = helper.getBlockEntity(SMALL_STAR, TreeStarBlockEntity.class);
+            TreeStarBlockEntity second = helper.<TreeStarBlockEntity>getBlockEntity(SMALL_STAR);
             second.putUp(owner, StockingBlockEntity.morning(helper.getLevel()) - 1);
             helper.assertTrue(first.tryGift(helper.getLevel()) != null, "the first tree brings the morning's present");
             helper.assertTrue(second.tryGift(helper.getLevel()) == null, "the second waits for another morning");
@@ -239,7 +239,7 @@ public final class TreeGameTests {
         for (int i = 0; i < ornaments; i++) {
             hangOrnament(helper, ORNAMENT_SPOTS.get(i), OrnamentColor.values()[i % OrnamentColor.values().length]);
         }
-        TreeStarBlockEntity star = helper.getBlockEntity(STAR, TreeStarBlockEntity.class);
+        TreeStarBlockEntity star = helper.<TreeStarBlockEntity>getBlockEntity(STAR);
         star.putUp(owner, StockingBlockEntity.morning(helper.getLevel()) - 1);
         return star;
     }

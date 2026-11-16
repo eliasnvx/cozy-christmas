@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.stocking;
 
+import com.mojang.serialization.MapCodec;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -9,7 +10,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -35,6 +37,8 @@ public class FireplaceBlock extends HorizontalDirectionalBlock {
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final int LIGHT = 13;
 
+    public static final MapCodec<FireplaceBlock> CODEC = simpleCodec(FireplaceBlock::new);
+
     public FireplaceBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
@@ -45,6 +49,11 @@ public class FireplaceBlock extends HorizontalDirectionalBlock {
         builder.add(FACING, LIT);
     }
 
+    @Override
+    protected MapCodec<? extends FireplaceBlock> codec() {
+        return CODEC;
+    }
+
     /** The hearth faces the player who places it. */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
@@ -52,7 +61,7 @@ public class FireplaceBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, BlockHitResult hit) {
         boolean lit = state.getValue(LIT);
         if (!lit && stack.is(CozyTags.LIGHTS_FIREPLACES)) {
@@ -61,22 +70,22 @@ public class FireplaceBlock extends HorizontalDirectionalBlock {
                     SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.4F + 0.8F);
             if (!level.isClientSide()) {
                 if (stack.isDamageableItem()) {
-                    stack.hurtAndBreak(1, player, hand.asEquipmentSlot());
+                    stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
                 } else {
                     stack.consume(1, player);
                 }
             }
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
         if (lit && stack.is(ItemTags.SHOVELS)) {
             setLit(level, pos, state, false, player);
             level.playSound(player, pos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 0.6F, 1.0F);
             if (!level.isClientSide()) {
-                stack.hurtAndBreak(1, player, hand.asEquipmentSlot());
+                stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
             }
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.sidedSuccess(level.isClientSide());
         }
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     private static void setLit(Level level, BlockPos pos, BlockState state, boolean lit, Player player) {

@@ -4,7 +4,7 @@ import dev.architectury.event.events.common.LootEvent;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -22,13 +22,13 @@ public final class Chestnuts {
     }
 
     public static void register() {
-        LootEvent.MODIFY_LOOT_TABLE.register((registries, key, context, builtin) -> {
+        LootEvent.MODIFY_LOOT_TABLE.register((key, context, builtin) -> {
             FoodSettings settings = CozyConfig.common().food();
             if (!builtin || settings.chestnutChance() <= 0.0F) {
                 return;
             }
-            for (Identifier leaves : settings.chestnutLeaves()) {
-                boolean match = BuiltInRegistries.BLOCK.getOptional(leaves).flatMap(Block::getLootTable)
+            for (ResourceLocation leaves : settings.chestnutLeaves()) {
+                boolean match = BuiltInRegistries.BLOCK.getOptional(leaves).map(Block::getLootTable)
                         .filter(key::equals).isPresent();
                 if (match) {
                     context.addPool(LootPool.lootPool()

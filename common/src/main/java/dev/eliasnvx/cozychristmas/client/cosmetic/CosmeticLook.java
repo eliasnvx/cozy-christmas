@@ -1,9 +1,8 @@
 package dev.eliasnvx.cozychristmas.client.cosmetic;
 
 import dev.eliasnvx.cozychristmas.CozyChristmas;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -34,7 +33,7 @@ public record CosmeticLook(CosmeticShape shape, RenderType base, @Nullable Rende
 
     private static RenderType type(String name) {
         // like armor: cutout, both faces (thin parts like the scarf ends are seen from behind)
-        Identifier texture = CozyChristmas.id("textures/entity/cosmetic/" + name + ".png");
-        return RenderTypes.armorCutoutNoCull(texture);
+        ResourceLocation texture = CozyChristmas.id("textures/entity/cosmetic/" + name + ".png");
+        return RenderType.armorCutoutNoCull(texture);
     }
 }

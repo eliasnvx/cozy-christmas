@@ -7,8 +7,12 @@
     "RR"
   ],
   "key": {
-    "W": "minecraft:white_wool",
-    "R": "minecraft:red_wool"
+    "W": {
+      "item": "minecraft:white_wool"
+    },
+    "R": {
+      "item": "minecraft:red_wool"
+    }
   },
   "result": {
     "id": "cozychristmas:stocking"

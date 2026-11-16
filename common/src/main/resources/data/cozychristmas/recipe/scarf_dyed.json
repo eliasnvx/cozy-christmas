@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_dye",
-  "dye": "#minecraft:dyes",
-  "group": "cozychristmas_dyed",
-  "result": {
-    "id": "cozychristmas:scarf"
-  },
-  "target": "cozychristmas:scarf"
-}

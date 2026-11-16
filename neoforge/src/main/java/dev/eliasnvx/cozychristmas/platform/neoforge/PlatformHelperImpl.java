@@ -18,13 +18,13 @@ public final class PlatformHelperImpl {
 
     private static final Supplier<AttachmentType<Karma>> KARMA = ATTACHMENTS.register("karma",
             () -> AttachmentType.builder(() -> Karma.ZERO)
-                    .serialize(Karma.CODEC.fieldOf("karma"))
+                    .serialize(Karma.CODEC.fieldOf("karma").codec())
                     .copyOnDeath()
                     .build());
 
     private static final Supplier<AttachmentType<CosmeticInventory>> COSMETICS = ATTACHMENTS.register("cosmetics",
             () -> AttachmentType.builder(() -> CosmeticInventory.EMPTY)
-                    .serialize(CosmeticInventory.CODEC.fieldOf("cosmetics"))
+                    .serialize(CosmeticInventory.CODEC.fieldOf("cosmetics").codec())
                     .copyOnDeath()
                     .build());
 

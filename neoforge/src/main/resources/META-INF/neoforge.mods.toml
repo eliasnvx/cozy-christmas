@@ -18,7 +18,7 @@ config = "cozychristmas.mixins.json"
 [[dependencies.${mod_id}]]
 modId = "minecraft"
 type = "required"
-versionRange = "[${minecraft_version},)"
+versionRange = "[${minecraft_version},1.21.2)"
 ordering = "NONE"
 side = "BOTH"
 
@@ -41,4 +41,12 @@ modId = "geckolib"
 type = "required"
 versionRange = "[${geckolib_version},)"
 ordering = "AFTER"
+side = "BOTH"
+
+# Soft dependencies (compat.*): used when present, never required; the ranges are the APIs compat.* is built against
+[[dependencies.${mod_id}]]
+modId = "curios"
+type = "optional"
+versionRange = "[9,10)"
+ordering = "NONE"
 side = "BOTH"

@@ -2,17 +2,17 @@ package dev.eliasnvx.cozychristmas.client.cosmetic;
 
 import dev.eliasnvx.cozychristmas.compat.catgirl.CatgirlEars;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.player.PlayerModel;
-import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * A baked {@link CosmeticShape}: poses like the wearer, swings the scarf's back end and the elf hat's tip, and puts the
- * ear warmers on the sides of the head or over cat ears. Posed when the frame is drawn (submissions are deferred), from
- * the state it was submitted with, so one instance serves every player.
+ * ear warmers on the sides of the head or over cat ears. The cosmetic layer copies the wearer's pose onto it and draws
+ * it right away, so one instance serves every player.
  */
-public final class CosmeticModel extends PlayerModel {
+public final class CosmeticModel extends PlayerModel<AbstractClientPlayer> {
 
     /** The back end hangs a little away from the back even when standing still. */
     private static final float TAIL_REST = 0.12F;
@@ -59,12 +59,25 @@ public final class CosmeticModel extends PlayerModel {
     }
 
     /**
-     * Also hides the skin's outer layer parts: cosmetics never draw there, and mods that put the skin's 3D layers into
-     * every player model (3D Skin Layers) would otherwise draw the wearer's outer skin with the knit texture.
+     * Poses the main parts like the wearer's model and shows only those it shows (a spectator's body is hidden), the
+     * way 26.x's setupAnim did from the render state.
      */
-    @Override
-    public void setupAnim(AvatarRenderState state) {
-        super.setupAnim(state);
+    public void poseLike(PlayerModel<AbstractClientPlayer> wearer) {
+        wearer.copyPropertiesTo(this);
+        head.visible = wearer.head.visible;
+        body.visible = wearer.body.visible;
+        rightArm.visible = wearer.rightArm.visible;
+        leftArm.visible = wearer.leftArm.visible;
+        rightLeg.visible = wearer.rightLeg.visible;
+        leftLeg.visible = wearer.leftLeg.visible;
+    }
+
+    /**
+     * Also hides the skin's outer layer parts: cosmetics never draw there, and mods that put the skin's 3D layers into
+     * every player model (3D Skin Layers) would otherwise draw the wearer's outer skin with the knit texture. The main
+     * parts are posed by {@link #poseLike} before this is called.
+     */
+    public void setupAnim(PlayerPose state) {
         hat.visible = false;
         jacket.visible = false;
         leftSleeve.visible = false;
@@ -98,7 +111,7 @@ public final class CosmeticModel extends PlayerModel {
         }
     }
 
-    private static void poseLikeCatEar(ModelPart muff, int side, AvatarRenderState state, CosmeticRenderData data) {
+    private static void poseLikeCatEar(ModelPart muff, int side, PlayerPose state, CosmeticRenderData data) {
         muff.zRot = CatgirlEars.zRot(side, state.ageInTicks, data.phase(), state.walkAnimationPos, data.walkAmount(),
                 data.flatten());
         muff.xRot = CatgirlEars.xRot(side, state.ageInTicks, data.phase(), data.flatten());

@@ -1,6 +1,6 @@
 package dev.eliasnvx.cozychristmas.client;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 
 /** Vanilla-looking panels and slots drawn with fills, so layouts live in code, not in a texture. */
 public final class CozyGui {
@@ -17,7 +17,7 @@ public final class CozyGui {
     }
 
     /** A window like vanilla containers: black rounded outline, white/grey bevel, light grey body. */
-    public static void panel(GuiGraphicsExtractor g, int x, int y, int w, int h) {
+    public static void panel(GuiGraphics g, int x, int y, int w, int h) {
         g.fill(x + 1, y, x + w - 1, y + 1, OUTLINE);
         g.fill(x + 1, y + h - 1, x + w - 1, y + h, OUTLINE);
         g.fill(x, y + 1, x + 1, y + h - 1, OUTLINE);
@@ -30,7 +30,7 @@ public final class CozyGui {
     }
 
     /** An 18x18 sunken slot frame; the item goes at (x + 1, y + 1). */
-    public static void slotFrame(GuiGraphicsExtractor g, int x, int y) {
+    public static void slotFrame(GuiGraphics g, int x, int y) {
         g.fill(x, y, x + SLOT - 1, y + 1, SLOT_DARK);
         g.fill(x, y, x + 1, y + SLOT - 1, SLOT_DARK);
         g.fill(x + 1, y + SLOT - 1, x + SLOT, y + SLOT, LIGHT);

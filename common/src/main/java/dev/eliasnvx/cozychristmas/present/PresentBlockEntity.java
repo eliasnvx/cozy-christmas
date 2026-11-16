@@ -7,7 +7,11 @@ import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.workshop.WorkshopAlarm;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -19,8 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -114,23 +116,27 @@ public class PresentBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        contents = input.read(CONTENTS, PresentContents.CODEC).orElse(PresentContents.SURPRISE);
-        workshopStock = input.getBooleanOr(WORKSHOP_STOCK, false);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        contents = tag.contains(CONTENTS)
+                ? PresentContents.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get(CONTENTS))
+                        .resultOrPartial().orElse(PresentContents.SURPRISE)
+                : PresentContents.SURPRISE;
+        workshopStock = tag.getBoolean(WORKSHOP_STOCK);
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.store(CONTENTS, PresentContents.CODEC, contents);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        RegistryOps<Tag> ops = registries.createSerializationContext(NbtOps.INSTANCE);
+        PresentContents.CODEC.encodeStart(ops, contents).ifSuccess(encoded -> tag.put(CONTENTS, encoded));
         if (workshopStock) {
-            output.putBoolean(WORKSHOP_STOCK, true);
+            tag.putBoolean(WORKSHOP_STOCK, true);
         }
     }
 
     @Override
-    protected void applyImplicitComponents(DataComponentGetter components) {
+    protected void applyImplicitComponents(DataComponentInput components) {
         super.applyImplicitComponents(components);
         contents = components.getOrDefault(CozyComponents.PRESENT_CONTENTS.get(), PresentContents.SURPRISE);
     }
@@ -147,8 +153,8 @@ public class PresentBlockEntity extends BlockEntity {
 
     @Override
     @SuppressWarnings("deprecation") // Mojang marks it override-only; vanilla's decorated pot overrides it the same way
-    public void removeComponentsFromTag(ValueOutput output) {
-        super.removeComponentsFromTag(output);
-        output.discard(CONTENTS);
+    public void removeComponentsFromTag(CompoundTag tag) {
+        super.removeComponentsFromTag(tag);
+        tag.remove(CONTENTS);
     }
 }

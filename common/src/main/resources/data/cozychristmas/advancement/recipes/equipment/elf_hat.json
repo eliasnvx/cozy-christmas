@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "cozychristmas:elf_hat"
+        "recipe": "cozychristmas:elf_hat"
       },
       "trigger": "minecraft:recipe_unlocked"
     },
