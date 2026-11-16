@@ -20,6 +20,9 @@ public final class CozyChristmasNeoForgeClient {
 
     public CozyChristmasNeoForgeClient(IEventBus modBus) {
         CozyChristmasClient.init();
+        if (Boolean.getBoolean("cozychristmas.devcheck")) {
+            startDevCheck(); // dev runs only: the class isn't in the released jar
+        }
         modBus.addListener((EntityRenderersEvent.AddLayers event) -> {
             for (PlayerSkin.Model skin : event.getSkins()) {
                 if (event.getSkin(skin) instanceof PlayerRenderer renderer) {
@@ -31,5 +34,13 @@ public final class CozyChristmasNeoForgeClient {
                 event.registerBlockEntityRenderer(CozyBlocks.PRESENT_ENTITY.get(), PresentRenderer::new));
         modBus.addListener((RegisterMenuScreensEvent event) ->
                 event.register(CozyMenus.WRAPPING_TABLE.get(), WrappingTableScreen::new));
+    }
+
+    private static void startDevCheck() {
+        try {
+            Class.forName("dev.eliasnvx.cozychristmas.neoforge.dev.DevCheckNeoForge").getMethod("start").invoke(null);
+        } catch (ReflectiveOperationException e) {
+            CozyChristmas.LOGGER.error("DEVCHECK couldn't start", e);
+        }
     }
 }

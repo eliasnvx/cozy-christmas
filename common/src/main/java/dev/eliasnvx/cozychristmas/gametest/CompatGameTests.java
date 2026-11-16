@@ -3,17 +3,29 @@ package dev.eliasnvx.cozychristmas.gametest;
 import dev.architectury.platform.Platform;
 import dev.eliasnvx.cozychristmas.compat.ExternalSlots;
 import dev.eliasnvx.cozychristmas.compat.sereneseasons.SereneSeasonsCalendar;
+import dev.eliasnvx.cozychristmas.compat.snowyspirit.SnowySpiritGuards;
+import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticInventory;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
+import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
 import dev.eliasnvx.cozychristmas.season.SeasonMoment;
 import dev.eliasnvx.cozychristmas.season.SubSeason;
+import dev.eliasnvx.cozychristmas.workshop.Santa;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -30,7 +42,9 @@ public final class CompatGameTests {
     public static final List<GameTestEntry> ALL = List.of(
             new GameTestEntry("cosmetics_in_other_mods_slots_count_as_worn", CompatGameTests::otherModsSlotsCount),
             new GameTestEntry("hidden_and_cosmetic_only_slots_split_looks_from_bonuses", CompatGameTests::hiddenAndLookOnlySlots),
-            new GameTestEntry("season_reads_serene_seasons_calendar", CompatGameTests::sereneSeasonsCalendar));
+            new GameTestEntry("season_reads_serene_seasons_calendar", CompatGameTests::sereneSeasonsCalendar),
+            new GameTestEntry("reindeer_pull_snowy_spirit_sleds", CompatGameTests::reindeerPullSleds),
+            new GameTestEntry("santa_calls_snowy_spirit_guards", CompatGameTests::santaCallsGuards));
 
     private static final Vec3 PLAYER = new Vec3(2.5, 1.0, 2.5);
 
@@ -112,6 +126,35 @@ public final class CompatGameTests {
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "season set early_summer");
         helper.assertValueEqual(ChristmasSeason.calendarMoment().map(SeasonMoment::subSeason), Optional.of(SubSeason.EARLY_SUMMER),
                 "and follows it");
+        helper.succeed();
+    }
+
+    /** Snowy Spirit's sleds take any animal in its puller tag: our reindeer is in it (data, there with or without the mod). */
+    public static void reindeerPullSleds(GameTestHelper helper) {
+        TagKey<EntityType<?>> pullers = TagKey.create(Registries.ENTITY_TYPE,
+                ResourceLocation.fromNamespaceAndPath(SnowySpiritGuards.MOD_ID, "sled_pullers"));
+        helper.assertTrue(CozyEntities.REINDEER.get().is(pullers), "reindeer pull Snowy Spirit's sleds");
+        helper.succeed();
+    }
+
+    /** With Snowy Spirit, Santa at home in his workshop calls his gingerbread golem guards once; without it, none. */
+    public static void santaCallsGuards(GameTestHelper helper) {
+        for (int x = 0; x < 8; x++) {
+            for (int z = 0; z < 8; z++) {
+                helper.setBlock(x, 0, z, Blocks.STONE);
+            }
+        }
+        Santa santa = helper.spawn(CozyEntities.SANTA.get(), new Vec3(3.5, 1.0, 3.5));
+        santa.setNoAi(true);
+        santa.restrictTo(santa.blockPosition(), 20); // a workshop's Santa has his home
+        santa.guardWorkshop(helper.getLevel());
+        santa.guardWorkshop(helper.getLevel()); // once only
+        long guards = helper.getLevel().getEntities((Entity) null, santa.getBoundingBox().inflate(12.0),
+                entity -> SnowySpiritGuards.GINGERBREAD_GOLEM.equals(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()))).size();
+        int expected = SnowySpiritGuards.available() ? CozyConfig.common().workshop().santa().snowySpiritGuards() : 0;
+        helper.assertValueEqual(guards, (long) expected, "gingerbread golem guards");
+        helper.getLevel().getEntities((Entity) null, santa.getBoundingBox().inflate(12.0), entity -> !(entity instanceof Player))
+                .forEach(Entity::discard);
         helper.succeed();
     }
 }

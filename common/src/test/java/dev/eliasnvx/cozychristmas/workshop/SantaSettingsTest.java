@@ -21,7 +21,7 @@ class SantaSettingsTest {
 
     @Test
     void noDiscountWhenOff() {
-        SantaSettings santa = new SantaSettings(80, 8, 0.3, 1200, 32, 0.0, true);
+        SantaSettings santa = new SantaSettings(80, 8, 0.3, 1200, 32, 0.0, true, 2);
         assertEquals(0, santa.discount(64));
     }
 

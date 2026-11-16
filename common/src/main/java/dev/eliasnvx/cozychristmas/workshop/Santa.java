@@ -2,6 +2,7 @@ package dev.eliasnvx.cozychristmas.workshop;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.eliasnvx.cozychristmas.compat.snowyspirit.SnowySpiritGuards;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.karma.KarmaManager;
 import dev.eliasnvx.cozychristmas.karma.KarmaTier;
@@ -85,6 +86,9 @@ public class Santa extends AbstractVillager {
     private static final double CHASE = 1.2;
     private static final double STROLL = 0.6;
     private static final String RESTOCK_DAY = "restock_day";
+    private static final String GUARDS_CALLED = "guards_called";
+    /** How often Santa checks his Snowy Spirit guards are still kept round the workshop. */
+    private static final int GUARD_CHECK = 200;
     private static final String OWED_THANKS = "owed_thanks";
     private static final String THANKED = "thanked";
     private static final String THANKED_DAY = "day";
@@ -93,6 +97,8 @@ public class Santa extends AbstractVillager {
     private static final double BY_THE_SLEIGH = 3.5;
     private static final double SLEIGH_SEARCH = 32.0;
 
+    /** Whether he called his Snowy Spirit guards (once, in a generated workshop, with Snowy Spirit installed). */
+    private boolean guardsCalled;
     private long restockDay = Long.MIN_VALUE;
     /**
      * Who Santa is angry at and until when (game time). Kept apart from the attack target: on peaceful he can't attack
@@ -184,6 +190,9 @@ public class Santa extends AbstractVillager {
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
+        if (level() instanceof ServerLevel server) {
+            guardWorkshop(server);
+        }
         if (angryAt == null || !(level() instanceof ServerLevel level)) {
             return;
         }
@@ -284,6 +293,22 @@ public class Santa extends AbstractVillager {
         return true;
     }
 
+    /**
+     * Snowy Spirit (SPEC compat): in his workshop (where he has a home) Santa calls {@code workshop.santa.snowy_spirit_guards}
+     * gingerbread golems once, and keeps them near it.
+     */
+    public void guardWorkshop(ServerLevel level) {
+        if (!hasRestriction() || !SnowySpiritGuards.available()) {
+            return;
+        }
+        if (!guardsCalled) {
+            guardsCalled = true;
+            SnowySpiritGuards.call(level, getRestrictCenter(), CozyConfig.common().workshop().santa().snowySpiritGuards());
+        } else if (tickCount % GUARD_CHECK == 0) {
+            SnowySpiritGuards.keepGuardsNear(level, getRestrictCenter());
+        }
+    }
+
     /** Back from a delivery flight: these players helped load the sleigh. */
     public void thank(Collection<UUID> helpers) {
         owedThanks.addAll(helpers);
@@ -363,6 +388,7 @@ public class Santa extends AbstractVillager {
         super.addAdditionalSaveData(tag);
         MobHome.save(this, tag);
         tag.putLong(RESTOCK_DAY, restockDay);
+        tag.putBoolean(GUARDS_CALLED, guardsCalled);
         store(tag, OWED_THANKS, UUIDUtil.CODEC.listOf(), List.copyOf(owedThanks));
         store(tag, THANKED, Thanked.CODEC.listOf(), thankedOn.entrySet().stream()
                 .map(entry -> new Thanked(entry.getKey(), entry.getValue())).toList());
@@ -373,6 +399,7 @@ public class Santa extends AbstractVillager {
         super.readAdditionalSaveData(tag);
         MobHome.load(this, tag);
         restockDay = tag.contains(RESTOCK_DAY, Tag.TAG_LONG) ? tag.getLong(RESTOCK_DAY) : Long.MIN_VALUE;
+        guardsCalled = tag.getBoolean(GUARDS_CALLED);
         owedThanks.clear();
         read(tag, OWED_THANKS, UUIDUtil.CODEC.listOf()).ifPresent(owedThanks::addAll);
         thankedOn.clear();

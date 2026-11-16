@@ -9,12 +9,13 @@ import net.minecraft.util.Mth;
  * The {@code workshop.santa} config section. Santa has {@code health}, hits for {@code attackDamage} and walks at
  * {@code speed}. When someone hurts him or an elf, or steals from the warehouse, every Santa within
  * {@code alarmRadius} blocks goes after them for {@code angerTicks}. Nice players pay {@code niceDiscount} less (0.25 =
- * a quarter off, rounded down); in season they also get one present a day if {@code dailyGifts} is on.
+ * a quarter off, rounded down); in season they also get one present a day if {@code dailyGifts} is on. With Snowy Spirit
+ * installed, {@code snowySpiritGuards} of its gingerbread golems guard a generated workshop (0 = none).
  */
 public record SantaSettings(double health, double attackDamage, double speed, int angerTicks, int alarmRadius,
-                            double niceDiscount, boolean dailyGifts) {
+                            double niceDiscount, boolean dailyGifts, int snowySpiritGuards) {
 
-    public static final SantaSettings DEFAULTS = new SantaSettings(80.0, 8.0, 0.3, 1200, 32, 0.25, true);
+    public static final SantaSettings DEFAULTS = new SantaSettings(80.0, 8.0, 0.3, 1200, 32, 0.25, true, 2);
 
     public static final Codec<SantaSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
             ConfigCodecs.field(Codec.doubleRange(1.0, 1024.0), "health", DEFAULTS.health)
@@ -28,7 +29,9 @@ public record SantaSettings(double health, double attackDamage, double speed, in
                     .forGetter(SantaSettings::alarmRadius),
             ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "nice_discount", DEFAULTS.niceDiscount)
                     .forGetter(SantaSettings::niceDiscount),
-            ConfigCodecs.field(Codec.BOOL, "daily_gifts", DEFAULTS.dailyGifts).forGetter(SantaSettings::dailyGifts)
+            ConfigCodecs.field(Codec.BOOL, "daily_gifts", DEFAULTS.dailyGifts).forGetter(SantaSettings::dailyGifts),
+            ConfigCodecs.field(Codec.intRange(0, 8), "snowy_spirit_guards", DEFAULTS.snowySpiritGuards)
+                    .forGetter(SantaSettings::snowySpiritGuards)
     ).apply(i, SantaSettings::new));
 
     /** How many fewer items a nice player pays for a price of {@code price} (the merchant keeps every price at 1+). */

@@ -29,6 +29,16 @@ public final class CompatGameTestsFabric implements FabricGameTest {
     }
 
     @GameTest(template = EMPTY_STRUCTURE)
+    public void reindeerPullSleds(GameTestHelper helper) {
+        CompatGameTests.reindeerPullSleds(helper);
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
+    public void santaCallsGuards(GameTestHelper helper) {
+        CompatGameTests.santaCallsGuards(helper);
+    }
+
+    @GameTest(template = EMPTY_STRUCTURE)
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

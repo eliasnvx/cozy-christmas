@@ -45,6 +45,18 @@ dependencies {
         if (wanted("snowy")) {
             modRuntimeOnly("maven.modrinth:snowy-spirit:${rootProject.snowy_spirit_fabric_id}") { transitive false }
             modRuntimeOnly("maven.modrinth:moonlight:${rootProject.moonlight_fabric_id}") { transitive false }
+            // Moonlight nests codecui in its jar, which a real install unpacks and the dev runtime doesn't
+            def moonlight = configurations.detachedConfiguration(
+                    dependencies.create("maven.modrinth:moonlight:${rootProject.moonlight_fabric_id}"))
+            moonlight.transitive = false
+            def nested = layout.buildDirectory.dir("nested/moonlight").get().asFile
+            copy {
+                from(zipTree(moonlight.singleFile)) { include "META-INF/jars/*.jar" }
+                into nested
+                eachFile { path = name }
+                includeEmptyDirs = false
+            }
+            modRuntimeOnly fileTree(nested) { include "*.jar" }
         }
     }
     shadowBundle(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
@@ -87,9 +99,20 @@ dependencies {
     prodMods "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     prodMods "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
     prodMods "software.bernie.geckolib:geckolib-fabric-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
-    if (project.findProperty("compat") == "true") {
+    // the same groups as the dev runs' -Pcompat; here the loader unpacks nested jars itself, and mods built for
+    // intermediary names (Moonlight's reload listeners) work as they do for players
+    def prodCompat = project.findProperty("compat")?.toString()
+    def prodWanted = { String group -> prodCompat != null && (prodCompat == "true" || prodCompat.split(",")*.trim().contains(group)) }
+    if (prodWanted("jei")) {
         prodMods "mezz.jei:jei-${rootProject.minecraft_version}-fabric:${rootProject.jei_version}"
+        prodMods "net.mezzdev.config:mezz_config-${rootProject.minecraft_version}-fabric:${rootProject.mezz_config_version}"
+    }
+    if (prodWanted("jade")) {
         prodMods "maven.modrinth:jade:${rootProject.jade_fabric_version}"
+    }
+    if (prodWanted("snowy")) {
+        prodMods "maven.modrinth:snowy-spirit:${rootProject.snowy_spirit_fabric_id}"
+        prodMods "maven.modrinth:moonlight:${rootProject.moonlight_fabric_id}"
     }
 }
 def devCheckJar = tasks.register("devCheckJar", Jar) {
@@ -119,4 +142,10 @@ remapJar {
     inputFile.set(shadowJar.archiveFile)
     archiveClassifier = null
     archiveVersion = "${project.version}+${rootProject.minecraft_version}-fabric"
+}
+
+// Every DevCheck starts in a fresh world: scenes left from an earlier run would stand in the shots
+tasks.matching { it.name in ["runDevCheck", "runProdDevCheck"] }.configureEach {
+    def saves = layout.buildDirectory.dir(name == "runDevCheck" ? "run/devCheck/saves/cozychristmas-check" : "run/prodDevCheck/saves/cozychristmas-check")
+    doFirst { delete saves }
 }

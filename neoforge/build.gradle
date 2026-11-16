@@ -48,6 +48,18 @@ dependencies {
         if (wanted("snowy")) {
             modRuntimeOnly("maven.modrinth:snowy-spirit:${rootProject.snowy_spirit_neoforge_id}") { transitive false }
             modRuntimeOnly("maven.modrinth:moonlight:${rootProject.moonlight_neoforge_id}") { transitive false }
+            // Moonlight nests codecui (jar-in-jar), which a real install unpacks and the dev runtime doesn't
+            def moonlight = configurations.detachedConfiguration(
+                    dependencies.create("maven.modrinth:moonlight:${rootProject.moonlight_neoforge_id}"))
+            moonlight.transitive = false
+            def nested = layout.buildDirectory.dir("nested/moonlight").get().asFile
+            copy {
+                from(zipTree(moonlight.singleFile)) { include "META-INF/jarjar/*.jar" }
+                into nested
+                eachFile { path = name }
+                includeEmptyDirs = false
+            }
+            modRuntimeOnly fileTree(nested) { include "*.jar" }
         }
         if (wanted("curios")) {
             modRuntimeOnly("maven.modrinth:curios:${rootProject.curios_neoforge_version}") { transitive false }
@@ -102,4 +114,9 @@ remapJar {
     inputFile.set(shadowJar.archiveFile)
     archiveClassifier = withDevCheck ? "devcheck" : null
     archiveVersion = "${project.version}+${rootProject.minecraft_version}-neoforge"
+}
+
+// Every DevCheck starts in a fresh world: scenes left from an earlier run would stand in the shots
+tasks.matching { it.name == "runDevCheck" }.configureEach {
+    doFirst { delete file("run/saves/cozychristmas-check") }
 }

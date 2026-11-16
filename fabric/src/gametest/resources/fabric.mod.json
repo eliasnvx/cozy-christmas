@@ -20,6 +20,9 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.TreeGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.CompatGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.SleighGameTestsFabric"
+    ],
+    "client": [
+      "dev.eliasnvx.cozychristmas.fabric.gametest.DevCheckFabric"
     ]
   },
   "depends": {

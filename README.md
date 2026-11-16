@@ -91,12 +91,13 @@ All optional; install any of them alongside.
 - **Jade**: whose stocking it is, what it holds and whether it hangs over a fireplace; whose tree a star crowns and how many ornaments it still needs; who wrapped a present (never what's inside).
 - **Serene Seasons**: set `season.source` to `serene_seasons` and Christmas follows its calendar (early and mid winter by default; Santa loads the sleigh at the start of mid winter).
 - **Curios** (NeoForge): hats, scarves, sweaters and mittens fit its head, necklace, body and hands slots, look the same there and count for the Toasty set.
+- **Snowy Spirit**: Santa calls two gingerbread golems to guard his workshop (`workshop.santa.snowy_spirit_guards`), and our reindeer pull its sleds.
 - **Catgirl & Catboy Mod**: ear warmers sit over its cat ears. **Femboy Mod**: its socks hang as stockings.
 
-Snowy Spirit (gingerbread golems guarding the workshop, sleds pulled by our reindeer) and Tradery (Santa trading for its money) come later: Snowy Spirit has no 26.x version yet.
+Tradery (Santa trading for its money) comes later.
 
 ## Building
-Java 25.
+Java 21 on this branch (Minecraft 1.21.1).
 ```bash
 ./gradlew build
 ```

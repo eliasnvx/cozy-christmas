@@ -13,6 +13,7 @@ import dev.eliasnvx.cozychristmas.gametest.PresentGameTests;
 import dev.eliasnvx.cozychristmas.gametest.SleighGameTests;
 import dev.eliasnvx.cozychristmas.gametest.SnowmanGameTests;
 import dev.eliasnvx.cozychristmas.gametest.StockingGameTests;
+import dev.eliasnvx.cozychristmas.gametest.TestPlayers;
 import dev.eliasnvx.cozychristmas.gametest.ToastySetGameTests;
 import dev.eliasnvx.cozychristmas.gametest.TreeGameTests;
 import dev.eliasnvx.cozychristmas.gametest.WorkshopGameTests;
@@ -22,6 +23,7 @@ import net.minecraft.gametest.framework.TestFunction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,8 @@ public final class CozyGameTestsNeoForge {
 
     public static void register(IEventBus modBus) {
         modBus.addListener((RegisterGameTestsEvent event) -> event.register(CozyGameTestsNeoForge.class));
+        // our mock players' connections act as a fully compatible NeoForge client, like NeoForge's own mock players
+        TestPlayers.setConnectionSetup(NetworkRegistry::configureMockConnection);
     }
 
     /** One test function per shared test, all in the {@code cozychristmas} batch. */

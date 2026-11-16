@@ -13,14 +13,26 @@ import net.minecraft.world.phys.Vec3;
 
 import java.lang.reflect.Field;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /** Mock players for the shared GameTests. */
-final class TestPlayers {
+public final class TestPlayers {
 
     /** Mojang name of ServerPlayer's private join protection counter (GameTests only run in dev, with Mojang names). */
     private static final String SPAWN_INVULNERABLE_TIME = "spawnInvulnerableTime";
 
+    /**
+     * Prepares a mock player's connection before the login. The loader glue may set it: NeoForge refuses other mods'
+     * payloads (Moonlight's on join) on a connection that never negotiated its channels.
+     */
+    private static Consumer<Connection> connectionSetup = connection -> {
+    };
+
     private TestPlayers() {
+    }
+
+    public static void setConnectionSetup(Consumer<Connection> setup) {
+        connectionSetup = setup;
     }
 
     /**
@@ -34,6 +46,7 @@ final class TestPlayers {
         ServerPlayer player = new ServerPlayer(server, helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
         new EmbeddedChannel(connection);
+        connectionSetup.accept(connection);
         server.getPlayerList().placeNewPlayer(connection, player, cookie); // joins at world spawn
         Vec3 pos = helper.absoluteVec(relative);
         player.moveTo(pos.x, pos.y, pos.z);
