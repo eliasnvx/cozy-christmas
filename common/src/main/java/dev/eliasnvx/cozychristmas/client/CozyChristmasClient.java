@@ -9,6 +9,9 @@ import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticShape;
 import dev.eliasnvx.cozychristmas.client.present.ConfettiParticle;
 import dev.eliasnvx.cozychristmas.client.goblin.GingerbreadManRenderer;
 import dev.eliasnvx.cozychristmas.client.goblin.PresentGoblinRenderer;
+import dev.eliasnvx.cozychristmas.client.krampus.KrampusRenderer;
+import dev.eliasnvx.cozychristmas.client.krampus.SackOverlay;
+import dev.eliasnvx.cozychristmas.client.krampus.SackRenderer;
 import dev.eliasnvx.cozychristmas.client.reindeer.ReindeerRenderer;
 import dev.eliasnvx.cozychristmas.client.snowman.EvilSnowmanRenderer;
 import dev.eliasnvx.cozychristmas.client.workshop.ElfRenderer;
@@ -55,6 +58,9 @@ public final class CozyChristmasClient {
         PresentGoblinRenderer.registerLayers();
         GingerbreadManRenderer.registerLayers();
         EvilSnowmanRenderer.registerLayers();
+        KrampusRenderer.registerLayers();
+        SackRenderer.registerLayers();
+        SackOverlay.register();
         EntityRendererRegistry.register(CozyEntities.ELF, ElfRenderer::new);
         EntityRendererRegistry.register(CozyEntities.SANTA, SantaRenderer::new);
         EntityRendererRegistry.register(CozyEntities.REINDEER, ReindeerRenderer::new);
@@ -62,6 +68,8 @@ public final class CozyChristmasClient {
         EntityRendererRegistry.register(CozyEntities.GINGERBREAD_MAN, GingerbreadManRenderer::new);
         EntityRendererRegistry.register(CozyEntities.EVIL_SNOWMAN, EvilSnowmanRenderer::new);
         EntityRendererRegistry.register(CozyEntities.ICE_SNOWBALL, ThrownItemRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.KRAMPUS, KrampusRenderer::new);
+        EntityRendererRegistry.register(CozyEntities.KRAMPUS_SACK, SackRenderer::new);
 
         CozyChristmas.LOGGER.info("{} client initialized", CozyChristmas.MOD_ID);
     }
@@ -83,6 +91,11 @@ public final class CozyChristmasClient {
             lines.add(Component.translatable("tooltip.cozychristmas.stocking").withStyle(ChatFormatting.GRAY));
         } else if (stack.is(CozyTags.HANGS_AS_STOCKING)) {
             lines.add(Component.translatable("tooltip.cozychristmas.hangs_as_stocking").withStyle(ChatFormatting.GRAY));
+        }
+        if (stack.is(CozyItems.KRAMPUS_HORNS.get())) {
+            lines.add(Component.translatable("tooltip.cozychristmas.krampus_horns").withStyle(ChatFormatting.GRAY));
+        } else if (stack.is(CozyItems.KRAMPUS_CHAIN.get())) {
+            lines.add(Component.translatable("tooltip.cozychristmas.krampus_chain").withStyle(ChatFormatting.GRAY));
         }
         if (stack.is(CozyItems.ICE_SNOWBALL.get())) {
             lines.add(Component.translatable("tooltip.cozychristmas.ice_snowball").withStyle(ChatFormatting.GRAY));

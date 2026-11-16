@@ -1,0 +1,15 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 512202605,
+    "separation": 20,
+    "spacing": 56,
+    "spread_type": "triangular"
+  },
+  "structures": [
+    {
+      "structure": "cozychristmas:krampus_lair",
+      "weight": 1
+    }
+  ]
+}

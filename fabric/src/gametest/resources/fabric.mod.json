@@ -17,7 +17,8 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.WorkshopGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.GoblinGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.StockingGameTestsFabric",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.SnowmanGameTestsFabric"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.SnowmanGameTestsFabric",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.KrampusGameTestsFabric"
     ],
     "fabric-client-gametest": [
       "dev.eliasnvx.cozychristmas.fabric.gametest.CosmeticsLookClientTest",
@@ -26,7 +27,8 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.HeadPiecesLookClientTest",
       "dev.eliasnvx.cozychristmas.fabric.gametest.GoblinsLookClientTest",
       "dev.eliasnvx.cozychristmas.fabric.gametest.StockingsLookClientTest",
-      "dev.eliasnvx.cozychristmas.fabric.gametest.SnowmenLookClientTest"
+      "dev.eliasnvx.cozychristmas.fabric.gametest.SnowmenLookClientTest",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.KrampusLookClientTest"
     ]
   },
   "mixins": [

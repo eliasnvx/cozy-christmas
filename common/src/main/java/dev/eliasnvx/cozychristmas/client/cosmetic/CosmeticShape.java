@@ -33,6 +33,8 @@ import java.util.Locale;
  *     (32,9), (0,19), (20,19), (36,19), (48,19), the bell at (56,19)</li>
  *     <li>{@link #ANTLER_HEADBAND} 32x32: band over the top at (0,0), down the sides at (24,0); each antler's beam at
  *     (0,2), front tine at (4,2), outer tine at (8,2)</li>
+ *     <li>{@link #KRAMPUS_HORNS} 32x32: band as the antlers'; each horn's four segments from the root at (0,4), (8,4),
+ *     (16,4) and (20,4)</li>
  * </ul>
  */
 public enum CosmeticShape {
@@ -42,7 +44,8 @@ public enum CosmeticShape {
     MITTENS(32, 32, true),
     EAR_WARMERS(64, 32, false),
     ELF_HAT(64, 32, false),
-    ANTLER_HEADBAND(32, 32, false);
+    ANTLER_HEADBAND(32, 32, false),
+    KRAMPUS_HORNS(32, 32, false);
 
     /** Above the skin's outer layer (0.25) and, for the armor size, above the outer armor layer (1.0). */
     private static final float SWEATER_FIT = 0.3F;
@@ -133,6 +136,7 @@ public enum CosmeticShape {
             case EAR_WARMERS -> earWarmers(root, overArmor);
             case ELF_HAT -> elfHat(root, overArmor ? HAT_OVER_ARMOR : HAT_FIT);
             case ANTLER_HEADBAND -> antlerHeadband(root, overArmor);
+            case KRAMPUS_HORNS -> krampusHorns(root, overArmor);
         }
         return LayerDefinition.create(mesh, textureWidth, textureHeight);
     }
@@ -265,6 +269,25 @@ public enum CosmeticShape {
      * A band with two antlers, set a little behind the middle of the head: behind where cat ears stand, as a reindeer's
      * antlers are behind its ears.
      */
+    private static void krampusHorns(PartDefinition root, boolean overArmor) {
+        PartDefinition piece = root.getChild("head").addOrReplaceChild("krampus_horns",
+                bandSides(bandTop(CubeListBuilder.create(), -1.0F), -1.0F), band(overArmor));
+        int[][] segments = {{0, 4, 2, 3}, {8, 4, 2, 3}, {16, 4, 1, 3}, {20, 4, 1, 2}};
+        float[] curl = {-0.35F, -0.6F, -0.7F, -0.8F};
+        for (int side = -1; side <= 1; side += 2) {
+            PartDefinition parent = piece;
+            for (int i = 0; i < segments.length; i++) {
+                int[] s = segments[i];
+                float half = s[2] / 2.0F;
+                PartPose pose = i == 0
+                        ? PartPose.offsetAndRotation(side * 3.0F, -9.3F, -0.5F, curl[0], 0.0F, side * 0.45F)
+                        : PartPose.offsetAndRotation(0.0F, -segments[i - 1][3] + 0.4F, 0.0F, curl[i], 0.0F, side * 0.1F);
+                parent = parent.addOrReplaceChild((side < 0 ? "left" : "right") + "_horn_" + i, CubeListBuilder.create()
+                        .texOffs(s[0], s[1]).addBox(-half, -s[3], -half, s[2], s[3], s[2]), pose);
+            }
+        }
+    }
+
     private static void antlerHeadband(PartDefinition root, boolean overArmor) {
         PartDefinition piece = root.getChild("head").addOrReplaceChild("antler_headband",
                 bandSides(bandTop(CubeListBuilder.create(), 1.0F), 1.0F), band(overArmor));

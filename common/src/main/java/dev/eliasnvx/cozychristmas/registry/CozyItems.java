@@ -7,6 +7,7 @@ import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.cosmetic.Cosmetic;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.present.PresentBlock;
+import dev.eliasnvx.cozychristmas.krampus.KrampusChainItem;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
 import dev.eliasnvx.cozychristmas.snowman.IceSnowballItem;
 import net.minecraft.core.component.DataComponents;
@@ -20,7 +21,10 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.TypedEntityData;
@@ -41,6 +45,14 @@ public final class CozyItems {
     /** Besides undyed red, the creative tab shows the knitwear in these dyes (any dye works in crafting). */
     private static final List<DyeColor> CREATIVE_DYES =
             List.of(DyeColor.GREEN, DyeColor.WHITE, DyeColor.LIGHT_BLUE, DyeColor.YELLOW, DyeColor.BLACK);
+
+    /** The chain hits like an iron sword plus one, slower, and reaches 5 blocks instead of 3. */
+    private static final float CHAIN_DAMAGE = 4.0F;
+    private static final float CHAIN_SPEED = -3.0F;
+    private static final int CHAIN_DURABILITY = 500;
+    private static final float CHAIN_REACH = 5.0F;
+    private static final float CHAIN_CREATIVE_REACH = 6.5F;
+    private static final float CHAIN_HITBOX_MARGIN = 0.125F;
 
     private static final List<RegistrySupplier<Item>> SWEATERS = new ArrayList<>();
     private static final List<RegistrySupplier<Item>> DYEABLE = new ArrayList<>();
@@ -68,6 +80,16 @@ public final class CozyItems {
     public static final RegistrySupplier<Item> PRESENT_GOBLIN_SPAWN_EGG = spawnEgg("present_goblin_spawn_egg", CozyEntities.PRESENT_GOBLIN_KEY);
     public static final RegistrySupplier<Item> GINGERBREAD_MAN_SPAWN_EGG = spawnEgg("gingerbread_man_spawn_egg", CozyEntities.GINGERBREAD_MAN_KEY);
     public static final RegistrySupplier<Item> EVIL_SNOWMAN_SPAWN_EGG = spawnEgg("evil_snowman_spawn_egg", CozyEntities.EVIL_SNOWMAN_KEY);
+
+    public static final RegistrySupplier<Item> KRAMPUS_SPAWN_EGG = spawnEgg("krampus_spawn_egg", CozyEntities.KRAMPUS_KEY);
+    /** SPEC: Krampus's horns, a trophy only he drops. Worn on the head, no bonus. */
+    public static final RegistrySupplier<Item> KRAMPUS_HORNS = register("krampus_horns", props -> new Item(props.stacksTo(1)
+            .rarity(Rarity.EPIC).component(CozyComponents.COSMETIC.get(), new Cosmetic(CosmeticSlot.HEAD))));
+    /** SPEC: Krampus's chain, his other drop: an iron weapon with a long reach that drags what it hits closer. */
+    public static final RegistrySupplier<Item> KRAMPUS_CHAIN = register("krampus_chain", props -> new KrampusChainItem(props
+            .sword(ToolMaterial.IRON, CHAIN_DAMAGE, CHAIN_SPEED).durability(CHAIN_DURABILITY).rarity(Rarity.RARE)
+            .component(DataComponents.ATTACK_RANGE, new AttackRange(0.0F, CHAIN_REACH, 0.0F, CHAIN_CREATIVE_REACH,
+                    CHAIN_HITBOX_MARGIN, 1.0F))));
 
     /** Evil snowmen drop them; thrown, they hurt, slow and chill. Stacks like snowballs. */
     public static final RegistrySupplier<Item> ICE_SNOWBALL = register("ice_snowball", props -> new IceSnowballItem(props.stacksTo(16)));
@@ -104,6 +126,10 @@ public final class CozyItems {
                 output.accept(GINGERBREAD_COOKIE.get());
                 output.accept(EVIL_SNOWMAN_SPAWN_EGG.get());
                 output.accept(ICE_SNOWBALL.get());
+                output.accept(KRAMPUS_SPAWN_EGG.get());
+                output.accept(KRAMPUS_HORNS.get());
+                output.accept(KRAMPUS_CHAIN.get());
+                output.accept(CozyBlocks.SACK_ITEM.get());
             })));
 
     private CozyItems() {

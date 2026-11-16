@@ -30,10 +30,10 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * Close-ups of the head pieces (ear warmers, elf hat, antler headband) from the front, the side, three quarters and
- * behind, plain and over a helmet. With Catgirl &amp; Catboy Mod in the dev run ({@code -Pcatgirl_jar=<its Fabric jar>})
- * the ear warmers are also shot over its cat ears, standing and just hurt (the ears flatten, the muffs with them).
- * Screenshots land in {@code fabric/build/run/clientGameTest/screenshots}.
+ * Close-ups of the head pieces (ear warmers, elf hat, antler headband, Krampus's horns) from the front, the side,
+ * three quarters and behind, plain and over a helmet. With Catgirl &amp; Catboy Mod in the dev run
+ * ({@code -Pcatgirl_jar=<its Fabric jar>}) the ear warmers are also shot over its cat ears, standing and just hurt
+ * (the ears flatten, the muffs with them). Screenshots land in {@code fabric/build/run/clientGameTest/screenshots}.
  */
 public final class HeadPiecesLookClientTest implements FabricClientGameTest {
 
@@ -87,9 +87,12 @@ public final class HeadPiecesLookClientTest implements FabricClientGameTest {
             shot(context, cameras, View.THREE_QUARTERS, "elf_hat_red");
             head(world, CozyItems.ANTLER_HEADBAND.get(), null);
             shots(context, cameras, "antler_headband");
+            head(world, CozyItems.KRAMPUS_HORNS.get(), null);
+            shots(context, cameras, "krampus_horns");
 
             world.getServer().runCommand("item replace entity @p armor.head with minecraft:iron_helmet");
-            for (Item piece : new Item[]{CozyItems.EAR_WARMERS.get(), CozyItems.ELF_HAT.get(), CozyItems.ANTLER_HEADBAND.get()}) {
+            for (Item piece : new Item[]{CozyItems.EAR_WARMERS.get(), CozyItems.ELF_HAT.get(), CozyItems.ANTLER_HEADBAND.get(),
+                    CozyItems.KRAMPUS_HORNS.get()}) {
                 head(world, piece, null);
                 shot(context, cameras, View.THREE_QUARTERS, name(piece) + "_helmet");
             }

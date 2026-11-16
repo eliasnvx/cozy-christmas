@@ -2,6 +2,7 @@ package dev.eliasnvx.cozychristmas.karma;
 
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
+import dev.eliasnvx.cozychristmas.krampus.KrampusSettings;
 import dev.eliasnvx.cozychristmas.platform.PlatformHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -77,6 +78,25 @@ public final class KarmaManager {
         }
         PlatformHelper.setKarma(player, before.withStocking(morning));
         return true;
+    }
+
+    /** The karma day Krampus last came for this player ({@link Karma#NO_GIFT} if never). */
+    public static long lastKrampusVisit(ServerPlayer player) {
+        return PlatformHelper.getKarma(player).krampusDay();
+    }
+
+    /** Marks today as the day Krampus came for this player. */
+    public static void markKrampusVisit(ServerPlayer player) {
+        PlatformHelper.setKarma(player, PlatformHelper.getKarma(player).withKrampusVisit(today(player)));
+    }
+
+    /** Krampus was beaten: bad karma is gone (good karma stays). Returns the karma it had. */
+    public static int clearBadKarma(ServerPlayer player) {
+        int before = get(player);
+        if (before < 0) {
+            set(player, KrampusSettings.karmaAfterDefeat(before));
+        }
+        return before;
     }
 
     public static void set(ServerPlayer player, int value) {

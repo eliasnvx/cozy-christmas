@@ -65,6 +65,20 @@ public final class CozySounds {
     public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_DEATH = event("entity.evil_snowman.death");
     public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_STEP = event("entity.evil_snowman.step");
     public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_THROW = event("entity.evil_snowman.throw");
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_AMBIENT = event("entity.krampus.ambient");
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_HURT = event("entity.krampus.hurt");
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_DEATH = event("entity.krampus.death");
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_STEP = event("entity.krampus.step");
+    /** The chain cracking out. */
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_LASH = event("entity.krampus.lash");
+    /** Into the sack. */
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_SACK = event("entity.krampus.sack");
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_SACK_OPEN = event("entity.krampus.sack_open");
+    /** Calling his goblins. */
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_ROAR = event("entity.krampus.roar");
+    /** Chains rattling in the dark: he's coming, or he's gone. */
+    public static final RegistrySupplier<SoundEvent> KRAMPUS_CHAINS = event("entity.krampus.chains");
+
     /** Fire or heat on snow: a hiss. */
     public static final RegistrySupplier<SoundEvent> EVIL_SNOWMAN_MELT = event("entity.evil_snowman.melt");
 

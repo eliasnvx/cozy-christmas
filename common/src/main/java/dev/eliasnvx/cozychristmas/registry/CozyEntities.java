@@ -11,6 +11,8 @@ import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.goblin.GingerbreadMan;
 import dev.eliasnvx.cozychristmas.goblin.PresentGoblin;
 import dev.eliasnvx.cozychristmas.goblin.PresentGoblinSettings;
+import dev.eliasnvx.cozychristmas.krampus.Krampus;
+import dev.eliasnvx.cozychristmas.krampus.KrampusSack;
 import dev.eliasnvx.cozychristmas.reindeer.Reindeer;
 import dev.eliasnvx.cozychristmas.reindeer.ReindeerSettings;
 import dev.eliasnvx.cozychristmas.snowman.EvilSnowman;
@@ -75,6 +77,17 @@ public final class CozyEntities {
             () -> EntityType.Builder.<IceSnowball>of(IceSnowball::new, MobCategory.MISC)
                     .noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10).build(ICE_SNOWBALL_KEY));
 
+    public static final ResourceKey<EntityType<?>> KRAMPUS_KEY = key("krampus");
+    /** A boss: fire can't hurt him, he never spawns naturally (his lair and his visits bring him). */
+    public static final RegistrySupplier<EntityType<Krampus>> KRAMPUS = REGISTER.register(KRAMPUS_KEY.identifier(),
+            () -> EntityType.Builder.<Krampus>of(Krampus::new, MobCategory.MONSTER)
+                    .sized(1.0F, 2.75F).eyeHeight(2.45F).fireImmune().notInPeaceful().clientTrackingRange(10).build(KRAMPUS_KEY));
+
+    public static final ResourceKey<EntityType<?>> KRAMPUS_SACK_KEY = key("krampus_sack");
+    public static final RegistrySupplier<EntityType<KrampusSack>> KRAMPUS_SACK = REGISTER.register(KRAMPUS_SACK_KEY.identifier(),
+            () -> EntityType.Builder.<KrampusSack>of(KrampusSack::new, MobCategory.MISC)
+                    .noLootTable().noSummon().sized(1.15F, 2.3F).clientTrackingRange(10).updateInterval(1).build(KRAMPUS_SACK_KEY));
+
     private CozyEntities() {
     }
 
@@ -91,6 +104,7 @@ public final class CozyEntities {
         EntityAttributeRegistry.register(PRESENT_GOBLIN, () -> PresentGoblin.createAttributes(config.goblins().presentGoblin()));
         EntityAttributeRegistry.register(GINGERBREAD_MAN, () -> GingerbreadMan.createAttributes(config.goblins().gingerbreadMan()));
         EntityAttributeRegistry.register(EVIL_SNOWMAN, () -> EvilSnowman.createAttributes(config.evilSnowman()));
+        EntityAttributeRegistry.register(KRAMPUS, () -> Krampus.createAttributes(config.krampus()));
 
         SpawnPlacementsRegistry.register(REINDEER, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Reindeer::checkReindeerSpawnRules);

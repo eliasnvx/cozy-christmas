@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "W W",
+    "WWW"
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "W": "minecraft:brown_wool"
+  },
+  "result": {
+    "id": "cozychristmas:sack",
+    "count": 2
+  }
+}

@@ -54,6 +54,13 @@ On snowy nights, under the open sky, evil snowmen come out with glowing icy eyes
 
 Where they spawn is the biome tag `#cozychristmas:spawns_evil_snowmen`; warm blocks they melt next to are `#cozychristmas:melts_snowmen`.
 
+## Krampus
+High in snowy mountains a pit in the snow, ringed with ice and hung with chains, leads down to **Krampus's lair**: a cave with his throne, a chest of loot, sacks and coal, and villagers he has locked in cages. He fights with a birch switch, lashes you with his chain and drags you closer, stuffs you into his sack for a moment, and calls present goblins to help. Beat him and your misdeeds are forgiven: your bad karma is gone. He drops his **horns**, a trophy to wear, and his **chain**, a weapon with a long reach.
+
+Be very naughty in the Christmas season and he may come for you himself one night (config `krampus.visits`).
+
+Where lairs generate is the biome tag `#cozychristmas:has_structure/krampus_lair`, how often the structure set `cozychristmas:krampus_lair`.
+
 ## Karma
 Every player has a hidden karma from -100 to +100. Hurting villagers, elves and other peaceful folk or stealing from Santa lowers it; giving gifts, feeding reindeer and getting back what goblins stole raises it; it drifts back toward zero by about one point per in-game day. Nice players mostly find gifts in their presents, naughty ones find coal.
 

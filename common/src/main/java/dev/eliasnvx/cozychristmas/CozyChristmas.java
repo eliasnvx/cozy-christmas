@@ -6,9 +6,11 @@ import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsEvents;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
 import dev.eliasnvx.cozychristmas.karma.KarmaRules;
+import dev.eliasnvx.cozychristmas.krampus.KrampusVisits;
 import dev.eliasnvx.cozychristmas.present.SnowPresents;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
+import dev.eliasnvx.cozychristmas.registry.CozyEffects;
 import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozyMenus;
@@ -42,6 +44,7 @@ public final class CozyChristmas {
         // components first: items read them in their properties; blocks before items: block items look them up
         CozyComponents.REGISTER.register();
         CozyBlocks.REGISTER.register();
+        CozyEffects.REGISTER.register();
         CozyEntities.REGISTER.register(); // before items: spawn eggs refer to the entity types
         CozyItems.REGISTER.register();
         CozyItems.ICE_SNOWBALL.listen(DispenserBlock::registerProjectileBehavior); // dispensers throw them like snowballs
@@ -56,6 +59,7 @@ public final class CozyChristmas {
         StockingEvents.register();
         ToastySet.register();
         SnowPresents.register();
+        KrampusVisits.register();
         KarmaRules.register();
         CommandRegistrationEvent.EVENT.register(CozyCommands::register);
 

@@ -78,6 +78,9 @@ public final class CozyTags {
     /** Warm blocks an evil snowman melts next to, if lit when they have a {@code lit} state (fire, campfires, fireplaces). */
     public static final TagKey<Block> MELTS_SNOWMEN = TagKey.create(Registries.BLOCK, CozyChristmas.id("melts_snowmen"));
 
+    /** Biomes where Krampus's lair can generate (snowy mountains). */
+    public static final TagKey<Biome> HAS_KRAMPUS_LAIR = TagKey.create(Registries.BIOME, CozyChristmas.id("has_structure/krampus_lair"));
+
     private CozyTags() {
     }
 }

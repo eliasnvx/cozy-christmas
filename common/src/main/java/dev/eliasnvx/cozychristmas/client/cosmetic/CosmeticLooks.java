@@ -29,6 +29,8 @@ public final class CosmeticLooks {
         dyeable(CozyItems.ELF_HAT, CosmeticShape.ELF_HAT, CozyItems.ELF_GREEN);
         look(CozyItems.ANTLER_HEADBAND, CosmeticLook.of(CosmeticShape.ANTLER_HEADBAND,
                 CozyItems.ANTLER_HEADBAND.getId().getPath(), false, CosmeticLook.UNTINTED));
+        look(CozyItems.KRAMPUS_HORNS, CosmeticLook.of(CosmeticShape.KRAMPUS_HORNS,
+                CozyItems.KRAMPUS_HORNS.getId().getPath(), false, CosmeticLook.UNTINTED));
     }
 
     /** Dyeable knitwear: a grayscale knit tinted with the dye, white trims on top. */

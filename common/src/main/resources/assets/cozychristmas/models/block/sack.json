@@ -1,0 +1,253 @@
+{
+  "textures": {
+    "particle": "cozychristmas:block/sack",
+    "sack": "cozychristmas:block/sack"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        11,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            4,
+            14,
+            15
+          ],
+          "texture": "#sack"
+        },
+        "south": {
+          "uv": [
+            2,
+            4,
+            14,
+            15
+          ],
+          "texture": "#sack"
+        },
+        "east": {
+          "uv": [
+            2,
+            4,
+            14,
+            15
+          ],
+          "texture": "#sack"
+        },
+        "west": {
+          "uv": [
+            2,
+            4,
+            14,
+            15
+          ],
+          "texture": "#sack"
+        },
+        "up": {
+          "uv": [
+            2,
+            4,
+            14,
+            15
+          ],
+          "texture": "#sack"
+        },
+        "down": {
+          "uv": [
+            2,
+            4,
+            14,
+            15
+          ],
+          "texture": "#sack"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        11,
+        6
+      ],
+      "to": [
+        10,
+        13,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            0,
+            8,
+            2
+          ],
+          "texture": "#sack"
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            8,
+            2
+          ],
+          "texture": "#sack"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            8,
+            2
+          ],
+          "texture": "#sack"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            8,
+            2
+          ],
+          "texture": "#sack"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        13,
+        5
+      ],
+      "to": [
+        11,
+        14,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            4,
+            9,
+            5
+          ],
+          "texture": "#sack"
+        },
+        "south": {
+          "uv": [
+            3,
+            4,
+            9,
+            5
+          ],
+          "texture": "#sack"
+        },
+        "east": {
+          "uv": [
+            3,
+            4,
+            9,
+            5
+          ],
+          "texture": "#sack"
+        },
+        "west": {
+          "uv": [
+            3,
+            4,
+            9,
+            5
+          ],
+          "texture": "#sack"
+        },
+        "up": {
+          "uv": [
+            3,
+            4,
+            9,
+            10
+          ],
+          "texture": "#sack"
+        },
+        "down": {
+          "uv": [
+            3,
+            4,
+            9,
+            10
+          ],
+          "texture": "#sack"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        0,
+        4
+      ],
+      "to": [
+        2,
+        7,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            6,
+            10,
+            13
+          ],
+          "texture": "#sack"
+        },
+        "south": {
+          "uv": [
+            2,
+            6,
+            10,
+            13
+          ],
+          "texture": "#sack"
+        },
+        "east": {
+          "uv": [
+            2,
+            6,
+            10,
+            13
+          ],
+          "texture": "#sack"
+        },
+        "west": {
+          "uv": [
+            2,
+            6,
+            10,
+            13
+          ],
+          "texture": "#sack"
+        },
+        "up": {
+          "uv": [
+            2,
+            6,
+            10,
+            13
+          ],
+          "texture": "#sack"
+        }
+      }
+    }
+  ]
+}

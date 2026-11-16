@@ -3,6 +3,7 @@ package dev.eliasnvx.cozychristmas.registry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
+import dev.eliasnvx.cozychristmas.krampus.SackBlock;
 import dev.eliasnvx.cozychristmas.present.PresentBlock;
 import dev.eliasnvx.cozychristmas.present.PresentBlockEntity;
 import dev.eliasnvx.cozychristmas.present.PresentContents;
@@ -66,6 +67,13 @@ public final class CozyBlocks {
 
     private CozyBlocks() {
     }
+
+    /** Krampus's sacks, piled round his lair. */
+    public static final RegistrySupplier<Block> SACK = block("sack", SackBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(0.6F).sound(SoundType.WOOL).noOcclusion()
+                    .ignitedByLava());
+    public static final RegistrySupplier<Item> SACK_ITEM = CozyItems.register("sack",
+            props -> new BlockItem(SACK.get(), props.useBlockDescriptionPrefix()));
 
     private static RegistrySupplier<Block> block(String name, Function<BlockBehaviour.Properties, Block> factory,
                                                  BlockBehaviour.Properties props) {

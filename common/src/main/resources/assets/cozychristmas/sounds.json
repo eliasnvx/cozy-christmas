@@ -648,5 +648,309 @@
       }
     ],
     "subtitle": "subtitles.cozychristmas.entity.evil_snowman.melt"
+  },
+  "entity.krampus.ambient": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/ravager/idle1",
+        "pitch": 0.75,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/ravager/idle2",
+        "pitch": 0.75,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/ravager/idle3",
+        "pitch": 0.75,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/ravager/idle4",
+        "pitch": 0.75,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/ravager/idle5",
+        "pitch": 0.75,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/ravager/idle6",
+        "pitch": 0.75,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/ravager/idle7",
+        "pitch": 0.75,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/ravager/idle8",
+        "pitch": 0.75,
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.krampus.ambient"
+  },
+  "entity.krampus.hurt": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/ravager/hurt1",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/ravager/hurt2",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/ravager/hurt3",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/ravager/hurt4",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.krampus.hurt"
+  },
+  "entity.krampus.death": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/ravager/death1",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/ravager/death2",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/ravager/death3",
+        "pitch": 0.7,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.krampus.death"
+  },
+  "entity.krampus.step": {
+    "sounds": [
+      {
+        "name": "minecraft:block/chain/step1",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/chain/step2",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/chain/step3",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/chain/step4",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/chain/step5",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/chain/step6",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ]
+  },
+  "entity.krampus.lash": {
+    "sounds": [
+      {
+        "name": "minecraft:item/armor/equip_chain1",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain2",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain3",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain4",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain5",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain6",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep1",
+        "pitch": 0.8,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep2",
+        "pitch": 0.8,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep3",
+        "pitch": 0.8,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep4",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.krampus.lash"
+  },
+  "entity.krampus.sack": {
+    "sounds": [
+      {
+        "name": "minecraft:item/bundle/insert1",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/bundle/insert2",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/bundle/insert3",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.krampus.sack"
+  },
+  "entity.krampus.sack_open": {
+    "sounds": [
+      {
+        "name": "minecraft:dig/cloth1",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/cloth2",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/cloth3",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:dig/cloth4",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.krampus.sack_open"
+  },
+  "entity.krampus.roar": {
+    "sounds": [
+      {
+        "name": "minecraft:mob/ravager/roar1",
+        "pitch": 0.8,
+        "attenuation_distance": 35
+      },
+      {
+        "name": "minecraft:mob/ravager/roar2",
+        "pitch": 0.8,
+        "attenuation_distance": 35
+      },
+      {
+        "name": "minecraft:mob/ravager/roar3",
+        "pitch": 0.8,
+        "attenuation_distance": 35
+      },
+      {
+        "name": "minecraft:mob/ravager/roar4",
+        "pitch": 0.8,
+        "attenuation_distance": 35
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.krampus.roar"
+  },
+  "entity.krampus.chains": {
+    "sounds": [
+      {
+        "name": "minecraft:block/chain/break1",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/chain/break2",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/chain/break3",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/chain/break4",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain1",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain2",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain3",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain4",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain5",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/armor/equip_chain6",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.cozychristmas.entity.krampus.chains"
   }
 }
