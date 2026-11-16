@@ -50,7 +50,7 @@ public final class ToastySet {
     }
 
     public static boolean isWorn(LivingEntity entity) {
-        return piecesWorn(CosmeticsManager.get(entity)) == SLOTS.size();
+        return piecesWorn(CosmeticsManager.worn(entity)) == SLOTS.size();
     }
 
     /** Whether the set stops this entity from freezing (config {@code keeps_warm}). */

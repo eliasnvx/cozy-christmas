@@ -56,7 +56,7 @@ public final class CosmeticRenderData {
         if (!(entity instanceof Player player)) {
             return null;
         }
-        CosmeticInventory inventory = CosmeticsManager.get(player);
+        CosmeticInventory inventory = CosmeticsManager.worn(player);
         if (inventory.isEmpty()) {
             return null;
         }

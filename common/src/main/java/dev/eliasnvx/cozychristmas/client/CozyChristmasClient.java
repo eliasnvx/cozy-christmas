@@ -124,7 +124,7 @@ public final class CozyChristmasClient {
     /** "Toasty set (2/4)" for the local player, then the bonuses, lit while the set is complete. */
     private static void appendToastySet(List<Component> lines) {
         Player player = Minecraft.getInstance().player;
-        int worn = player == null ? 0 : ToastySet.piecesWorn(CosmeticsManager.get(player));
+        int worn = player == null ? 0 : ToastySet.piecesWorn(CosmeticsManager.worn(player));
         boolean complete = worn == ToastySet.SLOTS.size();
         lines.add(Component.translatable("tooltip.cozychristmas.toasty_set", worn, ToastySet.SLOTS.size())
                 .withStyle(complete ? ChatFormatting.GOLD : ChatFormatting.GRAY));

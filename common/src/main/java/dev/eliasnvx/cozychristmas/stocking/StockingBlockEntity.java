@@ -41,6 +41,7 @@ import java.util.UUID;
 public class StockingBlockEntity extends BlockEntity {
 
     private static final String OWNER = "owner";
+    private static final String OWNER_NAME = "owner_name";
     private static final String CONTENTS = "contents";
     private static final String HUNG = "hung";
     private static final String LAST_MORNING = "last_morning";
@@ -49,6 +50,8 @@ public class StockingBlockEntity extends BlockEntity {
     private static final long NEVER = Long.MIN_VALUE;
 
     private @Nullable UUID owner;
+    /** Kept for the look-at tooltip (Jade), so it shows while the owner is offline; empty for old stockings. */
+    private String ownerName = "";
     private ItemStack contents = ItemStack.EMPTY;
     private ItemStack hung = ItemStack.EMPTY;
     private long lastMorning = NEVER;
@@ -65,6 +68,7 @@ public class StockingBlockEntity extends BlockEntity {
     /** Hung by {@code player}: theirs, filled from the next morning on. */
     public void hang(Player player, ItemStack item, long today) {
         this.owner = player.getUUID();
+        this.ownerName = player.getScoreboardName();
         this.hung = item.copyWithCount(1);
         this.lastMorning = today;
         setChanged();
@@ -72,6 +76,10 @@ public class StockingBlockEntity extends BlockEntity {
 
     public @Nullable UUID owner() {
         return owner;
+    }
+
+    public String ownerName() {
+        return ownerName;
     }
 
     public ItemStack contents() {
@@ -164,6 +172,7 @@ public class StockingBlockEntity extends BlockEntity {
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         owner = input.read(OWNER, UUIDUtil.CODEC).orElse(null);
+        ownerName = input.getStringOr(OWNER_NAME, "");
         contents = input.read(CONTENTS, ItemStack.CODEC).orElse(ItemStack.EMPTY);
         hung = input.read(HUNG, ItemStack.CODEC).orElse(ItemStack.EMPTY);
         lastMorning = input.getLongOr(LAST_MORNING, NEVER);
@@ -173,6 +182,7 @@ public class StockingBlockEntity extends BlockEntity {
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.storeNullable(OWNER, UUIDUtil.CODEC, owner);
+        output.putString(OWNER_NAME, ownerName);
         if (!contents.isEmpty()) {
             output.store(CONTENTS, ItemStack.CODEC, contents);
         }

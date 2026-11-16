@@ -20,6 +20,35 @@ dependencies {
 
     common(project(path: ":common")) { transitive false }
     shadowBundle(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive false }
+
+    // REI finds NeoForge plugins by an annotation that only its NeoForge jar has; Curios is NeoForge only
+    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rootProject.rei_version}") { transitive false }
+    compileOnly("maven.modrinth:curios:${rootProject.curios_neoforge_version}") { transitive false }
+
+    // Compat checks in the dev runs: -Pcompat=true loads JEI, REI, Jade, Serene Seasons and Curios
+    // (or some of them: -Pcompat=jei,jade,seasons,curios; JEI and REI both draw an item list)
+    def compat = project.findProperty("compat")?.toString()
+    if (compat != null) {
+        def wanted = { String group -> compat == "true" || compat.split(",")*.trim().contains(group) }
+        if (wanted("jei")) {
+            runtimeOnly "mezz.jei:jei-${rootProject.minecraft_version}-neoforge:${rootProject.jei_version}"
+        }
+        if (wanted("rei")) {
+            runtimeOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rootProject.rei_version}") { transitive false }
+            runtimeOnly("me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}") { transitive false }
+            runtimeOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
+        }
+        if (wanted("jade")) {
+            runtimeOnly("maven.modrinth:jade:${rootProject.jade_neoforge_version}") { transitive false }
+        }
+        if (wanted("seasons")) {
+            runtimeOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_neoforge_id}") { transitive false }
+            runtimeOnly("maven.modrinth:glitchcore:${rootProject.glitchcore_neoforge_id}") { transitive false }
+        }
+        if (wanted("curios")) {
+            runtimeOnly("maven.modrinth:curios:${rootProject.curios_neoforge_version}") { transitive false }
+        }
+    }
 }
 
 loom {

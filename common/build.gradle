@@ -8,6 +8,16 @@ dependencies {
 
     implementation "dev.architectury:architectury:${rootProject.architectury_api_version}"
     implementation "com.geckolib:geckolib-common-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+
+    // Soft dependencies: only the plugin classes in compat.* touch them, and only those mods load them.
+    // Jade's and Serene Seasons' APIs are the same in both loader jars; the Fabric ones are used to compile.
+    compileOnly("mezz.jei:jei-${rootProject.minecraft_version}-common-api:${rootProject.jei_version}") { transitive false }
+    compileOnly("me.shedaniel:RoughlyEnoughItems-api:${rootProject.rei_version}") { transitive false }
+    compileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin:${rootProject.rei_version}") { transitive false }
+    compileOnly("me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}") { transitive false }
+    compileOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
+    compileOnly("maven.modrinth:jade:${rootProject.jade_fabric_version}") { transitive false }
+    compileOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_fabric_id}") { transitive false }
 }
 
 // Optional local build additions

@@ -18,6 +18,15 @@
     ],
     "client": [
       "dev.eliasnvx.cozychristmas.fabric.CozyChristmasFabricClient"
+    ],
+    "jade": [
+      "dev.eliasnvx.cozychristmas.compat.jade.CozyJadePlugin"
+    ],
+    "jei_mod_plugin": [
+      "dev.eliasnvx.cozychristmas.compat.jei.CozyJeiPlugin"
+    ],
+    "rei_client": [
+      "dev.eliasnvx.cozychristmas.compat.rei.CozyReiPlugin"
     ]
   },
   "depends": {
@@ -27,6 +36,12 @@
     "architectury": ">=${architectury_api_version}",
     "geckolib": ">=${geckolib_version}",
     "java": ">=25"
+  },
+  "suggests": {
+    "jade": "*",
+    "jei": "*",
+    "roughlyenoughitems": "*",
+    "sereneseasons": "*"
   },
   "mixins": [
     "cozychristmas.mixins.json"

@@ -80,9 +80,19 @@ Every player has a hidden karma from -100 to +100. Hurting villagers, elves and 
 Mobs that count are in the entity tag `#cozychristmas:karma_protected`, so data packs can change them.
 
 ## Config
-`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread), stockings (`stockings`: season only, how much coal), evil snowmen (`evil_snowman`: health, throwing, melting), Krampus (`krampus`: his moves, karma, `visits`), chestnuts from leaves (`food`: which leaves, how often), Christmas trees (`tree`: season only, how many ornaments, how far presents land, how many pile up). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
+`config/cozychristmas-common.json`: season dates (`real_date`, `always`, `never`, or `serene_seasons` with the sub-seasons that count), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread), stockings (`stockings`: season only, how much coal), evil snowmen (`evil_snowman`: health, throwing, melting), Krampus (`krampus`: his moves, karma, `visits`), chestnuts from leaves (`food`: which leaves, how often), Christmas trees (`tree`: season only, how many ornaments, how far presents land, how many pile up). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
 
 Operators: `/cozychristmas karma get|set|add <players> [value]`, `/cozychristmas season`.
+
+## Works with
+All optional; install any of them alongside.
+- **JEI** and **REI**: the wrapping table as a recipe category, information pages for presents, stockings, the tree star and ornaments, the Toasty set, chestnuts, cocoa, ice snowballs and Krampus's trophies.
+- **Jade**: whose stocking it is, what it holds and whether it hangs over a fireplace; whose tree a star crowns and how many ornaments it still needs; who wrapped a present (never what's inside).
+- **Serene Seasons**: set `season.source` to `serene_seasons` and Christmas follows its calendar (early and mid winter by default; Santa loads the sleigh at the start of mid winter).
+- **Curios** (NeoForge): hats, scarves, sweaters and mittens fit its head, necklace, body and hands slots, look the same there and count for the Toasty set.
+- **Catgirl & Catboy Mod**: ear warmers sit over its cat ears. **Femboy Mod**: its socks hang as stockings.
+
+Snowy Spirit (gingerbread golems guarding the workshop, sleds pulled by our reindeer) and Tradery (Santa trading for its money) come later: Snowy Spirit has no 26.x version yet.
 
 ## Building
 Java 25.

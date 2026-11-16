@@ -1,8 +1,10 @@
 package dev.eliasnvx.cozychristmas.neoforge;
 
 import dev.eliasnvx.cozychristmas.CozyChristmas;
+import dev.eliasnvx.cozychristmas.neoforge.compat.CuriosSlots;
 import dev.eliasnvx.cozychristmas.platform.neoforge.PlatformHelperImpl;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.gametest.GameTestHooks;
 
@@ -12,6 +14,9 @@ public final class CozyChristmasNeoForge {
     public CozyChristmasNeoForge(IEventBus modBus) {
         PlatformHelperImpl.init(modBus);
         CozyChristmas.init();
+        if (ModList.get().isLoaded(CuriosSlots.MOD_ID)) {
+            CuriosSlots.register();
+        }
         if (GameTestHooks.isGametestEnabled()) {
             registerGameTests(modBus); // dev runs only: the class isn't in the released jar
         }

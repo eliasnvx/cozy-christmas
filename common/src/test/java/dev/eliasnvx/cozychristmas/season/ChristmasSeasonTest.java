@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.MonthDay;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -44,8 +46,8 @@ class ChristmasSeasonTest {
 
     @Test
     void alwaysAndNever() {
-        SeasonSettings always = new SeasonSettings(SeasonSource.ALWAYS, DEFAULTS.season(), DEFAULTS.workshopDelivery());
-        SeasonSettings never = new SeasonSettings(SeasonSource.NEVER, DEFAULTS.season(), DEFAULTS.workshopDelivery());
+        SeasonSettings always = new SeasonSettings(SeasonSource.ALWAYS, DEFAULTS.season(), DEFAULTS.workshopDelivery(), DEFAULTS.sereneSeasons());
+        SeasonSettings never = new SeasonSettings(SeasonSource.NEVER, DEFAULTS.season(), DEFAULTS.workshopDelivery(), DEFAULTS.sereneSeasons());
         LocalDate summer = LocalDate.of(2027, 7, 15);
         LocalDate christmas = LocalDate.of(2026, 12, 24);
         assertTrue(ChristmasSeason.isActive(always, summer));
@@ -76,5 +78,48 @@ class ChristmasSeasonTest {
 
     private static boolean active(int year, int month, int day) {
         return ChristmasSeason.isActive(DEFAULTS, LocalDate.of(year, month, day));
+    }
+
+    @Test
+    void sereneSeasonsFollowsItsCalendar() {
+        SeasonSettings serene = new SeasonSettings(SeasonSource.SERENE_SEASONS, DEFAULTS.season(), DEFAULTS.workshopDelivery(),
+                DEFAULTS.sereneSeasons());
+        LocalDate july = LocalDate.of(2026, 7, 1);
+        LocalDate christmasEve = LocalDate.of(2026, 12, 24);
+        assertTrue(ChristmasSeason.isActive(serene, july, Optional.of(new SeasonMoment(SubSeason.EARLY_WINTER, 3))),
+                "early winter is Christmas, whatever the date");
+        assertTrue(ChristmasSeason.isActive(serene, july, Optional.of(new SeasonMoment(SubSeason.MID_WINTER, 7))));
+        assertFalse(ChristmasSeason.isActive(serene, christmasEve, Optional.of(new SeasonMoment(SubSeason.LATE_WINTER, 0))),
+                "late winter isn't, whatever the date");
+        assertFalse(ChristmasSeason.isActive(serene, christmasEve, Optional.of(new SeasonMoment(SubSeason.MID_SUMMER, 0))));
+    }
+
+    @Test
+    void sereneSeasonsDeliveryIsTheStartOfMidWinter() {
+        SeasonSettings serene = new SeasonSettings(SeasonSource.SERENE_SEASONS, DEFAULTS.season(), DEFAULTS.workshopDelivery(),
+                DEFAULTS.sereneSeasons());
+        LocalDate july = LocalDate.of(2026, 7, 1);
+        assertTrue(ChristmasSeason.isWorkshopDelivery(serene, july, Optional.of(new SeasonMoment(SubSeason.MID_WINTER, 0))));
+        assertTrue(ChristmasSeason.isWorkshopDelivery(serene, july, Optional.of(new SeasonMoment(SubSeason.MID_WINTER, 1))));
+        assertFalse(ChristmasSeason.isWorkshopDelivery(serene, july, Optional.of(new SeasonMoment(SubSeason.MID_WINTER, 2))));
+        assertFalse(ChristmasSeason.isWorkshopDelivery(serene, july, Optional.of(new SeasonMoment(SubSeason.EARLY_WINTER, 0))));
+    }
+
+    @Test
+    void sereneSeasonsWithoutTheModFollowsTheDate() {
+        SeasonSettings serene = new SeasonSettings(SeasonSource.SERENE_SEASONS, DEFAULTS.season(), DEFAULTS.workshopDelivery(),
+                DEFAULTS.sereneSeasons());
+        assertTrue(ChristmasSeason.isActive(serene, LocalDate.of(2026, 12, 10), Optional.empty()));
+        assertFalse(ChristmasSeason.isActive(serene, LocalDate.of(2026, 7, 1), Optional.empty()));
+        assertTrue(ChristmasSeason.isWorkshopDelivery(serene, LocalDate.of(2026, 12, 24), Optional.empty()));
+    }
+
+    @Test
+    void sereneSeasonsSectionReadsSubSeasonNames() {
+        SereneSeasonsSettings parsed = SereneSeasonsSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(
+                "{\"sub_seasons\": [\"late_autumn\", \"early_winter\"], \"delivery_sub_season\": \"early_winter\", \"delivery_days\": 3}"))
+                .getOrThrow();
+        assertEquals(new SereneSeasonsSettings(List.of(SubSeason.LATE_AUTUMN, SubSeason.EARLY_WINTER), SubSeason.EARLY_WINTER, 3), parsed);
+        assertEquals(SereneSeasonsSettings.DEFAULTS, SereneSeasonsSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{}")).getOrThrow());
     }
 }

@@ -30,6 +30,14 @@ subprojects {
             filter { includeGroup "maven.modrinth" }
         }
         exclusiveContent {
+            forRepository { maven { url "https://maven.blamejared.com/" } }
+            filter { includeGroup "mezz.jei"; includeGroupAndSubgroups "net.mezzdev" }
+        }
+        exclusiveContent {
+            forRepository { maven { url "https://maven.shedaniel.me/" } }
+            filter { includeGroup "me.shedaniel"; includeGroup "me.shedaniel.cloth" }
+        }
+        exclusiveContent {
             forRepository {
                 maven {
                     name = "GeckoLib"

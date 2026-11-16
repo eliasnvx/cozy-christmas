@@ -1,7 +1,9 @@
 package dev.eliasnvx.cozychristmas;
 
 import dev.architectury.event.events.common.CommandRegistrationEvent;
+import dev.architectury.platform.Platform;
 import dev.eliasnvx.cozychristmas.command.CozyCommands;
+import dev.eliasnvx.cozychristmas.compat.sereneseasons.SereneSeasonsCalendar;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsEvents;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
@@ -17,6 +19,7 @@ import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozyMenus;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
+import dev.eliasnvx.cozychristmas.season.SeasonSource;
 import dev.eliasnvx.cozychristmas.stocking.StockingEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -64,8 +67,18 @@ public final class CozyChristmas {
         Chestnuts.register();
         KarmaRules.register();
         CommandRegistrationEvent.EVENT.register(CozyCommands::register);
+        registerCompat();
 
         LOGGER.info("{} initialized", MOD_ID);
+    }
+
+    /** Soft dependencies: their classes are only touched when the mod is installed. */
+    private static void registerCompat() {
+        if (Platform.isModLoaded(SereneSeasonsCalendar.MOD_ID)) {
+            SereneSeasonsCalendar.register();
+        } else if (CozyConfig.common().season().source() == SeasonSource.SERENE_SEASONS) {
+            LOGGER.warn("season.source is serene_seasons, but Serene Seasons isn't installed: the season follows the date");
+        }
     }
 
     public static Identifier id(String path) {

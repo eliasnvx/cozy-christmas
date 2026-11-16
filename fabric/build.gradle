@@ -26,6 +26,28 @@ dependencies {
     if (project.hasProperty("catgirl_jar")) {
         runtimeOnly files(project.property("catgirl_jar"))
     }
+
+    // Compat checks in the dev client and the client GameTests: -Pcompat=true loads JEI, REI, Jade and Serene Seasons
+    // (JEI and REI both draw an item list: -Pcompat=jei or -Pcompat=rei picks one, plus jade and seasons)
+    def compat = project.findProperty("compat")?.toString()
+    if (compat != null) {
+        def wanted = { String group -> compat == "true" || compat.split(",")*.trim().contains(group) }
+        if (wanted("jei")) {
+            runtimeOnly "mezz.jei:jei-${rootProject.minecraft_version}-fabric:${rootProject.jei_version}"
+        }
+        if (wanted("rei")) {
+            runtimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:${rootProject.rei_version}") { transitive false }
+            runtimeOnly("me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}") { transitive false }
+            runtimeOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
+        }
+        if (wanted("jade")) {
+            runtimeOnly("maven.modrinth:jade:${rootProject.jade_fabric_version}") { transitive false }
+        }
+        if (wanted("seasons")) {
+            runtimeOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_fabric_id}") { transitive false }
+            runtimeOnly("maven.modrinth:glitchcore:${rootProject.glitchcore_fabric_id}") { transitive false }
+        }
+    }
     shadowBundle(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 }
 
@@ -40,6 +62,14 @@ fabricApi {
         enableGameTests = true
         enableClientGameTests = true
     }
+}
+
+// The compat client test (CompatLookClientTest) opens JEI's and REI's views through their APIs; the gametest source
+// set exists once configureTests above has run
+dependencies {
+    gametestCompileOnly("mezz.jei:jei-${rootProject.minecraft_version}-common-api:${rootProject.jei_version}") { transitive false }
+    gametestCompileOnly("me.shedaniel:RoughlyEnoughItems-api:${rootProject.rei_version}") { transitive false }
+    gametestCompileOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
 }
 
 jar {

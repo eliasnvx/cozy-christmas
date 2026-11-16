@@ -4,6 +4,9 @@ import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.gametest.CosmeticSlotGameTests;
 import dev.eliasnvx.cozychristmas.gametest.FoodGameTests;
 import dev.eliasnvx.cozychristmas.gametest.TreeGameTests;
+import dev.eliasnvx.cozychristmas.gametest.CompatGameTests;
+import dev.eliasnvx.cozychristmas.neoforge.compat.CuriosSlots;
+import net.neoforged.fml.ModList;
 import dev.eliasnvx.cozychristmas.gametest.GameTestEntry;
 import dev.eliasnvx.cozychristmas.gametest.KarmaGameTests;
 import dev.eliasnvx.cozychristmas.gametest.PresentGameTests;
@@ -34,7 +37,7 @@ import java.util.function.Consumer;
  * Registers the shared GameTests ({@link KarmaGameTests}, {@link CosmeticSlotGameTests}, {@link ToastySetGameTests},
  * {@link HeadPieceGameTests}, {@link PresentGameTests}, {@link WorkshopGameTests}, {@link GoblinGameTests},
  * {@link StockingGameTests}, {@link SnowmanGameTests}, {@link KrampusGameTests}, {@link FoodGameTests},
- * {@link TreeGameTests}) on NeoForge.
+ * {@link TreeGameTests}, {@link CompatGameTests}) on NeoForge; with Curios installed only {@link CuriosGameTest}.
  * Started by {@code CozyChristmasNeoForge} only when GameTests are enabled ({@code ./gradlew :neoforge:runGameTestServer},
  * part of {@code build}); not in the released jar.
  */
@@ -50,12 +53,20 @@ public final class CozyGameTestsNeoForge {
     public static void register(IEventBus modBus) {
         DeferredRegister<Consumer<GameTestHelper>> functions = DeferredRegister.create(Registries.TEST_FUNCTION, CozyChristmas.MOD_ID);
         List<DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>>> holders = new ArrayList<>();
-        for (List<GameTestEntry> tests : List.of(KarmaGameTests.ALL, CosmeticSlotGameTests.ALL, ToastySetGameTests.ALL,
-                HeadPieceGameTests.ALL, PresentGameTests.ALL, WorkshopGameTests.ALL, GoblinGameTests.ALL,
-                StockingGameTests.ALL, SnowmanGameTests.ALL, KrampusGameTests.ALL, FoodGameTests.ALL, TreeGameTests.ALL)) {
-            for (GameTestEntry entry : tests) {
-                holders.add(functions.register(entry.name(), entry::body));
+        List<GameTestEntry> entries = new ArrayList<>();
+        if (ModList.get().isLoaded(CuriosSlots.MOD_ID)) {
+            // -Pcompat=curios: only the Curios check; Curios can't sync its slots to the shared tests' mock players
+            entries.add(new GameTestEntry("curios_slots_count_as_worn", CuriosGameTest::cosmeticsInCuriosSlotsCount));
+        } else {
+            for (List<GameTestEntry> tests : List.of(KarmaGameTests.ALL, CosmeticSlotGameTests.ALL, ToastySetGameTests.ALL,
+                    HeadPieceGameTests.ALL, PresentGameTests.ALL, WorkshopGameTests.ALL, GoblinGameTests.ALL,
+                    StockingGameTests.ALL, SnowmanGameTests.ALL, KrampusGameTests.ALL, FoodGameTests.ALL, TreeGameTests.ALL,
+                    CompatGameTests.ALL)) {
+                entries.addAll(tests);
             }
+        }
+        for (GameTestEntry entry : entries) {
+            holders.add(functions.register(entry.name(), entry::body));
         }
         functions.register(modBus);
 

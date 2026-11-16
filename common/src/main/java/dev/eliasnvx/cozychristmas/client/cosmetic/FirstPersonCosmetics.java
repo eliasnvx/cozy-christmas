@@ -42,7 +42,7 @@ public final class FirstPersonCosmetics {
         if (player == null) {
             return;
         }
-        CosmeticInventory worn = CosmeticsManager.get(player);
+        CosmeticInventory worn = CosmeticsManager.worn(player);
         if (worn.isEmpty()) {
             return;
         }
