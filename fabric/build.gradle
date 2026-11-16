@@ -13,6 +13,27 @@ configurations {
     developmentFabric.extendsFrom common
 }
 
+// Some compat mods nest libraries in their jar (Moonlight: mixinsquared; GlitchCore: night-config), which a real install
+// unpacks and the dev runtime doesn't: unpack them for the dev runs. The jar comes straight from the Modrinth maven:
+// resolving a configuration here, while Loom still sets up its repositories, breaks the setup on this branch.
+def nestedJars(String project, String versionId) {
+    def dir = layout.buildDirectory.dir("nested/${project}").get().asFile
+    def jar = new File(dir, "${project}-${versionId}.jar")
+    if (!jar.exists()) {
+        dir.mkdirs()
+        new URL("https://api.modrinth.com/maven/maven/modrinth/${project}/${versionId}/${project}-${versionId}.jar")
+                .withInputStream { input -> jar.withOutputStream { it << input } }
+    }
+    def libs = new File(dir, "libs")
+    copy {
+        from(zipTree(jar)) { include "META-INF/jars/*.jar" }
+        into libs
+        eachFile { path = name }
+        includeEmptyDirs = false
+    }
+    return fileTree(libs) { include "*.jar" }
+}
+
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
@@ -41,22 +62,12 @@ dependencies {
         if (wanted("seasons")) {
             modRuntimeOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_fabric_id}") { transitive false }
             modRuntimeOnly("maven.modrinth:glitchcore:${rootProject.glitchcore_fabric_id}") { transitive false }
+            modRuntimeOnly nestedJars("glitchcore", rootProject.glitchcore_fabric_id)
         }
         if (wanted("snowy")) {
             modRuntimeOnly("maven.modrinth:snowy-spirit:${rootProject.snowy_spirit_fabric_id}") { transitive false }
             modRuntimeOnly("maven.modrinth:moonlight:${rootProject.moonlight_fabric_id}") { transitive false }
-            // Moonlight nests codecui in its jar, which a real install unpacks and the dev runtime doesn't
-            def moonlight = configurations.detachedConfiguration(
-                    dependencies.create("maven.modrinth:moonlight:${rootProject.moonlight_fabric_id}"))
-            moonlight.transitive = false
-            def nested = layout.buildDirectory.dir("nested/moonlight").get().asFile
-            copy {
-                from(zipTree(moonlight.singleFile)) { include "META-INF/jars/*.jar" }
-                into nested
-                eachFile { path = name }
-                includeEmptyDirs = false
-            }
-            modRuntimeOnly fileTree(nested) { include "*.jar" }
+            modRuntimeOnly nestedJars("moonlight", rootProject.moonlight_fabric_id)
         }
     }
     shadowBundle(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
@@ -69,11 +80,11 @@ fabricApi {
         createSourceSet = true
         modId = "cozychristmas-test"
         enableGameTests = true
-        enableClientGameTests = false // 1.21.1 Fabric API has no client GameTest API
+        enableClientGameTests = false // 1.20.1 Fabric API has no client GameTest API
     }
 }
 
-// Dev-only check in a real client (1.21.1 has no client GameTest API): the shared DevCheck, started from src/gametest.
+// Dev-only check in a real client (1.20.1 has no client GameTest API): the shared DevCheck, started from src/gametest.
 // Opens build/run/devCheck/saves/cozychristmas-check (created flat on the first run), dresses the player, places blocks and
 // mobs, takes screenshots into build/run/devCheck/screenshots and quits. ./gradlew :fabric:runDevCheck [-Pcompat=true]
 loom {

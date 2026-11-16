@@ -23,12 +23,12 @@ class KarmaSettingsTest {
     @Test
     void rejectsCrossedThresholds() {
         var json = JsonParser.parseString("{\"nice_above\": -40, \"naughty_below\": 40}");
-        assertTrue(KarmaSettings.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(KarmaSettings.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 
     @Test
     void emptySectionGivesDefaults() {
         var json = JsonParser.parseString("{}");
-        assertEquals(KarmaSettings.DEFAULTS, KarmaSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(KarmaSettings.DEFAULTS, KarmaSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 }

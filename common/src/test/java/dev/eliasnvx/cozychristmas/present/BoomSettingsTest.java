@@ -33,6 +33,6 @@ class BoomSettingsTest {
     @Test
     void rejectsMinAboveMax() {
         var json = JsonParser.parseString("{\"min_damage\": 8, \"max_damage\": 2}");
-        assertTrue(BoomSettings.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(BoomSettings.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 }

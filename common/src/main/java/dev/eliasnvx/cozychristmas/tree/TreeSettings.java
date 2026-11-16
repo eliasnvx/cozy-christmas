@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * The {@code tree} config section. A tree is a column of {@code #cozychristmas:tree_parts} (leaves, logs) under a
@@ -17,7 +18,7 @@ public record TreeSettings(boolean seasonOnly, int minOrnaments, int reach, int 
 
     public static final TreeSettings DEFAULTS = new TreeSettings(true, 6, 5, 24, 3, 3);
 
-    public static final Codec<TreeSettings> CODEC = RecordCodecBuilder.<TreeSettings>create(i -> i.group(
+    public static final Codec<TreeSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<TreeSettings>create(i -> i.group(
             ConfigCodecs.field(Codec.BOOL, "season_only", DEFAULTS.seasonOnly).forGetter(TreeSettings::seasonOnly),
             ConfigCodecs.field(Codec.intRange(0, 256), "min_ornaments", DEFAULTS.minOrnaments)
                     .forGetter(TreeSettings::minOrnaments),
@@ -27,7 +28,7 @@ public record TreeSettings(boolean seasonOnly, int minOrnaments, int reach, int 
                     .forGetter(TreeSettings::presentRadius),
             ConfigCodecs.field(Codec.intRange(0, 64), "max_presents", DEFAULTS.maxPresents)
                     .forGetter(TreeSettings::maxPresents)
-    ).apply(i, TreeSettings::new)).validate(TreeSettings::validate);
+    ).apply(i, TreeSettings::new)), TreeSettings::validate);
 
     private static DataResult<TreeSettings> validate(TreeSettings settings) {
         return settings.presentRadius <= settings.reach

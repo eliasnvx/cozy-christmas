@@ -60,20 +60,20 @@ class ChristmasSeasonTest {
     @Test
     void leapDayParses() {
         var json = JsonParser.parseString("{\"start\": \"02-29\", \"end\": \"03-01\"}");
-        assertEquals(DateWindow.of(2, 29, 3, 1), DateWindow.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(DateWindow.of(2, 29, 3, 1), DateWindow.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 
     @Test
     void configRoundTrip() {
-        var json = SeasonSettings.CODEC.encodeStart(JsonOps.INSTANCE, DEFAULTS).getOrThrow();
+        var json = SeasonSettings.CODEC.encodeStart(JsonOps.INSTANCE, DEFAULTS).getOrThrow(false, e -> { });
         assertEquals("12-01", json.getAsJsonObject().getAsJsonObject("season").get("start").getAsString());
-        assertEquals(DEFAULTS, SeasonSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(DEFAULTS, SeasonSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 
     @Test
     void badDateIsAnError() {
         var json = JsonParser.parseString("{\"start\": \"13-01\", \"end\": \"01-07\"}");
-        assertTrue(DateWindow.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(DateWindow.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 
     private static boolean active(int year, int month, int day) {
@@ -118,8 +118,8 @@ class ChristmasSeasonTest {
     void sereneSeasonsSectionReadsSubSeasonNames() {
         SereneSeasonsSettings parsed = SereneSeasonsSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(
                 "{\"sub_seasons\": [\"late_autumn\", \"early_winter\"], \"delivery_sub_season\": \"early_winter\", \"delivery_days\": 3}"))
-                .getOrThrow();
+                .getOrThrow(false, e -> { });
         assertEquals(new SereneSeasonsSettings(List.of(SubSeason.LATE_AUTUMN, SubSeason.EARLY_WINTER), SubSeason.EARLY_WINTER, 3), parsed);
-        assertEquals(SereneSeasonsSettings.DEFAULTS, SereneSeasonsSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{}")).getOrThrow());
+        assertEquals(SereneSeasonsSettings.DEFAULTS, SereneSeasonsSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{}")).getOrThrow(false, e -> { }));
     }
 }

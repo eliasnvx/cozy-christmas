@@ -1,10 +1,8 @@
 package dev.eliasnvx.cozychristmas.cosmetic;
 
 import dev.architectury.event.events.common.TickEvent;
-import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -12,6 +10,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * The Toasty set: something from {@code #cozychristmas:toasty_set} in each of {@link #SLOTS} (a sweater, a hat, a
@@ -23,8 +22,12 @@ public final class ToastySet {
     public static final List<CosmeticSlot> SLOTS = List.of(CosmeticSlot.HEAD, CosmeticSlot.NECK, CosmeticSlot.BODY,
             CosmeticSlot.HANDS);
 
-    /** The speed bonus modifier. Transient: it's recomputed every tick, never saved. */
-    public static final ResourceLocation SNOW_SPEED_ID = CozyChristmas.id("toasty_snow_speed");
+    /**
+     * The speed bonus modifier. Transient: it's recomputed every tick, never saved. 1.20.1 names modifiers by UUID
+     * (later versions use the id {@code cozychristmas:toasty_snow_speed}; this is its name-based UUID).
+     */
+    public static final UUID SNOW_SPEED_ID = UUID.fromString("2641b459-159e-3bf2-8ec4-7d65b48dcda6");
+    private static final String SNOW_SPEED_NAME = "cozychristmas:toasty_snow_speed";
 
     private ToastySet() {
     }
@@ -68,10 +71,11 @@ public final class ToastySet {
             return;
         }
         double bonus = settings().snowSpeedBonus();
-        boolean active = speed.hasModifier(SNOW_SPEED_ID);
+        boolean active = speed.getModifier(SNOW_SPEED_ID) != null;
         boolean wanted = bonus > 0.0 && isWorn(player) && (player.onGround() ? onSnow(player) : active);
         if (wanted && !active) {
-            speed.addTransientModifier(new AttributeModifier(SNOW_SPEED_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+            speed.addTransientModifier(new AttributeModifier(SNOW_SPEED_ID, SNOW_SPEED_NAME, bonus,
+                    AttributeModifier.Operation.MULTIPLY_BASE));
         } else if (!wanted && active) {
             speed.removeModifier(SNOW_SPEED_ID);
         }

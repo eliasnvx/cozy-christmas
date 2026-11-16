@@ -26,18 +26,18 @@ class ReindeerSettingsTest {
     @Test
     void readsTheFlightMode() {
         var json = JsonParser.parseString("{\"flight\": \"always\"}");
-        assertEquals(FlightMode.ALWAYS, ReindeerSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow().flight());
+        assertEquals(FlightMode.ALWAYS, ReindeerSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }).flight());
     }
 
     @Test
     void rejectsACrossedHerdSize() {
         var json = JsonParser.parseString("{\"min_group\": 5, \"max_group\": 2}");
-        assertTrue(ReindeerSettings.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(ReindeerSettings.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 
     @Test
     void emptySectionGivesDefaults() {
         var json = JsonParser.parseString("{}");
-        assertEquals(ReindeerSettings.DEFAULTS, ReindeerSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(ReindeerSettings.DEFAULTS, ReindeerSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 }

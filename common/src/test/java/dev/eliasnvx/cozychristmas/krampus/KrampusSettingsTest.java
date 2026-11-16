@@ -17,20 +17,20 @@ class KrampusSettingsTest {
     @Test
     void emptySectionGivesDefaults() {
         var json = JsonParser.parseString("{}");
-        assertEquals(KrampusSettings.DEFAULTS, KrampusSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(KrampusSettings.DEFAULTS, KrampusSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 
     @Test
     void visitsCanBeTurnedOff() {
         var json = JsonParser.parseString("{\"visits\": {\"enabled\": false}}");
-        KrampusVisitSettings off = KrampusSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow().visits();
+        KrampusVisitSettings off = KrampusSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }).visits();
         assertFalse(off.mayVisit(-100, true, true, TODAY, Karma.NO_GIFT));
     }
 
     @Test
     void rejectsALashThatCantReach() {
         var json = JsonParser.parseString("{\"lash_min_range\": 9, \"lash_range\": 5}");
-        assertTrue(KrampusSettings.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(KrampusSettings.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 
     @Test
@@ -68,7 +68,7 @@ class KrampusSettingsTest {
         Karma visited = new Karma(-80, 5).withKrampusVisit(5);
         assertEquals(5, visited.krampusDay());
         assertEquals(5, visited.withValue(0, 6).krampusDay(), "beating him keeps the day");
-        var json = Karma.CODEC.encodeStart(JsonOps.INSTANCE, visited).getOrThrow();
-        assertEquals(visited, Karma.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        var json = Karma.CODEC.encodeStart(JsonOps.INSTANCE, visited).getOrThrow(false, e -> { });
+        assertEquals(visited, Karma.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 }

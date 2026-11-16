@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.registry.CozyEffects;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +23,7 @@ public final class SackOverlay {
     }
 
     /** Drawn like vanilla's carved pumpkin overlay ({@code Gui#renderTextureOverlay}): blended, no depth. */
-    private static void render(GuiGraphics graphics, DeltaTracker delta) {
+    private static void render(GuiGraphics graphics, float tickDelta) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || !minecraft.options.getCameraType().isFirstPerson()
                 || !minecraft.player.hasEffect(CozyEffects.holder(CozyEffects.SACKED))) {

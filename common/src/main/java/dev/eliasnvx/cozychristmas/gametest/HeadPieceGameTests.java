@@ -5,15 +5,14 @@ import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.workshop.SantaTrades;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.DyedItemColor;
-import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.phys.Vec3;
 
@@ -22,7 +21,7 @@ import java.util.Optional;
 
 /**
  * Ear warmers, elf hat and antler headband on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest},
- * NeoForge: {@code neoforge/.../dev/CozyGameTestsNeoForge}). Dev only: not in the released jars.
+ * Forge: {@code forge/.../dev/CozyGameTestsForge}). Dev only: not in the released jars.
  */
 public final class HeadPieceGameTests {
 
@@ -43,20 +42,20 @@ public final class HeadPieceGameTests {
         ItemStack red = new ItemStack(Items.RED_WOOL);
         ItemStack bone = new ItemStack(Items.BONE);
         ItemStack none = ItemStack.EMPTY;
-        assertCrafts(helper, CozyItems.EAR_WARMERS.get(), CraftingInput.of(3, 2,
+        assertCrafts(helper, CozyItems.EAR_WARMERS.get(), TestContainers.crafting(3, 2,
                 List.of(string, string, string, wool, none, wool)));
-        assertCrafts(helper, CozyItems.ELF_HAT.get(), CraftingInput.of(3, 3,
+        assertCrafts(helper, CozyItems.ELF_HAT.get(), TestContainers.crafting(3, 3,
                 List.of(none, none, new ItemStack(Items.GOLD_NUGGET), none, green, none, green, green, green)));
-        assertCrafts(helper, CozyItems.ANTLER_HEADBAND.get(), CraftingInput.of(3, 2,
+        assertCrafts(helper, CozyItems.ANTLER_HEADBAND.get(), TestContainers.crafting(3, 2,
                 List.of(bone, none, bone, red, red, red)));
 
         for (Item dyeable : List.of(CozyItems.EAR_WARMERS.get(), CozyItems.ELF_HAT.get())) {
-            ItemStack dyed = craft(helper, CraftingInput.of(2, 1, List.of(new ItemStack(dyeable), new ItemStack(Items.BLUE_DYE))));
-            DyedItemColor color = dyed.get(DataComponents.DYED_COLOR);
-            // both carry alpha, which crafting and the dye's color don't agree on
-            helper.assertTrue(dyed.is(dyeable) && color != null
-                            && (color.rgb() & 0xFFFFFF) == (DyeColor.BLUE.getTextureDiffuseColor() & 0xFFFFFF),
-                    "blue " + dyeable + ", got " + dyed + " " + color);
+            ItemStack dyed = craft(helper, TestContainers.crafting(2, 1, List.of(new ItemStack(dyeable), new ItemStack(Items.BLUE_DYE))));
+            // dyed like leather armor: the stored color is the one CozyItems.dyed gives (the dye's color)
+            int blue = ((DyeableLeatherItem) dyeable).getColor(CozyItems.dyed(dyeable, DyeColor.BLUE));
+            helper.assertTrue(dyed.is(dyeable) && ((DyeableLeatherItem) dyeable).hasCustomColor(dyed)
+                            && ((DyeableLeatherItem) dyeable).getColor(dyed) == blue,
+                    "blue " + dyeable + ", got " + dyed + " " + dyed.getTag());
         }
 
         for (String piece : List.of("ear_warmers", "elf_hat", "antler_headband")) {
@@ -74,7 +73,7 @@ public final class HeadPieceGameTests {
             CosmeticsManager.set(player, CosmeticSlot.HANDS, CozyItems.MITTENS.get().getDefaultInstance());
             helper.assertTrue(player.canFreeze(), "three pieces are not the set");
             CosmeticsManager.set(player, CosmeticSlot.HEAD, CozyItems.dyed(CozyItems.EAR_WARMERS.get(), DyeColor.PINK));
-            helper.assertValueEqual(player.canFreeze(), !CozyConfig.common().toastySet().keepsWarm(),
+            GameTestAsserts.assertValueEqual(helper, player.canFreeze(), !CozyConfig.common().toastySet().keepsWarm(),
                     "freezing with ear warmers instead of the hat");
             CosmeticsManager.set(player, CosmeticSlot.HEAD, CozyItems.ELF_HAT.get().getDefaultInstance());
             helper.assertTrue(player.canFreeze(), "an elf hat is felt, not part of the set");
@@ -84,16 +83,16 @@ public final class HeadPieceGameTests {
         }
     }
 
-    private static void assertCrafts(GameTestHelper helper, Item piece, CraftingInput grid) {
+    private static void assertCrafts(GameTestHelper helper, Item piece, CraftingContainer grid) {
         ItemStack result = craft(helper, grid);
         helper.assertTrue(result.is(piece), "crafting " + piece + ", got " + result);
-        helper.assertValueEqual(CosmeticsManager.slotOf(result), CosmeticSlot.HEAD, "slot of " + piece);
+        GameTestAsserts.assertValueEqual(helper, CosmeticsManager.slotOf(result), CosmeticSlot.HEAD, "slot of " + piece);
     }
 
-    private static ItemStack craft(GameTestHelper helper, CraftingInput grid) {
+    private static ItemStack craft(GameTestHelper helper, CraftingContainer grid) {
         Optional<ItemStack> result = helper.getLevel().getServer().getRecipeManager()
                 .getRecipeFor(RecipeType.CRAFTING, grid, helper.getLevel())
-                .map(recipe -> recipe.value().assemble(grid, helper.getLevel().registryAccess()));
+                .map(recipe -> recipe.assemble(grid, helper.getLevel().registryAccess()));
         return result.orElse(ItemStack.EMPTY);
     }
 }

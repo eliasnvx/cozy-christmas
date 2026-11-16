@@ -9,7 +9,7 @@ import net.minecraft.world.item.Items;
 /**
  * What a present goblin takes: one whole stack from a random hotbar slot that holds something, skipping
  * {@code #cozychristmas:goblin_proof} and anything that saves its holder from death (a totem in the goblin's hand would
- * save the goblin, and be used up; on 1.21.1 that's only the totem of undying, vanilla checks the item itself). The held item counts, so a goblin can run off with your sword.
+ * save the goblin, and be used up; on 1.20.1 that's only the totem of undying, vanilla checks the item itself). The held item counts, so a goblin can run off with your sword.
  */
 public final class GoblinLoot {
 

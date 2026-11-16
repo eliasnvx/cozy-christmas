@@ -1,14 +1,13 @@
 package dev.eliasnvx.cozychristmas.present;
 
-import com.mojang.serialization.MapCodec;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.workshop.WorkshopAlarm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -28,8 +27,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.BiConsumer;
-
 /**
  * A present on the ground. Right-click opens it ({@link PresentBlockEntity#open}); breaking it drops the present with
  * its contents, so it can be carried and given away. While it's going to go boom and a player stands close it ticks:
@@ -44,7 +41,8 @@ public class PresentBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = Shapes.or(Block.box(2.0, 0.0, 2.0, 14.0, 10.0, 14.0),
             Block.box(5.0, 10.0, 5.0, 11.0, 13.0, 11.0));
 
-    public static final MapCodec<PresentBlock> CODEC = simpleCodec(PresentBlock::new);
+    /** The warehouse present just removed on the server thread, read by {@link #wasExploded} right after; else null. */
+    private @Nullable BlockPos removedStock;
 
     public PresentBlock(Properties properties) {
         super(properties);
@@ -56,19 +54,14 @@ public class PresentBlock extends BaseEntityBlock {
         builder.add(DESIGN, TICKING);
     }
 
-    @Override
-    protected MapCodec<? extends PresentBlock> codec() {
-        return CODEC;
-    }
-
     /** {@link BaseEntityBlock} draws nothing by default; the block model is the present (the ticking one too). */
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
@@ -84,28 +77,48 @@ public class PresentBlock extends BaseEntityBlock {
 
     /** Breaking a present of the workshop warehouse is theft too (like gold guarded by piglins). */
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (player instanceof ServerPlayer thief && level.getBlockEntity(pos) instanceof PresentBlockEntity present
                 && present.isWorkshopStock()) {
             WorkshopAlarm.theft(thief.serverLevel(), pos, thief);
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player);
     }
 
-    /** Blowing up the warehouse is theft too, by whoever lit the TNT or fired the shot. */
+    /**
+     * Blowing up the warehouse is theft too, by whoever lit the TNT or fired the shot. 1.20.1 tells a block it was
+     * exploded only after its block entity is gone: {@link #onRemove} (called on the server thread just before, while
+     * it's still there) remembers whether a warehouse present went, {@link #wasExploded} blames.
+     */
     @Override
-    protected void onExplosionHit(BlockState state, Level level, BlockPos pos, Explosion explosion,
-                                  BiConsumer<ItemStack, BlockPos> drops) {
-        if (level instanceof ServerLevel server && explosion.getIndirectSourceEntity() instanceof ServerPlayer thief
-                && level.getBlockEntity(pos) instanceof PresentBlockEntity present && present.isWorkshopStock()) {
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+        if (!state.is(newState.getBlock())) {
+            removedStock = level.getBlockEntity(pos) instanceof PresentBlockEntity present && present.isWorkshopStock()
+                    ? pos.immutable()
+                    : null;
+        }
+        super.onRemove(state, level, pos, newState, moved);
+    }
+
+    @Override
+    public void wasExploded(Level level, BlockPos pos, Explosion explosion) {
+        if (level instanceof ServerLevel server && pos.equals(removedStock)
+                && explosion.getIndirectSourceEntity() instanceof ServerPlayer thief) {
             WorkshopAlarm.theft(server, pos, thief);
         }
-        super.onExplosionHit(state, level, pos, explosion, drops);
+        if (!level.isClientSide()) {
+            removedStock = null;
+        }
+        super.wasExploded(level, pos, explosion);
     }
 
-    /** Any hand opens it: block use comes before item use, and sneaking with an item still places blocks against it. */
+    /**
+     * Any hand opens it: block use comes before item use, and sneaking with an item still places blocks against it.
+     * 1.20.1 has one {@code use} for both; presents ignore what's held.
+     */
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
         if (player instanceof ServerPlayer opener && level.getBlockEntity(pos) instanceof PresentBlockEntity present) {
             present.open(opener);
         }

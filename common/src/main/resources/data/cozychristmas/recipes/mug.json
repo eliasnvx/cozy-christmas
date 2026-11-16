@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "B B",
+    " B "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:brick"
+    }
+  },
+  "result": {
+    "item": "cozychristmas:mug",
+    "count": 2
+  }
+}

@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * The {@code evil_snowman} config section. A snowman has {@code health}, walks at {@code speed} and throws an ice
@@ -19,7 +20,7 @@ public record EvilSnowmanSettings(double health, double speed, int throwInterval
     public static final EvilSnowmanSettings DEFAULTS = new EvilSnowmanSettings(16.0, 0.25, 30, 12.0, 3.0, 2, 20, 1, 2,
             IceSnowballSettings.DEFAULTS);
 
-    public static final Codec<EvilSnowmanSettings> CODEC = RecordCodecBuilder.<EvilSnowmanSettings>create(i -> i.group(
+    public static final Codec<EvilSnowmanSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<EvilSnowmanSettings>create(i -> i.group(
             ConfigCodecs.field(Codec.doubleRange(1.0, 1024.0), "health", DEFAULTS.health)
                     .forGetter(EvilSnowmanSettings::health),
             ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "speed", DEFAULTS.speed)
@@ -40,7 +41,7 @@ public record EvilSnowmanSettings(double health, double speed, int throwInterval
                     .forGetter(EvilSnowmanSettings::maxGroup),
             ConfigCodecs.field(IceSnowballSettings.CODEC, "ice_snowball", DEFAULTS.iceSnowball)
                     .forGetter(EvilSnowmanSettings::iceSnowball)
-    ).apply(i, EvilSnowmanSettings::new)).validate(EvilSnowmanSettings::validate);
+    ).apply(i, EvilSnowmanSettings::new)), EvilSnowmanSettings::validate);
 
     private static DataResult<EvilSnowmanSettings> validate(EvilSnowmanSettings settings) {
         return settings.minGroup <= settings.maxGroup

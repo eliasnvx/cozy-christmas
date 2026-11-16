@@ -1,0 +1,19 @@
+{
+  "values": [
+    "minecraft:villager",
+    "minecraft:wandering_trader",
+    "minecraft:cat",
+    "minecraft:ocelot",
+    "minecraft:parrot",
+    "minecraft:fox",
+    "minecraft:axolotl",
+    "minecraft:allay",
+    "minecraft:sniffer",
+    "minecraft:snow_golem",
+    "minecraft:turtle",
+    "minecraft:panda",
+    "cozychristmas:elf",
+    "cozychristmas:santa",
+    "cozychristmas:reindeer"
+  ]
+}

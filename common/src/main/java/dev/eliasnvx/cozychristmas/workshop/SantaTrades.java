@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.ItemLike;
@@ -20,8 +19,9 @@ import java.util.function.Supplier;
 
 /**
  * Santa's trades. 26.3 reads them from data ({@code villager_trade/santa/**}, picked by trade sets
- * {@code cozychristmas:santa/goods} and {@code santa/buying}); 1.21.1 has no data-driven villager trades, so the same
- * trades live here: same items, counts, prices, max uses and xp, no reputation discount. Each set offers {@code amount}
+ * {@code cozychristmas:santa/goods} and {@code santa/buying}); 1.20.1 has no data-driven villager trades, so the same
+ * trades live here: same items, counts, prices, max uses and xp, no reputation discount. A cost without NBT takes the
+ * item whatever its tag, like 26.3's {@code ItemCost} without components. Each set offers {@code amount}
  * different trades, drawn from the world's random sequence of the same name, like 26.3's trade sets.
  */
 public final class SantaTrades {
@@ -71,7 +71,7 @@ public final class SantaTrades {
                         Supplier<? extends ItemLike> gives, int givesCount, int maxUses, int xp) {
 
         public MerchantOffer offer() {
-            return new MerchantOffer(new ItemCost(wants.get(), wantsCount), new ItemStack(gives.get(), givesCount),
+            return new MerchantOffer(new ItemStack(wants.get(), wantsCount), new ItemStack(gives.get(), givesCount),
                     maxUses, xp, PRICE_MULTIPLIER);
         }
     }

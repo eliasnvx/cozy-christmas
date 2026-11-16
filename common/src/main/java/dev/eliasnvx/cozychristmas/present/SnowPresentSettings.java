@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * The {@code presents.snow} config section: during the Christmas season, every {@code intervalTicks} each player has a
@@ -15,7 +16,7 @@ public record SnowPresentSettings(boolean enabled, int intervalTicks, double cha
 
     public static final SnowPresentSettings DEFAULTS = new SnowPresentSettings(true, 1200, 0.08, 16, 40, 32);
 
-    public static final Codec<SnowPresentSettings> CODEC = RecordCodecBuilder.<SnowPresentSettings>create(i -> i.group(
+    public static final Codec<SnowPresentSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<SnowPresentSettings>create(i -> i.group(
             ConfigCodecs.field(Codec.BOOL, "enabled", DEFAULTS.enabled).forGetter(SnowPresentSettings::enabled),
             ConfigCodecs.field(Codec.intRange(20, 72000), "interval_ticks", DEFAULTS.intervalTicks)
                     .forGetter(SnowPresentSettings::intervalTicks),
@@ -27,7 +28,7 @@ public record SnowPresentSettings(boolean enabled, int intervalTicks, double cha
                     .forGetter(SnowPresentSettings::maxDistance),
             ConfigCodecs.field(Codec.intRange(0, 128), "spacing", DEFAULTS.spacing)
                     .forGetter(SnowPresentSettings::spacing)
-    ).apply(i, SnowPresentSettings::new)).validate(SnowPresentSettings::validate);
+    ).apply(i, SnowPresentSettings::new)), SnowPresentSettings::validate);
 
     private static DataResult<SnowPresentSettings> validate(SnowPresentSettings settings) {
         return settings.minDistance <= settings.maxDistance

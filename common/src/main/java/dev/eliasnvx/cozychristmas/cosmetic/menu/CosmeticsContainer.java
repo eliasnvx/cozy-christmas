@@ -7,7 +7,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Container view over a player's cosmetics attachment, one index per {@link CosmeticSlot}. Holds no items itself,
+ * Container view over a player's stored cosmetics, one index per {@link CosmeticSlot}. Holds no items itself,
  * so there is no second copy that could drift from the stored state (dupe safety).
  */
 public final class CosmeticsContainer implements Container {

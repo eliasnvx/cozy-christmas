@@ -38,7 +38,7 @@ import java.util.function.Predicate;
 
 /**
  * Present goblins, gingerbread men and their camp on a real server, shared by both loaders (Fabric:
- * {@code fabric/src/gametest}, NeoForge: {@code neoforge/.../dev/CozyGameTestsNeoForge}). Dev only: not in the
+ * {@code fabric/src/gametest}, Forge: {@code forge/.../dev/CozyGameTestsForge}). Dev only: not in the
  * released jars.
  */
 public final class GoblinGameTests {
@@ -75,7 +75,7 @@ public final class GoblinGameTests {
             player.getInventory().setItem(STICK_SLOT, new ItemStack(Items.STICK, STICKS));
             float health = player.getHealth();
             helper.assertTrue(goblin.doHurtTarget(player), "the snatch counts as a hit");
-            helper.assertValueEqual(player.getHealth(), health, "a snatch doesn't hurt");
+            GameTestAsserts.assertValueEqual(helper, player.getHealth(), health, "a snatch doesn't hurt");
             ItemStack loot = goblin.getMainHandItem();
             boolean tookSword = loot.is(Items.IRON_SWORD) && player.getInventory().getItem(SWORD_SLOT).isEmpty();
             boolean tookSticks = loot.is(Items.STICK) && loot.getCount() == STICKS && player.getInventory().getItem(STICK_SLOT).isEmpty();
@@ -119,7 +119,7 @@ public final class GoblinGameTests {
                     "the diamonds drop");
             helper.assertTrue(drops.stream().anyMatch(drop -> drop.getItem().is(CozyBlocks.PRESENT_ITEM.get())),
                     "a present drops with them");
-            helper.assertValueEqual(KarmaManager.get(player), karma + CozyConfig.common().karma().returnStolen(),
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), karma + CozyConfig.common().karma().returnStolen(),
                     "karma for getting the loot back");
             helper.succeed();
         } finally {
@@ -161,8 +161,7 @@ public final class GoblinGameTests {
 
             PresentGoblin second = helper.spawn(CozyEntities.PRESENT_GOBLIN.get(), GOBLIN.add(0.0, 0.0, 3.0));
             ItemStack sword = new ItemStack(Items.IRON_SWORD);
-            sword.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
-                    .getOrThrow(Enchantments.VANISHING_CURSE), 1);
+            sword.enchant(Enchantments.VANISHING_CURSE, 1);
             player.getInventory().setItem(0, sword);
             helper.assertTrue(second.steal(player), "the goblin steals the cursed sword");
             second.hurt(helper.getLevel().damageSources().playerAttack(player), 1000.0F);
@@ -191,10 +190,10 @@ public final class GoblinGameTests {
                 helper.assertTrue(goblin.steal(player), "the goblin steals the cobblestone");
                 goblin.hurt(helper.getLevel().damageSources().playerAttack(player), 1000.0F);
                 helper.assertTrue(dropped(helper, goblin, stack -> stack.is(Items.COBBLESTONE)), "the cobblestone comes back");
-                helper.assertValueEqual(dropped(helper, goblin, stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())), round == 0,
+                GameTestAsserts.assertValueEqual(helper, dropped(helper, goblin, stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())), round == 0,
                         "a present only the first time today, round " + round);
             }
-            helper.assertValueEqual(KarmaManager.get(player), karma + CozyConfig.common().karma().returnStolen(),
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), karma + CozyConfig.common().karma().returnStolen(),
                     "karma for returned loot once a day");
             helper.succeed();
         } finally {
@@ -214,7 +213,7 @@ public final class GoblinGameTests {
         man.setNoAi(true);
         float health = man.getHealth();
         helper.runAfterDelay(SOAK_TICKS, () -> {
-            helper.assertValueEqual(man.isSensitiveToWater(), CozyConfig.common().goblins().gingerbreadMan().soggy(),
+            GameTestAsserts.assertValueEqual(helper, man.isSensitiveToWater(), CozyConfig.common().goblins().gingerbreadMan().soggy(),
                     "soggy follows the config");
             helper.assertTrue(!man.isSensitiveToWater() || man.getHealth() < health, "water hurts a gingerbread man");
             helper.succeed();
@@ -236,10 +235,10 @@ public final class GoblinGameTests {
         StructureTemplate template = helper.getLevel().getServer().getStructureManager()
                 .getOrCreate(CozyChristmas.id("goblin_camp/camp"));
         StructurePlaceSettings settings = new StructurePlaceSettings();
-        helper.assertValueEqual(template.filterBlocks(BlockPos.ZERO, settings, Blocks.CAMPFIRE).size(), 1, "the camp fire");
-        helper.assertValueEqual(template.filterBlocks(BlockPos.ZERO, settings, CozyBlocks.PRESENT.get()).size(), CAMP_PRESENTS,
+        GameTestAsserts.assertValueEqual(helper, template.filterBlocks(BlockPos.ZERO, settings, Blocks.CAMPFIRE).size(), 1, "the camp fire");
+        GameTestAsserts.assertValueEqual(helper, template.filterBlocks(BlockPos.ZERO, settings, CozyBlocks.PRESENT.get()).size(), CAMP_PRESENTS,
                 "the heap of stolen presents");
-        helper.assertValueEqual(template.filterBlocks(BlockPos.ZERO, settings, Blocks.CHEST).size(), 1, "the loot chest");
+        GameTestAsserts.assertValueEqual(helper, template.filterBlocks(BlockPos.ZERO, settings, Blocks.CHEST).size(), 1, "the loot chest");
         helper.succeed();
     }
 

@@ -15,7 +15,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * The Toasty set's bonuses on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, NeoForge:
- * {@code neoforge/.../dev/CozyGameTestsNeoForge}). Dev only: not in the released jars.
+ * The Toasty set's bonuses on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, Forge:
+ * {@code forge/.../dev/CozyGameTestsForge}). Dev only: not in the released jars.
  */
 public final class ToastySetGameTests {
 
@@ -39,7 +39,7 @@ public final class ToastySetGameTests {
 
     /**
      * Each sweater's pattern ingredient, in the middle of a ring of wool. Built when the test runs: the test lists are
-     * read on NeoForge before our items are registered.
+     * read on Forge before our items are registered.
      */
     private static Map<String, Item> patternIngredients() {
         return Map.of("snowflake_sweater", Items.SNOWBALL, "reindeer_sweater", Items.LEATHER, "cat_sweater", Items.COD,
@@ -61,7 +61,7 @@ public final class ToastySetGameTests {
             wearSetBut(player, CosmeticSlot.HANDS);
             helper.assertTrue(player.canFreeze(), "three pieces are not the set");
             wear(player, CosmeticSlot.HANDS, CozyItems.MITTENS.get().getDefaultInstance());
-            helper.assertValueEqual(player.canFreeze(), !CozyConfig.common().toastySet().keepsWarm(),
+            GameTestAsserts.assertValueEqual(helper, player.canFreeze(), !CozyConfig.common().toastySet().keepsWarm(),
                     "freezing with the whole set");
         });
     }
@@ -69,17 +69,17 @@ public final class ToastySetGameTests {
     /** Every pattern: crafted from wool round its ingredient, worn as the body piece, part of the set. */
     public static void everySweaterCraftsAndCounts(GameTestHelper helper) {
         Map<String, Item> ingredients = patternIngredients();
-        helper.assertValueEqual(CozyItems.sweaters().size(), ingredients.size(), "patterns with a known ingredient");
+        GameTestAsserts.assertValueEqual(helper, CozyItems.sweaters().size(), ingredients.size(), "patterns with a known ingredient");
         ItemStack wool = new ItemStack(Items.WHITE_WOOL);
         for (var sweater : CozyItems.sweaters()) {
             String name = sweater.getId().getPath();
             ItemStack pattern = new ItemStack(ingredients.get(name));
-            CraftingInput grid = CraftingInput.of(3, 3, List.of(wool, ItemStack.EMPTY, wool, wool, pattern, wool, wool, wool, wool));
+            CraftingContainer grid = TestContainers.crafting(3, 3, List.of(wool, ItemStack.EMPTY, wool, wool, pattern, wool, wool, wool, wool));
             ItemStack result = helper.getLevel().getServer().getRecipeManager()
                     .getRecipeFor(RecipeType.CRAFTING, grid, helper.getLevel())
-                    .map(recipe -> recipe.value().assemble(grid, helper.getLevel().registryAccess())).orElse(ItemStack.EMPTY);
+                    .map(recipe -> recipe.assemble(grid, helper.getLevel().registryAccess())).orElse(ItemStack.EMPTY);
             helper.assertTrue(result.is(sweater.get()), "crafting " + name + ", got " + result);
-            helper.assertValueEqual(CosmeticsManager.slotOf(result), CosmeticSlot.BODY, "slot of " + name);
+            GameTestAsserts.assertValueEqual(helper, CosmeticsManager.slotOf(result), CosmeticSlot.BODY, "slot of " + name);
             helper.assertTrue(result.is(CozyTags.SWEATERS) && result.is(CozyTags.TOASTY_SET), name + " is a Toasty sweater");
         }
         helper.succeed();
@@ -90,23 +90,23 @@ public final class ToastySetGameTests {
             double bonus = CozyConfig.common().toastySet().snowSpeedBonus();
             player.setOnGround(true);
             stand(helper, player, Blocks.SNOW_BLOCK, Blocks.AIR);
-            helper.assertValueEqual(bonus(player), 0.0, "bonus on snow without the set");
+            GameTestAsserts.assertValueEqual(helper, bonus(player), 0.0, "bonus on snow without the set");
 
             wearSet(player);
             stand(helper, player, Blocks.SNOW_BLOCK, Blocks.AIR);
-            helper.assertValueEqual(bonus(player), bonus, "bonus on a snow block");
+            GameTestAsserts.assertValueEqual(helper, bonus(player), bonus, "bonus on a snow block");
             stand(helper, player, Blocks.STONE, Blocks.AIR);
-            helper.assertValueEqual(bonus(player), 0.0, "bonus on stone");
+            GameTestAsserts.assertValueEqual(helper, bonus(player), 0.0, "bonus on stone");
             stand(helper, player, Blocks.STONE, Blocks.SNOW);
-            helper.assertValueEqual(bonus(player), bonus, "bonus in a snow layer");
+            GameTestAsserts.assertValueEqual(helper, bonus(player), bonus, "bonus in a snow layer");
 
             // airborne the last decision holds (no flicker while hopping), but taking a piece off ends it at once
             player.setOnGround(false);
             stand(helper, player, Blocks.STONE, Blocks.AIR);
-            helper.assertValueEqual(bonus(player), bonus, "bonus in the air after leaving snow");
+            GameTestAsserts.assertValueEqual(helper, bonus(player), bonus, "bonus in the air after leaving snow");
             wear(player, CosmeticSlot.HEAD, ItemStack.EMPTY);
             ToastySet.updateSnowSpeed(player);
-            helper.assertValueEqual(bonus(player), 0.0, "bonus in the air without the hat");
+            GameTestAsserts.assertValueEqual(helper, bonus(player), 0.0, "bonus in the air without the hat");
         });
     }
 
@@ -140,7 +140,7 @@ public final class ToastySetGameTests {
     private static double bonus(ServerPlayer player) {
         AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
         AttributeModifier modifier = speed == null ? null : speed.getModifier(ToastySet.SNOW_SPEED_ID);
-        return modifier == null ? 0.0 : modifier.amount();
+        return modifier == null ? 0.0 : modifier.getAmount();
     }
 
     private static void withPlayer(GameTestHelper helper, Consumer<ServerPlayer> body) {

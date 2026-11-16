@@ -125,7 +125,7 @@ public enum CosmeticShape {
     }
 
     /**
-     * Bakes one size of this shape. 1.21.1's part poses have no scale, so the headbands' scale over a helmet is set on
+     * Bakes one size of this shape. 1.20.1's part poses have no scale, so the headbands' scale over a helmet is set on
      * the baked parts here; nothing resets it afterwards (the cosmetic model only copies the wearer's main parts).
      */
     public ModelPart bake(EntityModelSet models, boolean overArmor, boolean slim) {
@@ -166,7 +166,7 @@ public enum CosmeticShape {
     }
 
     /**
-     * The player mesh's parts with their pivots and no boxes (1.21.1 can't clear a mesh's cubes). Slim meshes put the
+     * The player mesh's parts with their pivots and no boxes (1.20.1 can't clear a mesh's cubes). Slim meshes put the
      * arms where slim skins have them (half a pixel lower); the wearer's pose is copied over them anyway.
      */
     private static MeshDefinition emptyPlayerMesh(boolean slim) {

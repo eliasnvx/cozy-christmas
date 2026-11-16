@@ -16,14 +16,14 @@ class CommonConfigTest {
 
     @Test
     void defaultsRoundTrip() {
-        var json = CommonConfig.CODEC.encodeStart(JsonOps.INSTANCE, CommonConfig.DEFAULTS).getOrThrow();
-        assertEquals(CommonConfig.DEFAULTS, CommonConfig.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        var json = CommonConfig.CODEC.encodeStart(JsonOps.INSTANCE, CommonConfig.DEFAULTS).getOrThrow(false, e -> { });
+        assertEquals(CommonConfig.DEFAULTS, CommonConfig.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 
     @Test
     void missingSectionsTakeDefaults() {
         var json = JsonParser.parseString("{\"karma\": {\"decay_per_day\": 3}}");
-        CommonConfig config = CommonConfig.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+        CommonConfig config = CommonConfig.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { });
         assertEquals(3, config.karma().decayPerDay());
         assertEquals(CommonConfig.DEFAULTS.karma().niceAbove(), config.karma().niceAbove());
         assertEquals(CommonConfig.DEFAULTS.season(), config.season());
@@ -34,9 +34,9 @@ class CommonConfigTest {
     @Test
     void anOutOfRangeValueIsAnErrorNotSilentlyTheDefault() {
         var tooFast = JsonParser.parseString("{\"toasty_set\": {\"snow_speed_bonus\": 5.0}}");
-        assertTrue(CommonConfig.CODEC.parse(JsonOps.INSTANCE, tooFast).isError());
+        assertTrue(CommonConfig.CODEC.parse(JsonOps.INSTANCE, tooFast).error().isPresent());
         var off = JsonParser.parseString("{\"toasty_set\": {\"snow_speed_bonus\": 0}}");
-        ToastySettings toasty = CommonConfig.CODEC.parse(JsonOps.INSTANCE, off).getOrThrow().toastySet();
+        ToastySettings toasty = CommonConfig.CODEC.parse(JsonOps.INSTANCE, off).getOrThrow(false, e -> { }).toastySet();
         assertEquals(0.0, toasty.snowSpeedBonus());
         assertTrue(toasty.keepsWarm());
     }
@@ -46,7 +46,7 @@ class CommonConfigTest {
     void aSectionFailingItsCheckIsAnError() {
         var crossed = JsonParser.parseString(
                 "{\"krampus\": {\"lash_min_range\": 8, \"lash_range\": 6, \"visits\": {\"enabled\": false}}}");
-        assertTrue(CommonConfig.CODEC.parse(JsonOps.INSTANCE, crossed).isError());
+        assertTrue(CommonConfig.CODEC.parse(JsonOps.INSTANCE, crossed).error().isPresent());
     }
 
     /** A broken file is kept as .broken next to the fresh defaults, and the defaults are used. */

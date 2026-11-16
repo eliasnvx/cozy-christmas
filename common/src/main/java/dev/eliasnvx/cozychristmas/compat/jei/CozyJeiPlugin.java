@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * JEI (SPEC compat): information pages for what comes from mechanics rather than recipes, and the wrapping table's
- * uses as a category. Loaded only by JEI: the {@code jei_mod_plugin} entrypoint on Fabric, the annotation on NeoForge.
+ * uses as a category. Loaded only by JEI: the {@code jei_mod_plugin} entrypoint on Fabric, the annotation on Forge.
  */
 @JeiPlugin
 public final class CozyJeiPlugin implements IModPlugin {

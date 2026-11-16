@@ -7,6 +7,7 @@ import dev.eliasnvx.cozychristmas.present.PresentBlock;
 import dev.eliasnvx.cozychristmas.present.PresentBlockEntity;
 import dev.eliasnvx.cozychristmas.present.PresentContents;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
+import dev.eliasnvx.cozychristmas.present.PresentItem;
 import dev.eliasnvx.cozychristmas.present.PresentOutcome;
 import dev.eliasnvx.cozychristmas.present.SnowPresents;
 import dev.eliasnvx.cozychristmas.present.WrappingTableMenu;
@@ -14,7 +15,6 @@ import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -24,10 +24,10 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -37,7 +37,7 @@ import java.util.Optional;
 
 /**
  * Presents and the wrapping table on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest},
- * NeoForge: {@code neoforge/.../dev/CozyGameTestsNeoForge}): contents surviving a break, gifts and the giver's karma,
+ * Forge: {@code forge/.../dev/CozyGameTestsForge}): contents surviving a break, gifts and the giver's karma,
  * karma deciding a surprise when a player comes close, the ticking warning, the boom's damage without block damage,
  * the wrapping table's menu and where presents appear in the snow. The odds and damage math are in JUnit. Dev only:
  * not in the released jars.
@@ -71,12 +71,11 @@ public final class PresentGameTests {
         placePresent(helper, PresentDesign.GREEN, gift);
         helper.getLevel().destroyBlock(helper.absolutePos(PRESENT), true);
         List<ItemEntity> drops = drops(helper);
-        helper.assertValueEqual(drops.size(), 1, "dropped stacks");
-        ItemStack present = drops.getFirst().getItem();
+        GameTestAsserts.assertValueEqual(helper, drops.size(), 1, "dropped stacks");
+        ItemStack present = drops.get(0).getItem();
         helper.assertTrue(present.is(CozyBlocks.PRESENT_ITEM.get()), "the drop is a present");
-        helper.assertValueEqual(present.get(CozyComponents.PRESENT_CONTENTS.get()), gift, "contents after breaking");
-        BlockItemStateProperties state = present.get(DataComponents.BLOCK_STATE);
-        helper.assertValueEqual(state == null ? null : state.get(PresentBlock.DESIGN), PresentDesign.GREEN, "design after breaking");
+        GameTestAsserts.assertValueEqual(helper, CozyComponents.PRESENT_CONTENTS.get(present), gift, "contents after breaking");
+        GameTestAsserts.assertValueEqual(helper, design(present), PresentDesign.GREEN, "design after breaking");
         drops.forEach(Entity::discard);
         helper.succeed();
     }
@@ -90,14 +89,14 @@ public final class PresentGameTests {
 
             placePresent(helper, PresentDesign.RED, gift(Items.DIAMOND, 3, from)).open(opener);
             helper.assertBlockPresent(Blocks.AIR, PRESENT);
-            helper.assertValueEqual(count(drops(helper), Items.DIAMOND), 3, "diamonds out of the gift");
-            helper.assertValueEqual(KarmaManager.get(giver), thanks, "giver's karma after a gift");
+            GameTestAsserts.assertValueEqual(helper, count(drops(helper), Items.DIAMOND), 3, "diamonds out of the gift");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(giver), thanks, "giver's karma after a gift");
 
             placePresent(helper, PresentDesign.RED, gift(Items.DIAMOND, 1, from)).open(opener);
-            helper.assertValueEqual(KarmaManager.get(giver), thanks, "giver's karma after a second gift the same day");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(giver), thanks, "giver's karma after a second gift the same day");
 
             placePresent(helper, PresentDesign.RED, gift(Items.DIAMOND, 1, Optional.of(PresentContents.Giver.of(opener)))).open(opener);
-            helper.assertValueEqual(KarmaManager.get(opener), 0, "karma for opening your own gift");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(opener), 0, "karma for opening your own gift");
             drops(helper).forEach(Entity::discard);
             helper.succeed();
         } finally {
@@ -155,7 +154,7 @@ public final class PresentGameTests {
         helper.runAfterDelay(CHECKS, () -> {
             try {
                 helper.assertBlockProperty(PRESENT, PresentBlock.TICKING, true);
-                PresentContents decided = helper.<PresentBlockEntity>getBlockEntity(surprise).contents();
+                PresentContents decided = ((PresentBlockEntity) helper.getBlockEntity(surprise)).contents();
                 helper.assertTrue(decided instanceof PresentContents.Surprise s && s.decided().isPresent(),
                         "a surprise next to a player is decided, got " + decided);
                 player.moveTo(helper.absoluteVec(FAR_AWAY));
@@ -189,24 +188,23 @@ public final class PresentGameTests {
             menu.clickMenuButton(player, PresentDesign.BLUE.ordinal());
             menu.clicked(WrappingTableMenu.RESULT_SLOT, 0, ClickType.QUICK_MOVE, player);
             ItemStack present = findPresent(player);
-            helper.assertValueEqual(present.get(CozyComponents.PRESENT_CONTENTS.get()),
+            GameTestAsserts.assertValueEqual(helper, CozyComponents.PRESENT_CONTENTS.get(present),
                     gift(Items.DIAMOND, 5, Optional.of(PresentContents.Giver.of(player))), "wrapped gift");
-            BlockItemStateProperties state = present.get(DataComponents.BLOCK_STATE);
-            helper.assertValueEqual(state == null ? null : state.get(PresentBlock.DESIGN), PresentDesign.BLUE, "chosen design");
+            GameTestAsserts.assertValueEqual(helper, design(present), PresentDesign.BLUE, "chosen design");
             helper.assertTrue(menu.getSlot(WrappingTableMenu.GIFT_SLOT).getItem().isEmpty(), "the whole gift stack is wrapped");
-            helper.assertValueEqual(menu.getSlot(WrappingTableMenu.PAPER_SLOT).getItem().getCount(), 1, "paper left");
+            GameTestAsserts.assertValueEqual(helper, menu.getSlot(WrappingTableMenu.PAPER_SLOT).getItem().getCount(), 1, "paper left");
             player.getInventory().clearContent();
 
             menu.getSlot(WrappingTableMenu.GIFT_SLOT).set(new ItemStack(Items.TNT, 3));
             menu.clicked(WrappingTableMenu.RESULT_SLOT, 0, ClickType.PICKUP, player);
-            helper.assertTrue(menu.getCarried().get(CozyComponents.PRESENT_CONTENTS.get()) instanceof PresentContents.Prank,
+            helper.assertTrue(CozyComponents.PRESENT_CONTENTS.get(menu.getCarried()) instanceof PresentContents.Prank,
                     "TNT makes a prank");
-            helper.assertValueEqual(menu.getSlot(WrappingTableMenu.GIFT_SLOT).getItem().getCount(), 2, "TNT left");
+            GameTestAsserts.assertValueEqual(helper, menu.getSlot(WrappingTableMenu.GIFT_SLOT).getItem().getCount(), 2, "TNT left");
             helper.assertTrue(menu.getSlot(WrappingTableMenu.RESULT_SLOT).getItem().isEmpty(), "no paper, no present");
             menu.setCarried(ItemStack.EMPTY);
 
             menu.removed(player);
-            helper.assertValueEqual(player.getInventory().countItem(Items.TNT), 2, "TNT back in the inventory on close");
+            GameTestAsserts.assertValueEqual(helper, player.getInventory().countItem(Items.TNT), 2, "TNT back in the inventory on close");
             helper.succeed();
         } finally {
             TestPlayers.remove(helper, player);
@@ -236,8 +234,8 @@ public final class PresentGameTests {
         helper.assertTrue(SnowPresents.trySpawnAt(helper.getLevel(), helper.absolutePos(inSnowLayer), random, spacing),
                 "a present in a snow layer");
         helper.assertBlockPresent(CozyBlocks.PRESENT.get(), inSnowLayer);
-        PresentContents contents = helper.<PresentBlockEntity>getBlockEntity(inSnowLayer).contents();
-        helper.assertValueEqual(contents, PresentContents.SURPRISE, "a snow present is an undecided surprise");
+        PresentContents contents = ((PresentBlockEntity) helper.getBlockEntity(inSnowLayer)).contents();
+        GameTestAsserts.assertValueEqual(helper, contents, PresentContents.SURPRISE, "a snow present is an undecided surprise");
         helper.succeed();
     }
 
@@ -268,7 +266,7 @@ public final class PresentGameTests {
                             new AABB(helper.absolutePos(PRESENT)).inflate(DROP_RADIUS)).stream()
                     .map(ItemEntity::getItem).filter(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())).findFirst()
                     .orElseThrow(() -> new AssertionError("the present drops"));
-            helper.assertValueEqual(dropped.getMaxStackSize(), 1, "a decided present doesn't stack");
+            GameTestAsserts.assertValueEqual(helper, dropped.getMaxStackSize(), 1, "a decided present doesn't stack");
             helper.succeed();
         } finally {
             TestPlayers.remove(helper, player);
@@ -303,9 +301,14 @@ public final class PresentGameTests {
                                                    PresentContents contents) {
         helper.setBlock(pos.below(), Blocks.STONE);
         helper.setBlock(pos, CozyBlocks.PRESENT.get().defaultBlockState().setValue(PresentBlock.DESIGN, design));
-        PresentBlockEntity present = helper.<PresentBlockEntity>getBlockEntity(pos);
+        PresentBlockEntity present = ((PresentBlockEntity) helper.getBlockEntity(pos));
         present.setContents(contents);
         return present;
+    }
+
+    /** The design a present item places with ({@code BlockStateTag}), or null if it carries none. */
+    private static PresentDesign design(ItemStack present) {
+        return present.getTagElement(BlockItem.BLOCK_STATE_TAG) == null ? null : PresentItem.design(present);
     }
 
     private static List<ItemEntity> drops(GameTestHelper helper) {

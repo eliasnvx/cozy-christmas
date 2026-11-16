@@ -4,8 +4,6 @@ import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.menu.InventoryMenuCosmetics;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -18,9 +16,9 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.GameRules;
@@ -31,8 +29,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Dupe checks for the cosmetic slots, shared by both loaders (Fabric: {@code fabric/src/gametest}, NeoForge:
- * {@code neoforge/.../dev/CozyGameTestsNeoForge}). Every way an item gets into or out of a slot goes through the
+ * Dupe checks for the cosmetic slots, shared by both loaders (Fabric: {@code fabric/src/gametest}, Forge:
+ * {@code forge/.../dev/CozyGameTestsForge}). Every way an item gets into or out of a slot goes through the
  * real server code (menu clicks, the creative slot packet, right-click use, death and respawn), and after each step
  * the number of pompom hats (menu, cursor, worn and dropped) must not change. Dev only: not in the released jars.
  */
@@ -56,8 +54,6 @@ public final class CosmeticSlotGameTests {
     /** Dropped items are looked for this far around the spot the player stood on. */
     private static final double DROP_RADIUS = 3.0;
     private static final int OUTSIDE = AbstractContainerMenu.SLOT_CLICKED_OUTSIDE;
-    /** A dye's color without alpha, as dyeing stores it. */
-    private static final int RGB = 0xFFFFFF;
 
     private CosmeticSlotGameTests() {
     }
@@ -101,7 +97,7 @@ public final class CosmeticSlotGameTests {
             rig.click(rig.hotbar(0), 0, ClickType.PICKUP);
             rig.click(rig.hat, 0, ClickType.PICKUP);
             rig.expectWornCount(1, "placing a stack of three");
-            rig.helper.assertValueEqual(rig.menu.getCarried().getCount(), 2, "hat left on the cursor");
+            GameTestAsserts.assertValueEqual(rig.helper, rig.menu.getCarried().getCount(), 2, "hat left on the cursor");
             rig.click(rig.hat, 0, ClickType.PICKUP);
             rig.click(rig.hat, 1, ClickType.PICKUP);
             rig.expectWornCount(1, "clicking a full slot with more of the same");
@@ -251,7 +247,7 @@ public final class CosmeticSlotGameTests {
             rig.inventory().setItem(1, rig.player.getMainHandItem());
             rig.use(InteractionHand.MAIN_HAND, stackedHats(3));
             rig.expectWornCount(1, "right-click with a stack");
-            rig.helper.assertValueEqual(rig.player.getMainHandItem().getCount(), 2, "hat left in the hand");
+            GameTestAsserts.assertValueEqual(rig.helper, rig.player.getMainHandItem().getCount(), 2, "hat left in the hand");
             rig.expectTotal(5, "right-click with a stack");
 
             // ... or to the ground when the inventory is full
@@ -309,8 +305,7 @@ public final class CosmeticSlotGameTests {
     public static void cursedOnesVanish(GameTestHelper helper) {
         run(helper, rig -> rig.withKeepInventory(false, () -> {
             ItemStack cursed = hat(DyeColor.RED);
-            cursed.enchant(rig.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
-                    .getOrThrow(Enchantments.VANISHING_CURSE), 1);
+            cursed.enchant(Enchantments.VANISHING_CURSE, 1);
             rig.wear(cursed);
             rig.die();
             rig.expectWornEmpty("death with a cursed hat");
@@ -341,17 +336,20 @@ public final class CosmeticSlotGameTests {
         return CozyItems.dyed(CozyItems.POMPOM_HAT.get(), dye);
     }
 
-    /** Hats that stack, as a command or a data pack can make them. The slot still takes one. */
+    /**
+     * Several hats in one stack, as a command can make them (1.20.1 has no stack size component: an oversized stack).
+     * The slot still takes one.
+     */
     private static ItemStack stackedHats(int count) {
         ItemStack stack = hat(DyeColor.GRAY);
-        stack.set(DataComponents.MAX_STACK_SIZE, 64);
         stack.setCount(count);
         return stack;
     }
 
+    /** Dyed with {@code dye}: the stored color (leather armor's {@code display.color}) is the one dyeing gives. */
     private static boolean dyed(ItemStack stack, DyeColor dye) {
-        DyedItemColor color = stack.get(DataComponents.DYED_COLOR);
-        return color != null && color.rgb() == (dye.getTextureDiffuseColor() & RGB);
+        return stack.getItem() instanceof DyeableLeatherItem dyeable && dyeable.hasCustomColor(stack)
+                && dyeable.getColor(stack) == dyeable.getColor(hat(dye));
     }
 
     /** Runs the body with a fresh survival player in the test area and always removes the player afterwards. */
@@ -423,8 +421,7 @@ public final class CosmeticSlotGameTests {
 
         /** Respawns like after death ({@code false}) or like leaving the End ({@code true}); the new player stays here. */
         void respawn(boolean leavingTheEnd) {
-            player = level().getServer().getPlayerList().respawn(player, leavingTheEnd,
-                    leavingTheEnd ? Entity.RemovalReason.CHANGED_DIMENSION : Entity.RemovalReason.KILLED);
+            player = level().getServer().getPlayerList().respawn(player, leavingTheEnd);
             TestPlayers.loaded(player);
             menu = player.inventoryMenu;
         }
@@ -444,7 +441,7 @@ public final class CosmeticSlotGameTests {
         void fillInventory() {
             for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) {
                 if (inventory().getItem(i).isEmpty()) {
-                    inventory().setItem(i, new ItemStack(Items.STONE, Items.STONE.getDefaultMaxStackSize()));
+                    inventory().setItem(i, new ItemStack(Items.STONE, Items.STONE.getMaxStackSize()));
                 }
             }
         }
@@ -473,7 +470,7 @@ public final class CosmeticSlotGameTests {
         }
 
         void expectWornCount(int count, String step) {
-            helper.assertValueEqual(worn().getCount(), count, "worn hat after " + step);
+            GameTestAsserts.assertValueEqual(helper, worn().getCount(), count, "worn hat after " + step);
         }
 
         void expectWornEmpty(String step) {
@@ -494,7 +491,7 @@ public final class CosmeticSlotGameTests {
                     total += drop.getItem().getCount();
                 }
             }
-            helper.assertValueEqual(total, expected, "pompom hats after " + step);
+            GameTestAsserts.assertValueEqual(helper, total, expected, "pompom hats after " + step);
         }
 
         private List<ItemEntity> drops() {

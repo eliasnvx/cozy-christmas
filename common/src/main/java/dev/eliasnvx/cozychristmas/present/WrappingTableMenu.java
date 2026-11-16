@@ -5,7 +5,6 @@ import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozyMenus;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -17,7 +16,6 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.BlockItemStateProperties;
 
 import java.util.Optional;
 
@@ -119,9 +117,8 @@ public class WrappingTableMenu extends AbstractContainerMenu {
         PresentContents contents = gift.is(CozyTags.WRAPS_AS_BOOM)
                 ? new PresentContents.Prank(from)
                 : new PresentContents.Gift(gift, from);
-        ItemStack present = new ItemStack(CozyBlocks.PRESENT_ITEM.get());
-        present.set(CozyComponents.PRESENT_CONTENTS.get(), contents);
-        present.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(PresentBlock.DESIGN, design));
+        ItemStack present = PresentItem.withDesign(new ItemStack(CozyBlocks.PRESENT_ITEM.get()), design);
+        CozyComponents.PRESENT_CONTENTS.set(present, contents);
         return present;
     }
 

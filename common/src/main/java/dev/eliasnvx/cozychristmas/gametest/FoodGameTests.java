@@ -8,6 +8,7 @@ import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -16,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,8 +25,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /**
- * The SPEC food on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, NeoForge:
- * {@code neoforge/.../dev/CozyGameTestsNeoForge}). Pigs drink and eat: the consume effects work on any living thing.
+ * The SPEC food on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, Forge:
+ * {@code forge/.../dev/CozyGameTestsForge}). Pigs drink and eat: the consume effects work on any living thing.
  * Dev only: not in the released jars.
  */
 public final class FoodGameTests {
@@ -51,7 +51,7 @@ public final class FoodGameTests {
 
     /**
      * Two pigs in powder snow, both half frozen: the one given cocoa thaws and stays warm, the other freezes on. They keep
-     * their AI: 1.21.1 applies the blocks an entity is in only when it moves, and a pig without AI never does.
+     * their AI: 1.20.1 applies the blocks an entity is in only when it moves, and a pig without AI never does.
      */
     public static void cocoaThawsAndKeepsWarm(GameTestHelper helper) {
         for (BlockPos snow : List.of(WARM_SNOW, COLD_SNOW)) {
@@ -66,7 +66,7 @@ public final class FoodGameTests {
         helper.assertTrue(left.is(CozyItems.MUG.get()), "the mug is left, not " + left);
         helper.succeedWhen(() -> {
             helper.assertTrue(warm.hasEffect(CozyEffects.holder(CozyEffects.WARM)), "the cocoa warms");
-            helper.assertValueEqual(warm.getTicksFrozen(), 0, "the warm pig's freezing");
+            GameTestAsserts.assertValueEqual(helper, warm.getTicksFrozen(), 0, "the warm pig's freezing");
             helper.assertFalse(warm.canFreeze(), "the warm pig can't freeze");
             helper.assertTrue(cold.getTicksFrozen() > FROZEN, "the other pig freezes on");
         });
@@ -78,8 +78,8 @@ public final class FoodGameTests {
         helper.assertTrue(left.is(Items.GLASS_BOTTLE), "the bottle is left, not " + left);
         MobEffectInstance regeneration = pig.getEffect(MobEffects.REGENERATION);
         helper.assertTrue(regeneration != null, "mulled wine regenerates");
-        helper.assertValueEqual(regeneration.getAmplifier(), 0, "Regeneration level (I)");
-        helper.assertValueEqual(regeneration.getDuration(), 200, "Regeneration ticks (10 s)");
+        GameTestAsserts.assertValueEqual(helper, regeneration.getAmplifier(), 0, "Regeneration level (I)");
+        GameTestAsserts.assertValueEqual(helper, regeneration.getDuration(), 200, "Regeneration ticks (10 s)");
         helper.succeed();
     }
 
@@ -93,7 +93,7 @@ public final class FoodGameTests {
         MobEffectInstance chimes = pig.getEffect(CozyEffects.holder(CozyEffects.CHIMES));
         helper.assertTrue(chimes != null, "the bell strikes");
         helper.assertFalse(chimes.isVisible() || chimes.showIcon(), "no particles, no icon: no explanation");
-        helper.assertValueEqual(chimes.getDuration(), Tangerine.CHIMES_DURATION, "twelve strokes long");
+        GameTestAsserts.assertValueEqual(helper, chimes.getDuration(), Tangerine.CHIMES_DURATION, "twelve strokes long");
         helper.runAfterDelay(RING_AGAIN_AFTER, () -> {
             TangerineItem.ringIn(pig);
             MobEffectInstance again = pig.getEffect(CozyEffects.holder(CozyEffects.CHIMES));
@@ -111,7 +111,7 @@ public final class FoodGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(PIG_BLOCK);
         helper.assertTrue(chestnuts(level, pos, Blocks.DARK_OAK_LEAVES.defaultBlockState()) > 0, "dark oak leaves drop chestnuts");
-        helper.assertValueEqual(chestnuts(level, pos, Blocks.OAK_LEAVES.defaultBlockState()), 0, "chestnuts from oak leaves");
+        GameTestAsserts.assertValueEqual(helper, chestnuts(level, pos, Blocks.OAK_LEAVES.defaultBlockState()), 0, "chestnuts from oak leaves");
         helper.succeed();
     }
 
@@ -119,10 +119,10 @@ public final class FoodGameTests {
     public static void chestnutsRoastOnCampfire(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         RecipeManager recipes = level.getServer().getRecipeManager();
-        SingleRecipeInput input = new SingleRecipeInput(new ItemStack(CozyItems.CHESTNUTS.get()));
+        SimpleContainer input = new SimpleContainer(new ItemStack(CozyItems.CHESTNUTS.get()));
         var roast = recipes.getRecipeFor(RecipeType.CAMPFIRE_COOKING, input, level);
         helper.assertTrue(roast.isPresent(), "a campfire recipe for chestnuts");
-        helper.assertTrue(roast.get().value().assemble(input, level.registryAccess()).is(CozyItems.ROASTED_CHESTNUTS.get()), "it roasts them");
+        helper.assertTrue(roast.get().assemble(input, level.registryAccess()).is(CozyItems.ROASTED_CHESTNUTS.get()), "it roasts them");
         helper.assertFalse(recipes.getRecipeFor(RecipeType.SMELTING, input, level).isPresent(), "no furnace recipe");
         helper.succeed();
     }

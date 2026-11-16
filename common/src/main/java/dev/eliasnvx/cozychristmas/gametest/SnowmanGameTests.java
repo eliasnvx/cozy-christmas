@@ -35,7 +35,7 @@ import java.util.Locale;
 
 /**
  * Evil snowmen and their ice snowballs on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest},
- * NeoForge: {@code neoforge/.../dev/CozyGameTestsNeoForge}). Dev only: not in the released jars.
+ * Forge: {@code forge/.../dev/CozyGameTestsForge}). Dev only: not in the released jars.
  */
 public final class SnowmanGameTests {
 
@@ -78,7 +78,7 @@ public final class SnowmanGameTests {
             helper.assertTrue(cold.hasEffect(MobEffects.MOVEMENT_SLOWDOWN) && warm.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "both pigs are slowed");
             helper.assertTrue(settings.damage() == 0.0 || cold.getHealth() < health, "the ice hurts");
             helper.assertTrue(settings.chillTicks() == 0 || cold.getTicksFrozen() > 0, "the bare pig is chilled");
-            helper.assertValueEqual(warm.getTicksFrozen(), 0, "leather boots keep the cold out");
+            GameTestAsserts.assertValueEqual(helper, warm.getTicksFrozen(), 0, "leather boots keep the cold out");
         });
     }
 
@@ -89,7 +89,7 @@ public final class SnowmanGameTests {
         IceSnowball ball = dropBall(helper, OTHER_SNOWMAN, thrower);
         helper.runAfterDelay(SETTLE_TICKS, () -> {
             helper.assertTrue(ball.isRemoved(), "the ball landed");
-            helper.assertValueEqual(other.getHealth(), other.getMaxHealth(), "the other snowman is unhurt");
+            GameTestAsserts.assertValueEqual(helper, other.getHealth(), other.getMaxHealth(), "the other snowman is unhurt");
             helper.assertFalse(other.hasEffect(MobEffects.MOVEMENT_SLOWDOWN), "and not slowed");
             helper.succeed();
         });
@@ -100,7 +100,7 @@ public final class SnowmanGameTests {
         Pig target = pig(helper, COLD_PIG);
         snowman.performRangedAttack(target, 1.0F);
         List<IceSnowball> balls = balls(helper);
-        helper.assertTrue(balls.size() == 1 && balls.getFirst().getOwner() == snowman, "one ice snowball, thrown by the snowman");
+        helper.assertTrue(balls.size() == 1 && balls.get(0).getOwner() == snowman, "one ice snowball, thrown by the snowman");
         helper.succeed();
     }
 
@@ -111,8 +111,8 @@ public final class SnowmanGameTests {
         ServerLevel level = helper.getLevel();
         hit.hurt(level.damageSources().generic(), 1.0F);
         burnt.hurt(level.damageSources().onFire(), 1.0F);
-        helper.assertValueEqual(hit.getMaxHealth() - hit.getHealth(), 1.0F, "a plain hit");
-        helper.assertValueEqual(burnt.getMaxHealth() - burnt.getHealth(), CozyConfig.common().evilSnowman().fireDamage(1.0F), "fire");
+        GameTestAsserts.assertValueEqual(helper, hit.getMaxHealth() - hit.getHealth(), 1.0F, "a plain hit");
+        GameTestAsserts.assertValueEqual(helper, burnt.getMaxHealth() - burnt.getHealth(), CozyConfig.common().evilSnowman().fireDamage(1.0F), "fire");
         helper.succeed();
     }
 
@@ -123,7 +123,7 @@ public final class SnowmanGameTests {
         EvilSnowman snowman = snowman(helper, SNOWMAN);
         helper.assertFalse(snowman.nearHeat(helper.getLevel()), "a cold fireplace is just bricks");
         helper.setBlock(FIREPLACE, CozyBlocks.FIREPLACE.get().defaultBlockState().setValue(FireplaceBlock.LIT, true));
-        helper.assertValueEqual(snowman.nearHeat(helper.getLevel()), settings.heatRadius() > 0, "a lit one is warm");
+        GameTestAsserts.assertValueEqual(helper, snowman.nearHeat(helper.getLevel()), settings.heatRadius() > 0, "a lit one is warm");
         if (settings.heatRadius() == 0) {
             helper.succeed();
             return;
@@ -133,7 +133,7 @@ public final class SnowmanGameTests {
 
     public static void dispensersThrow(GameTestHelper helper) {
         helper.setBlock(DISPENSER, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.UP));
-        DispenserBlockEntity dispenser = helper.<DispenserBlockEntity>getBlockEntity(DISPENSER);
+        DispenserBlockEntity dispenser = ((DispenserBlockEntity) helper.getBlockEntity(DISPENSER));
         dispenser.setItem(0, new ItemStack(CozyItems.ICE_SNOWBALL.get()));
         helper.setBlock(DISPENSER.east(), Blocks.REDSTONE_BLOCK);
         helper.succeedWhen(() -> helper.assertFalse(balls(helper).isEmpty(), "the dispenser threw an ice snowball"));

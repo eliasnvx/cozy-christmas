@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The fireplace and stockings on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, NeoForge:
- * {@code neoforge/.../dev/CozyGameTestsNeoForge}). The season clock is fixed and restored within each test body, which
+ * The fireplace and stockings on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, Forge:
+ * {@code forge/.../dev/CozyGameTestsForge}). The season clock is fixed and restored within each test body, which
  * runs in one tick. Dev only: not in the released jars.
  */
 public final class StockingGameTests {
@@ -71,9 +71,9 @@ public final class StockingGameTests {
             helper.assertTrue(first.tryFill(helper.getLevel()), "a new morning fills the stocking");
             ItemStack gift = first.contents();
             helper.assertTrue(gift.is(CozyBlocks.PRESENT_ITEM.get()), "a nice owner finds a present, got " + gift);
-            helper.assertValueEqual(gift.get(CozyComponents.PRESENT_CONTENTS.get()),
+            GameTestAsserts.assertValueEqual(helper, CozyComponents.PRESENT_CONTENTS.get(gift),
                     new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)), "and it's a gift");
-            helper.assertValueEqual(helper.getBlockState(STOCKING).getValue(StockingBlock.FILL), StockingFill.PRESENT,
+            GameTestAsserts.assertValueEqual(helper, helper.getBlockState(STOCKING).getValue(StockingBlock.FILL), StockingFill.PRESENT,
                     "the present shows");
             helper.assertFalse(second.tryFill(helper.getLevel()), "one stocking a morning per player");
             helper.assertFalse(first.tryFill(helper.getLevel()), "a full stocking stays as it is");
@@ -121,12 +121,12 @@ public final class StockingGameTests {
             BlockState state = helper.getBlockState(STOCKING);
             BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(helper.absolutePos(STOCKING)), Direction.SOUTH,
                     helper.absolutePos(STOCKING), false);
-            state.useWithoutItem(helper.getLevel(), other, hit);
+            state.use(helper.getLevel(), other, InteractionHand.MAIN_HAND, hit); // empty-handed
             helper.assertFalse(stocking.contents().isEmpty(), "someone else's click leaves it full");
-            state.useWithoutItem(helper.getLevel(), owner, hit);
+            state.use(helper.getLevel(), owner, InteractionHand.MAIN_HAND, hit);
             helper.assertTrue(stocking.contents().isEmpty(), "the owner empties it");
-            helper.assertTrue(owner.getInventory().contains(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())), "into their pockets");
-            helper.assertValueEqual(helper.getBlockState(STOCKING).getValue(StockingBlock.FILL), StockingFill.EMPTY, "shows empty");
+            helper.assertTrue(owner.getInventory().hasAnyMatching(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())), "into their pockets");
+            GameTestAsserts.assertValueEqual(helper, helper.getBlockState(STOCKING).getValue(StockingBlock.FILL), StockingFill.EMPTY, "shows empty");
             helper.succeed();
         } finally {
             ChristmasSeason.setClock(Clock.systemDefaultZone());
@@ -143,7 +143,7 @@ public final class StockingGameTests {
             hang(helper, FIREPLACE, STOCKING, owner);
             BlockState state = helper.getBlockState(STOCKING);
             BlockPos pos = helper.absolutePos(STOCKING);
-            helper.assertValueEqual(state.getDestroyProgress(other, helper.getLevel(), pos), 0.0F, "another player can't break it");
+            GameTestAsserts.assertValueEqual(helper, state.getDestroyProgress(other, helper.getLevel(), pos), 0.0F, "another player can't break it");
             helper.assertTrue(state.getDestroyProgress(owner, helper.getLevel(), pos) > 0.0F, "its owner can");
             helper.succeed();
         } finally {
@@ -178,16 +178,16 @@ public final class StockingGameTests {
                     helper.absolutePos(FIREPLACE), false);
             ItemStack flint = new ItemStack(Items.FLINT_AND_STEEL);
             player.setItemInHand(InteractionHand.MAIN_HAND, flint);
-            helper.getBlockState(FIREPLACE).useItemOn(flint, helper.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+            helper.getBlockState(FIREPLACE).use(helper.getLevel(), player, InteractionHand.MAIN_HAND, hit);
             BlockState lit = helper.getBlockState(FIREPLACE);
             helper.assertTrue(lit.getValue(FireplaceBlock.LIT), "flint and steel lights it");
-            helper.assertValueEqual(lit.getLightEmission(), FireplaceBlock.LIGHT, "a lit fireplace glows");
-            helper.assertValueEqual(flint.getDamageValue(), 1, "the flint and steel wears");
+            GameTestAsserts.assertValueEqual(helper, lit.getLightEmission(), FireplaceBlock.LIGHT, "a lit fireplace glows");
+            GameTestAsserts.assertValueEqual(helper, flint.getDamageValue(), 1, "the flint and steel wears");
             ItemStack shovel = new ItemStack(Items.IRON_SHOVEL);
             player.setItemInHand(InteractionHand.MAIN_HAND, shovel);
-            lit.useItemOn(shovel, helper.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+            lit.use(helper.getLevel(), player, InteractionHand.MAIN_HAND, hit);
             helper.assertFalse(helper.getBlockState(FIREPLACE).getValue(FireplaceBlock.LIT), "a shovel puts it out");
-            helper.assertValueEqual(helper.getBlockState(FIREPLACE).getLightEmission(), 0, "dark again");
+            GameTestAsserts.assertValueEqual(helper, helper.getBlockState(FIREPLACE).getLightEmission(), 0, "dark again");
             helper.succeed();
         } finally {
             TestPlayers.remove(helper, player);
@@ -199,7 +199,7 @@ public final class StockingGameTests {
         helper.setBlock(fireplace, CozyBlocks.FIREPLACE.get().defaultBlockState().setValue(FireplaceBlock.FACING, Direction.SOUTH));
         helper.setBlock(fireplace.above(), Blocks.BRICKS);
         helper.setBlock(stocking, CozyBlocks.STOCKING.get().defaultBlockState().setValue(StockingBlock.FACING, Direction.SOUTH));
-        StockingBlockEntity entity = helper.<StockingBlockEntity>getBlockEntity(stocking);
+        StockingBlockEntity entity = ((StockingBlockEntity) helper.getBlockEntity(stocking));
         entity.hang(owner, new ItemStack(CozyBlocks.STOCKING_ITEM.get()), StockingBlockEntity.morning(helper.getLevel()) - 1);
         return entity;
     }

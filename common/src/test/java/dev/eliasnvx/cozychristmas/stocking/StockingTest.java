@@ -26,12 +26,12 @@ class StockingTest {
 
     @Test
     void emptySectionGivesDefaults() {
-        assertEquals(StockingSettings.DEFAULTS, StockingSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{}")).getOrThrow());
+        assertEquals(StockingSettings.DEFAULTS, StockingSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{}")).getOrThrow(false, e -> { }));
         assertTrue(StockingSettings.DEFAULTS.seasonOnly());
     }
 
     @Test
     void rejectsCrossedCoalCounts() {
-        assertTrue(StockingSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{\"coal_min\": 4, \"coal_max\": 2}")).isError());
+        assertTrue(StockingSettings.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{\"coal_min\": 4, \"coal_max\": 2}")).error().isPresent());
     }
 }

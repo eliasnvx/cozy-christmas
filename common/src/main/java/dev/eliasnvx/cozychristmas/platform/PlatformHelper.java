@@ -5,7 +5,7 @@ import dev.eliasnvx.cozychristmas.cosmetic.CosmeticInventory;
 import dev.eliasnvx.cozychristmas.karma.Karma;
 import net.minecraft.world.entity.player.Player;
 
-/** Loader-specific services. Implementations: {@code platform.fabric/neoforge.PlatformHelperImpl}. */
+/** Loader-specific services. Implementations: {@code platform.fabric/forge.PlatformHelperImpl}. */
 public final class PlatformHelper {
 
     private PlatformHelper() {

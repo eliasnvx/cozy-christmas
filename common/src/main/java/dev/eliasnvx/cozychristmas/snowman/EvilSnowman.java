@@ -12,10 +12,12 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -44,6 +46,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public class EvilSnowman extends Monster implements RangedAttackMob {
 
+    /** Eye height (blocks): 1.20.1 has none in the entity type. */
+    private static final float EYE_HEIGHT = 1.7F;
+
     /** Client: the throwing arm swings for this many ticks after a throw. */
     public static final int THROW_TICKS = 8;
     private static final byte THROW_EVENT = EntityEvent.START_ATTACKING;
@@ -63,6 +68,12 @@ public class EvilSnowman extends Monster implements RangedAttackMob {
         super(type, level);
     }
 
+    /** 1.20.1 has no eye height in the entity type: 26.3's. */
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
+        return EYE_HEIGHT;
+    }
+
     private static EvilSnowmanSettings settings() {
         return CozyConfig.common().evilSnowman();
     }
@@ -77,9 +88,9 @@ public class EvilSnowman extends Monster implements RangedAttackMob {
     /** Monster rules (dark enough, not peaceful) under the open sky: no snowmen in caves. */
     public static boolean checkEvilSnowmanSpawnRules(EntityType<? extends Monster> type, ServerLevelAccessor level,
                                                      MobSpawnType reason, BlockPos pos, RandomSource random) {
-        // 26.3's Monster#checkSurfaceMonstersSpawnRules, which 1.21.1 doesn't have
+        // 26.3's Monster#checkSurfaceMonstersSpawnRules, which 1.20.1 doesn't have (nor trial spawners)
         return Monster.checkMonsterSpawnRules(type, level, reason, pos, random)
-                && (MobSpawnType.isSpawner(reason) || level.canSeeSky(pos));
+                && (reason == MobSpawnType.SPAWNER || level.canSeeSky(pos));
     }
 
     @Override

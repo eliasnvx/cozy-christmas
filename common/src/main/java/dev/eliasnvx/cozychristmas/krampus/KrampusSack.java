@@ -6,7 +6,6 @@ import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -50,8 +49,8 @@ public class KrampusSack extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(DATA_VICTIM, -1);
+    protected void defineSynchedData() {
+        entityData.define(DATA_VICTIM, -1);
     }
 
     public @Nullable LivingEntity victim() {
@@ -66,7 +65,7 @@ public class KrampusSack extends Entity {
             setPos(victim.position());
         }
         if (level() instanceof ServerLevel server && (victim == null || !victim.isAlive()
-                || !victim.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(CozyEffects.SACKED.get())) || tickCount > maxAge)) {
+                || !victim.hasEffect(CozyEffects.SACKED.get()) || tickCount > maxAge)) {
             burst(server);
         }
     }

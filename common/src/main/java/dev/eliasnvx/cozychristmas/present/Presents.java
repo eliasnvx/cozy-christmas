@@ -6,8 +6,7 @@ import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -24,10 +23,10 @@ import net.minecraft.world.phys.Vec3;
 /** Opening a present: what comes out of it. Loot and coal are loot tables, so packs decide what Santa gives. */
 public final class Presents {
 
-    /** A real gift: {@code data/cozychristmas/loot_table/presents/gift.json}. */
-    public static final ResourceKey<LootTable> GIFT_LOOT = ResourceKey.create(Registries.LOOT_TABLE, CozyChristmas.id("presents/gift"));
-    /** Santa noticed: {@code data/cozychristmas/loot_table/presents/coal.json}. */
-    public static final ResourceKey<LootTable> COAL_LOOT = ResourceKey.create(Registries.LOOT_TABLE, CozyChristmas.id("presents/coal"));
+    /** A real gift: {@code data/cozychristmas/loot_tables/presents/gift.json}. */
+    public static final ResourceLocation GIFT_LOOT = CozyChristmas.id("presents/gift");
+    /** Santa noticed: {@code data/cozychristmas/loot_tables/presents/coal.json}. */
+    public static final ResourceLocation COAL_LOOT = CozyChristmas.id("presents/coal");
 
     private static final int PAPER_BITS = 12;
     private static final double PAPER_SPREAD = 0.25;
@@ -38,26 +37,24 @@ public final class Presents {
 
     /** The present at {@code pos} is already gone; this hands out what it held. */
     static void unwrap(ServerLevel level, BlockPos pos, PresentContents contents, ServerPlayer opener) {
-        switch (contents) {
-            case PresentContents.Surprise surprise -> {
-                switch (surprise.decided().orElse(PresentOutcome.LOOT)) {
-                    case LOOT -> dropLoot(level, pos, GIFT_LOOT, opener, CozySounds.PRESENT_OPEN.get());
-                    case COAL -> dropLoot(level, pos, COAL_LOOT, opener, CozySounds.PRESENT_COAL.get());
-                    case BOOM -> PresentBoom.explode(level, Vec3.atCenterOf(pos), null);
-                }
+        if (contents instanceof PresentContents.Surprise surprise) {
+            switch (surprise.decided().orElse(PresentOutcome.LOOT)) {
+                case LOOT -> dropLoot(level, pos, GIFT_LOOT, opener, CozySounds.PRESENT_OPEN.get());
+                case COAL -> dropLoot(level, pos, COAL_LOOT, opener, CozySounds.PRESENT_COAL.get());
+                case BOOM -> PresentBoom.explode(level, Vec3.atCenterOf(pos), null);
             }
-            case PresentContents.Gift gift -> {
-                Block.popResource(level, pos, gift.create());
-                paperBurst(level, pos, CozySounds.PRESENT_OPEN.get());
-                gift.from().ifPresent(giver -> thankGiver(level, giver, opener));
-            }
-            case PresentContents.Prank prank -> PresentBoom.explode(level, Vec3.atCenterOf(pos),
+        } else if (contents instanceof PresentContents.Gift gift) {
+            Block.popResource(level, pos, gift.create());
+            paperBurst(level, pos, CozySounds.PRESENT_OPEN.get());
+            gift.from().ifPresent(giver -> thankGiver(level, giver, opener));
+        } else if (contents instanceof PresentContents.Prank prank) {
+            PresentBoom.explode(level, Vec3.atCenterOf(pos),
                     prank.from().map(giver -> level.getServer().getPlayerList().getPlayer(giver.id())).orElse(null));
         }
     }
 
-    private static void dropLoot(ServerLevel level, BlockPos pos, ResourceKey<LootTable> key, ServerPlayer opener, SoundEvent sound) {
-        LootTable table = level.getServer().reloadableRegistries().getLootTable(key);
+    private static void dropLoot(ServerLevel level, BlockPos pos, ResourceLocation id, ServerPlayer opener, SoundEvent sound) {
+        LootTable table = level.getServer().getLootData().getLootTable(id);
         LootParams params = new LootParams.Builder(level)
                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
                 .withParameter(LootContextParams.THIS_ENTITY, opener)

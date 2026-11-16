@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " I ",
+    "IGI",
+    " I "
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:gold_ingot"
+    },
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "result": {
+    "item": "cozychristmas:tree_star"
+  }
+}

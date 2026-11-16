@@ -10,28 +10,31 @@ import dev.eliasnvx.cozychristmas.krampus.Krampus;
 import dev.eliasnvx.cozychristmas.krampus.KrampusSack;
 import dev.eliasnvx.cozychristmas.krampus.KrampusSettings;
 import dev.eliasnvx.cozychristmas.krampus.KrampusVisits;
+import dev.eliasnvx.cozychristmas.krampus.SackedEffect;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyEffects;
 import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.entity.EquipmentSlotGroup;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -45,7 +48,7 @@ import java.util.List;
 
 /**
  * Krampus, his sack and his lair on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest},
- * NeoForge: {@code neoforge/.../dev/CozyGameTestsNeoForge}). Dev only: not in the released jars.
+ * Forge: {@code forge/.../dev/CozyGameTestsForge}). Dev only: not in the released jars.
  */
 public final class KrampusGameTests {
 
@@ -72,6 +75,8 @@ public final class KrampusGameTests {
     private static final int MIN_LADDER = 10;
     /** A player's reach with a sword (the attribute's default). */
     private static final double SWORD_REACH = 3.0;
+    /** Forge's entity reach attribute; vanilla 1.20.1 and Fabric have none. */
+    private static final ResourceLocation ENTITY_REACH = new ResourceLocation("forge", "entity_reach");
 
     private KrampusGameTests() {
     }
@@ -98,7 +103,7 @@ public final class KrampusGameTests {
         player.setGameMode(GameType.CREATIVE);
         helper.assertFalse(krampus.canSack(player), "creative players stay out of the sack");
         player.setGameMode(GameType.SURVIVAL);
-        helper.assertValueEqual(krampus.canSack(player), ticks > 0, "a survival player goes in");
+        GameTestAsserts.assertValueEqual(helper, krampus.canSack(player), ticks > 0, "a survival player goes in");
         if (ticks == 0) {
             TestPlayers.remove(helper, player);
             helper.succeed();
@@ -106,15 +111,16 @@ public final class KrampusGameTests {
         }
         krampus.sack(helper.getLevel(), player);
         helper.assertTrue(player.hasEffect(CozyEffects.holder(CozyEffects.SACKED)), "sacked");
-        helper.assertValueEqual(player.getAttributeValue(Attributes.MOVEMENT_SPEED), 0.0, "can't walk");
-        helper.assertValueEqual(player.getAttributeValue(Attributes.JUMP_STRENGTH), 0.0, "can't jump");
+        GameTestAsserts.assertValueEqual(helper, player.getAttributeValue(Attributes.MOVEMENT_SPEED), 0.0, "can't walk");
+        // 1.20.1 has no jump strength attribute: the sack zeroes the jump power itself (LivingEntityMixin)
+        helper.assertTrue(SackedEffect.blocksJump(player), "can't jump");
         helper.assertFalse(krampus.canSack(player), "one sack at a time");
         List<KrampusSack> sacks = sacks(helper);
-        helper.assertTrue(sacks.size() == 1 && sacks.getFirst().victim() == player, "a sack over the player");
+        helper.assertTrue(sacks.size() == 1 && sacks.get(0).victim() == player, "a sack over the player");
         TestPlayers.remove(helper, player);
         Pig pig = helper.spawn(EntityType.PIG, SECOND);
         krampus.sack(helper.getLevel(), pig);
-        helper.assertValueEqual(pig.getAttributeValue(Attributes.MOVEMENT_SPEED), 0.0, "the pig can't walk");
+        GameTestAsserts.assertValueEqual(helper, pig.getAttributeValue(Attributes.MOVEMENT_SPEED), 0.0, "the pig can't walk");
         helper.runAfterDelay(ticks + SACK_GRACE, () -> {
             helper.assertFalse(pig.hasEffect(CozyEffects.holder(CozyEffects.SACKED)), "out after " + ticks + " ticks");
             helper.assertTrue(pig.getAttributeValue(Attributes.MOVEMENT_SPEED) > 0.0, "walking again");
@@ -139,8 +145,8 @@ public final class KrampusGameTests {
         krampus.summonGoblins(helper.getLevel());
         AABB around = krampus.getBoundingBox().inflate(SEARCH);
         int goblins = helper.getLevel().getEntitiesOfClass(PresentGoblin.class, around).size();
-        helper.assertValueEqual(goblins, CozyConfig.common().krampus().summonGoblins(), "goblins at his side");
-        helper.assertValueEqual(KrampusSettings.summonsDue(0.5F), 1, "one call at half health");
+        GameTestAsserts.assertValueEqual(helper, goblins, CozyConfig.common().krampus().summonGoblins(), "goblins at his side");
+        GameTestAsserts.assertValueEqual(helper, KrampusSettings.summonsDue(0.5F), 1, "one call at half health");
         helper.succeed();
     }
 
@@ -158,8 +164,8 @@ public final class KrampusGameTests {
             krampus.hurt(level.damageSources().playerAttack(naughty), 10000.0F);
             helper.assertTrue(krampus.isDeadOrDying(), "Krampus falls");
             boolean clears = CozyConfig.common().krampus().clearsKarma();
-            helper.assertValueEqual(KarmaManager.get(naughty), clears ? 0 : NAUGHTY, "the naughty fighter's karma");
-            helper.assertValueEqual(KarmaManager.get(nice), NICE, "good karma stays");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(naughty), clears ? 0 : NAUGHTY, "the naughty fighter's karma");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(nice), NICE, "good karma stays");
             List<ItemEntity> drops = level.getEntitiesOfClass(ItemEntity.class, krampus.getBoundingBox().inflate(SEARCH));
             helper.assertTrue(drops.stream().anyMatch(drop -> drop.getItem().is(CozyItems.KRAMPUS_HORNS.get())), "his horns drop");
             helper.assertTrue(drops.stream().anyMatch(drop -> drop.getItem().is(CozyItems.KRAMPUS_CHAIN.get())), "his chain drops");
@@ -177,12 +183,14 @@ public final class KrampusGameTests {
             KarmaManager.set(player, NAUGHTY);
             Krampus krampus = KrampusVisits.visit(helper.getLevel(), player);
             helper.assertTrue(krampus != null, "Krampus found room to stand");
-            double distance = krampus.distanceTo(player);
+            // he stands on the surface of a column 16-24 blocks away: the height depends on what stands there (on a test
+            // server, maybe a neighbouring test's build), so the distance is measured across
+            double distance = Math.sqrt(Mth.square(krampus.getX() - player.getX()) + Mth.square(krampus.getZ() - player.getZ()));
             var visits = CozyConfig.common().krampus().visits();
             helper.assertTrue(distance >= visits.minDistance() - 1 && distance <= visits.maxDistance() + 2,
                     "he comes from " + visits.minDistance() + "-" + visits.maxDistance() + " blocks away, got " + distance);
             helper.assertTrue(krampus.isVisiting(), "he comes for the player");
-            helper.assertValueEqual(KarmaManager.lastKrampusVisit(player), KarmaManager.today(helper.getLevel()), "the visit is marked");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.lastKrampusVisit(player), KarmaManager.today(helper.getLevel()), "the visit is marked");
             krampus.vanish(helper.getLevel());
             helper.succeed();
         } finally {
@@ -200,14 +208,13 @@ public final class KrampusGameTests {
         helper.assertTrue(registries.lookupOrThrow(Registries.TEMPLATE_POOL)
                 .get(ResourceKey.create(Registries.TEMPLATE_POOL, CozyChristmas.id("krampus_lair/lair"))).isPresent(), "pool");
         for (String table : List.of("entities/krampus", "chests/krampus_lair", "blocks/sack")) {
-            LootTable loot = helper.getLevel().getServer().reloadableRegistries()
-                    .getLootTable(ResourceKey.create(Registries.LOOT_TABLE, CozyChristmas.id(table)));
+            LootTable loot = helper.getLevel().getServer().getLootData().getLootTable(CozyChristmas.id(table));
             helper.assertTrue(loot != LootTable.EMPTY, "loot table " + table);
         }
         StructureTemplate template = helper.getLevel().getServer().getStructureManager()
                 .getOrCreate(CozyChristmas.id("krampus_lair/lair"));
         StructurePlaceSettings settings = new StructurePlaceSettings();
-        helper.assertValueEqual(template.filterBlocks(BlockPos.ZERO, settings, Blocks.CHEST).size(), 1, "the loot chest");
+        GameTestAsserts.assertValueEqual(helper, template.filterBlocks(BlockPos.ZERO, settings, Blocks.CHEST).size(), 1, "the loot chest");
         helper.assertTrue(template.filterBlocks(BlockPos.ZERO, settings, Blocks.IRON_BARS).size() >= MIN_BARS, "cages");
         helper.assertTrue(template.filterBlocks(BlockPos.ZERO, settings, CozyBlocks.SACK.get()).size() >= MIN_SACKS, "sacks");
         helper.assertTrue(template.filterBlocks(BlockPos.ZERO, settings, Blocks.LADDER).size() >= MIN_LADDER, "a way down");
@@ -216,17 +223,22 @@ public final class KrampusGameTests {
     }
 
     /**
-     * The horns are a head piece; the chain reaches 5 blocks (1.21.1 has no attack range component: an entity
-     * interaction range modifier in the main hand).
+     * The horns are a head piece; the chain reaches 5 blocks. 1.20.1 has no vanilla reach attribute: the chain adds its
+     * bonus to Forge's {@code forge:entity_reach} in the main hand where that exists. Fabric has none (the reach is
+     * degraded there), so there the chain is checked to be the sword it is built on.
      */
     public static void hornsAndChain(GameTestHelper helper) {
-        helper.assertValueEqual(CosmeticsManager.slotOf(new ItemStack(CozyItems.KRAMPUS_HORNS.get())), CosmeticSlot.HEAD, "horns slot");
-        ItemAttributeModifiers modifiers = new ItemStack(CozyItems.KRAMPUS_CHAIN.get()).getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS,
-                ItemAttributeModifiers.EMPTY);
-        double reach = Attributes.ENTITY_INTERACTION_RANGE.value().getDefaultValue() + modifiers.modifiers().stream()
-                .filter(entry -> entry.attribute().is(Attributes.ENTITY_INTERACTION_RANGE) && entry.slot() == EquipmentSlotGroup.MAINHAND
-                        && entry.modifier().operation() == AttributeModifier.Operation.ADD_VALUE)
-                .mapToDouble(entry -> entry.modifier().amount())
+        GameTestAsserts.assertValueEqual(helper, CosmeticsManager.slotOf(new ItemStack(CozyItems.KRAMPUS_HORNS.get())), CosmeticSlot.HEAD, "horns slot");
+        ItemStack chain = new ItemStack(CozyItems.KRAMPUS_CHAIN.get());
+        Attribute entityReach = BuiltInRegistries.ATTRIBUTE.get(ENTITY_REACH);
+        if (entityReach == null) {
+            helper.assertTrue(chain.getItem() instanceof SwordItem, "without a reach attribute the chain is a sword");
+            helper.succeed();
+            return;
+        }
+        double reach = entityReach.getDefaultValue() + chain.getAttributeModifiers(EquipmentSlot.MAINHAND).get(entityReach).stream()
+                .filter(modifier -> modifier.getOperation() == AttributeModifier.Operation.ADDITION)
+                .mapToDouble(AttributeModifier::getAmount)
                 .sum();
         helper.assertTrue(reach > SWORD_REACH, "the chain reaches further than a sword, got " + reach);
         helper.succeed();

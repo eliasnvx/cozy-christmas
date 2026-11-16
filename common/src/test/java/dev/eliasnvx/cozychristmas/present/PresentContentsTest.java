@@ -19,8 +19,8 @@ class PresentContentsTest {
     void roundTrips() {
         for (PresentContents contents : new PresentContents[]{PresentContents.SURPRISE,
                 new PresentContents.Surprise(PresentOutcome.COAL), new PresentContents.Prank(Optional.of(STEVE))}) {
-            var json = PresentContents.CODEC.encodeStart(JsonOps.INSTANCE, contents).getOrThrow();
-            assertEquals(contents, PresentContents.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+            var json = PresentContents.CODEC.encodeStart(JsonOps.INSTANCE, contents).getOrThrow(false, e -> { });
+            assertEquals(contents, PresentContents.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
         }
     }
 

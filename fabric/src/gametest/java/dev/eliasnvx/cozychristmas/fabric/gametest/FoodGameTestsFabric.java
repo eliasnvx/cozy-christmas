@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.fabric.gametest;
 
 import dev.eliasnvx.cozychristmas.gametest.FoodGameTests;
+import dev.eliasnvx.cozychristmas.gametest.GameTestAsserts;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -43,7 +44,7 @@ public final class FoodGameTestsFabric implements FabricGameTest {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))
                 .count() - 1;
-        helper.assertValueEqual(wrappers, (long) FoodGameTests.ALL.size(), "Fabric wrappers for the shared tests");
+        GameTestAsserts.assertValueEqual(helper, wrappers, (long) FoodGameTests.ALL.size(), "Fabric wrappers for the shared tests");
         helper.succeed();
     }
 }

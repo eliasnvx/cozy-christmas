@@ -11,19 +11,18 @@ import java.util.Objects;
 
 public final class PlatformHelperImpl {
 
-    private static final AttachmentType<Karma> KARMA = AttachmentRegistry.create(
-            CozyChristmas.id("karma"),
-            builder -> builder
-                    .initializer(() -> Karma.ZERO)
-                    .persistent(Karma.CODEC)
-                    .copyOnDeath());
+    // Fabric API 0.92 ships the (experimental) Data Attachment API v1.0.x: builder() + buildAndRegister(id)
+    private static final AttachmentType<Karma> KARMA = AttachmentRegistry.<Karma>builder()
+            .initializer(() -> Karma.ZERO)
+            .persistent(Karma.CODEC)
+            .copyOnDeath()
+            .buildAndRegister(CozyChristmas.id("karma"));
 
-    private static final AttachmentType<CosmeticInventory> COSMETICS = AttachmentRegistry.create(
-            CozyChristmas.id("cosmetics"),
-            builder -> builder
-                    .initializer(() -> CosmeticInventory.EMPTY)
-                    .persistent(CosmeticInventory.CODEC)
-                    .copyOnDeath());
+    private static final AttachmentType<CosmeticInventory> COSMETICS = AttachmentRegistry.<CosmeticInventory>builder()
+            .initializer(() -> CosmeticInventory.EMPTY)
+            .persistent(CosmeticInventory.CODEC)
+            .copyOnDeath()
+            .buildAndRegister(CozyChristmas.id("cosmetics"));
 
     private PlatformHelperImpl() {
     }

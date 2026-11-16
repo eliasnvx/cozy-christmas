@@ -22,14 +22,14 @@ public final class Chestnuts {
     }
 
     public static void register() {
-        LootEvent.MODIFY_LOOT_TABLE.register((key, context, builtin) -> {
+        LootEvent.MODIFY_LOOT_TABLE.register((lootData, id, context, builtin) -> {
             FoodSettings settings = CozyConfig.common().food();
             if (!builtin || settings.chestnutChance() <= 0.0F) {
                 return;
             }
             for (ResourceLocation leaves : settings.chestnutLeaves()) {
                 boolean match = BuiltInRegistries.BLOCK.getOptional(leaves).map(Block::getLootTable)
-                        .filter(key::equals).isPresent();
+                        .filter(id::equals).isPresent();
                 if (match) {
                     context.addPool(LootPool.lootPool()
                             .add(LootItem.lootTableItem(CozyItems.CHESTNUTS.get()))

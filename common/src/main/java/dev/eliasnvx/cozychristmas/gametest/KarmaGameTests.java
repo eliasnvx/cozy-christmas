@@ -6,7 +6,6 @@ import dev.eliasnvx.cozychristmas.karma.KarmaManager;
 import dev.eliasnvx.cozychristmas.karma.KarmaSettings;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -16,8 +15,8 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 /**
- * Karma on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, NeoForge:
- * {@code neoforge/.../dev/CozyGameTestsNeoForge}): storage, the hurt/kill rules through real damage, and keeping karma
+ * Karma on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, Forge:
+ * {@code forge/.../dev/CozyGameTestsForge}): storage, the hurt/kill rules through real damage, and keeping karma
  * through death. The pure math (drift, tiers, odds) is in JUnit. Dev only: not in the released jars.
  */
 public final class KarmaGameTests {
@@ -37,10 +36,10 @@ public final class KarmaGameTests {
 
     public static void karmaStaysInRange(GameTestHelper helper) {
         withPlayer(helper, player -> {
-            helper.assertValueEqual(KarmaManager.get(player), 0, "karma of a new player");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), 0, "karma of a new player");
             KarmaManager.set(player, 90);
-            helper.assertValueEqual(KarmaManager.add(player, 50), Karma.MAX, "karma after +50 from 90");
-            helper.assertValueEqual(KarmaManager.add(player, -500), Karma.MIN, "karma after -500");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.add(player, 50), Karma.MAX, "karma after +50 from 90");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.add(player, -500), Karma.MIN, "karma after -500");
         });
     }
 
@@ -49,9 +48,9 @@ public final class KarmaGameTests {
             LivingEntity villager = helper.spawn(EntityType.VILLAGER, TEST_AREA_CENTER);
             hit(player, villager, 1.0F);
             int afterOne = settings().hurtProtected();
-            helper.assertValueEqual(KarmaManager.get(player), afterOne, "karma after one hit");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), afterOne, "karma after one hit");
             hit(player, villager, 1.0F); // same tick: inside the cooldown, a fast clicker pays once
-            helper.assertValueEqual(KarmaManager.get(player), afterOne, "karma after a second hit in the cooldown");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), afterOne, "karma after a second hit in the cooldown");
             villager.discard();
         });
     }
@@ -65,7 +64,7 @@ public final class KarmaGameTests {
         helper.runAfterDelay(15, () -> { // past the villager's invulnerability, inside the cooldown
             try {
                 hit(second, villager, 1.0F);
-                helper.assertValueEqual(KarmaManager.get(second), settings().hurtProtected(), "the second player's karma");
+                GameTestAsserts.assertValueEqual(helper, KarmaManager.get(second), settings().hurtProtected(), "the second player's karma");
                 helper.succeed();
             } finally {
                 villager.discard();
@@ -79,7 +78,7 @@ public final class KarmaGameTests {
         withPlayer(helper, player -> {
             LivingEntity zombie = helper.spawn(EntityType.ZOMBIE, TEST_AREA_CENTER);
             hit(player, zombie, 1.0F);
-            helper.assertValueEqual(KarmaManager.get(player), 0, "karma after hitting a zombie");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), 0, "karma after hitting a zombie");
             zombie.discard();
         });
     }
@@ -89,7 +88,7 @@ public final class KarmaGameTests {
             LivingEntity villager = helper.spawn(EntityType.VILLAGER, TEST_AREA_CENTER);
             hit(player, villager, 1000.0F);
             helper.assertTrue(villager.isDeadOrDying(), "the villager should be dead");
-            helper.assertValueEqual(KarmaManager.get(player), settings().hurtProtected() + settings().killProtected(),
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), settings().hurtProtected() + settings().killProtected(),
                     "karma after a killing blow");
         });
     }
@@ -99,8 +98,8 @@ public final class KarmaGameTests {
             KarmaManager.set(player, -50);
             player.kill();
             ServerPlayer respawned = helper.getLevel().getServer().getPlayerList()
-                    .respawn(player, false, Entity.RemovalReason.KILLED);
-            helper.assertValueEqual(KarmaManager.get(respawned), -50, "karma after death and respawn");
+                    .respawn(player, false);
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(respawned), -50, "karma after death and respawn");
             return respawned;
         });
     }

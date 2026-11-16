@@ -22,17 +22,15 @@ public class ChimesEffect extends MobEffect {
     }
 
     @Override
-    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
+    public boolean isDurationEffectTick(int duration, int amplifier) {
         return Tangerine.strikesAt(duration);
     }
 
     @Override
-    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
-        if (!(entity.level() instanceof ServerLevel level)) {
-            return true;
+    public void applyEffectTick(LivingEntity entity, int amplifier) {
+        if (entity.level() instanceof ServerLevel level) {
+            level.playSound(null, entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BELL_BLOCK, SoundSource.AMBIENT,
+                    VOLUME, PITCH);
         }
-        level.playSound(null, entity.getX(), entity.getEyeY(), entity.getZ(), SoundEvents.BELL_BLOCK, SoundSource.AMBIENT,
-                VOLUME, PITCH);
-        return true;
     }
 }

@@ -29,7 +29,7 @@ public final class GingerbreadManModel extends HumanoidModel<GingerbreadMan> {
         root.addOrReplaceChild("head", CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-2.5F, -5.0F, -1.0F, 5, 5, 2),
                 PartPose.offset(0.0F, 15.0F, 0.0F));
-        // 1.21.1 HumanoidModel takes the (empty) hat from the root and copies the head's pose onto it
+        // 1.20.1 HumanoidModel takes the (empty) hat from the root and copies the head's pose onto it
         root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.offset(0.0F, 15.0F, 0.0F));
         root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 7).addBox(-2.5F, 0.0F, -1.0F, 5, 5, 2),
                 PartPose.offset(0.0F, 15.0F, 0.0F));
@@ -47,7 +47,7 @@ public final class GingerbreadManModel extends HumanoidModel<GingerbreadMan> {
     @Override
     public void setupAnim(GingerbreadMan man, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
         super.setupAnim(man, walkPos, walkSpeed, ageInTicks, headYaw, headPitch);
-        // 1.21.1 HumanoidModel moves the parts to a player's positions: back to ours
+        // 1.20.1 HumanoidModel moves the parts to a player's positions: back to ours
         restorePosition(head);
         restorePosition(body);
         restorePosition(rightArm);

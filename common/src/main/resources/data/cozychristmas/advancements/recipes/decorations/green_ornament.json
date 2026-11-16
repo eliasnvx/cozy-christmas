@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "cozychristmas:green_ornament"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:glass_pane"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_item"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "cozychristmas:green_ornament"
+    ]
+  }
+}

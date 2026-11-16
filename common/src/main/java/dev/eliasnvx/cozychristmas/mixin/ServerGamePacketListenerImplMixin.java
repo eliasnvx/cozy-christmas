@@ -26,18 +26,18 @@ public abstract class ServerGamePacketListenerImplMixin {
     @Inject(method = "handleSetCreativeModeSlot", cancellable = true, at = @At(value = "INVOKE", shift = At.Shift.AFTER,
             target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/server/level/ServerLevel;)V"))
     private void cozychristmas$creativeCosmeticSlot(ServerboundSetCreativeModeSlotPacket packet, CallbackInfo ci) {
-        int index = packet.slotNum();
+        int index = packet.getSlotNum();
         int start = ((InventoryMenuCosmetics) player.inventoryMenu).cozychristmas$cosmeticStart();
         if (index < start || index >= start + CosmeticSlot.values().length) {
             return;
         }
         ci.cancel();
-        ItemStack stack = packet.itemStack();
+        ItemStack stack = packet.getItem();
         Slot slot = player.inventoryMenu.getSlot(index);
         // as vanilla's own check: no items of features this world doesn't have
         boolean allowed = stack.isEmpty() || stack.getCount() == 1 && slot.mayPlace(stack)
                 && stack.isItemEnabled(player.level().enabledFeatures());
-        if (player.hasInfiniteMaterials() && allowed) {
+        if (player.getAbilities().instabuild && allowed) {
             slot.setByPlayer(stack);
             player.inventoryMenu.setRemoteSlot(index, stack);
             player.inventoryMenu.broadcastChanges();

@@ -12,13 +12,13 @@ class SnowPresentSettingsTest {
     @Test
     void rejectsACrossedRing() {
         var json = JsonParser.parseString("{\"min_distance\": 50, \"max_distance\": 20}");
-        assertTrue(SnowPresentSettings.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(SnowPresentSettings.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 
     @Test
     void emptySectionGivesDefaults() {
         var json = JsonParser.parseString("{}");
-        assertEquals(SnowPresentSettings.DEFAULTS, SnowPresentSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(SnowPresentSettings.DEFAULTS, SnowPresentSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 
     @Test

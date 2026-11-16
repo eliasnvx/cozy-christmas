@@ -73,7 +73,7 @@ public final class SleighRenderer extends EntityRenderer<SantasSleigh> {
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1.501F, 0.0F);
         model.setupAnim(sleigh, 0.0F, 0.0F, ageInTicks, 0.0F, 0.0F);
-        model.renderToBuffer(poseStack, buffers.getBuffer(sleighType), light, OverlayTexture.NO_OVERLAY);
+        model.renderToBuffer(poseStack, buffers.getBuffer(sleighType), light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         if (sleigh.isHarnessed()) {
             boolean flying = sleigh.phase().isFlying();
             VertexConsumer team = buffers.getBuffer(reindeerType);
@@ -82,7 +82,7 @@ public final class SleighRenderer extends EntityRenderer<SantasSleigh> {
                 poseStack.translate(TEAM[i][0], 0.0F, TEAM[i][1]);
                 // the harness: saddle and bell collar; parked they stand, flying the model tucks their legs
                 reindeer.pose(true, false, flying, 0.0F, 0.0F, ageInTicks + i * TEAM_PHASE, 0.0F, 0.0F);
-                reindeer.renderToBuffer(poseStack, team, light, OverlayTexture.NO_OVERLAY);
+                reindeer.renderToBuffer(poseStack, team, light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
                 poseStack.popPose();
             }
         }

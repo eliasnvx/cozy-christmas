@@ -28,7 +28,7 @@ class SantaSettingsTest {
     @Test
     void emptySectionGivesDefaults() {
         var json = JsonParser.parseString("{}");
-        assertEquals(WorkshopSettings.DEFAULTS, WorkshopSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(WorkshopSettings.DEFAULTS, WorkshopSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 
     @Test

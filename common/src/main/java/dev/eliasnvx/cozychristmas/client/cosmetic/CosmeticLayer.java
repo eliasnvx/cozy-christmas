@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
@@ -23,11 +22,9 @@ import java.util.Map;
  */
 public final class CosmeticLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
-    private static final int WHITE = 0xFFFFFFFF;
-
     /** Baked models by shape: [fit, over armor][wide, slim]. */
     private final Map<CosmeticShape, CosmeticModel[][]> models = new EnumMap<>(CosmeticShape.class);
-    /** Filled per draw; no render states in 1.21.1. */
+    /** Filled per draw; no render states in 1.20.1. */
     private final PlayerPose state = new PlayerPose();
 
     public CosmeticLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> parent, EntityModelSet modelSet) {
@@ -71,10 +68,11 @@ public final class CosmeticLayer extends RenderLayer<AbstractClientPlayer, Playe
             CosmeticModel model = models.get(look.shape())[size][arms];
             model.poseLike(parent);
             model.setupAnim(state);
+            int rgb = look.baseColor(item.dye());
             model.renderToBuffer(poseStack, buffers.getBuffer(look.base()), light, overlay,
-                    FastColor.ARGB32.opaque(look.baseColor(item.dye())));
+                    CosmeticLook.red(rgb), CosmeticLook.green(rgb), CosmeticLook.blue(rgb), 1.0F);
             if (look.overlay() != null) {
-                model.renderToBuffer(poseStack, buffers.getBuffer(look.overlay()), light, overlay, WHITE);
+                model.renderToBuffer(poseStack, buffers.getBuffer(look.overlay()), light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
             }
         }
     }

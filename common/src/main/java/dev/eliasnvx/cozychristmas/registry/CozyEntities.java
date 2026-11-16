@@ -25,18 +25,19 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.SpawnPlacementTypes;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * Entity types, their attributes (from the config) and natural spawns. Santa and the elves only come with the workshop
  * (structure templates), so they're {@code MISC} like villagers and never count against the mob cap. Present goblins
  * and gingerbread men are monsters; gingerbread men spawn only through the goblin camp's spawn overrides. Evil snowmen
- * are monsters of snowy nights. 1.21.1 has no {@code notInPeaceful()}: the monsters leave peaceful worlds through
+ * are monsters of snowy nights. 1.20.1 has no {@code notInPeaceful()}: the monsters leave peaceful worlds through
  * {@code Monster#shouldDespawnInPeaceful}, and missing entity loot tables are empty, so no {@code noLootTable()} either.
+ * 1.20.1's builder has no {@code eyeHeight} or {@code passengerAttachments}: eye heights are the entity classes'
+ * {@code getStandingEyeHeight}, riders are placed by the vehicles' {@code getPassengersRidingOffset}/{@code positionRider}.
  */
 public final class CozyEntities {
 
@@ -45,34 +46,34 @@ public final class CozyEntities {
     public static final ResourceKey<EntityType<?>> ELF_KEY = key("elf");
     public static final RegistrySupplier<EntityType<Elf>> ELF = REGISTER.register(ELF_KEY.location(),
             () -> EntityType.Builder.<Elf>of(Elf::new, MobCategory.MISC)
-                    .sized(0.5F, 1.05F).eyeHeight(0.9F).clientTrackingRange(10).build(ELF_KEY.location().toString()));
+                    .sized(0.5F, 1.05F).clientTrackingRange(10).build(ELF_KEY.location().toString()));
 
     public static final ResourceKey<EntityType<?>> SANTA_KEY = key("santa");
     public static final RegistrySupplier<EntityType<Santa>> SANTA = REGISTER.register(SANTA_KEY.location(),
             () -> EntityType.Builder.<Santa>of(Santa::new, MobCategory.MISC)
-                    .sized(0.8F, 2.0F).eyeHeight(1.7F).clientTrackingRange(10).build(SANTA_KEY.location().toString()));
+                    .sized(0.8F, 2.0F).clientTrackingRange(10).build(SANTA_KEY.location().toString()));
 
     public static final ResourceKey<EntityType<?>> REINDEER_KEY = key("reindeer");
     public static final RegistrySupplier<EntityType<Reindeer>> REINDEER = REGISTER.register(REINDEER_KEY.location(),
             () -> EntityType.Builder.<Reindeer>of(Reindeer::new, MobCategory.CREATURE)
-                    .sized(1.1F, 1.45F).eyeHeight(1.35F).passengerAttachments(1.3F).clientTrackingRange(10)
+                    .sized(1.1F, 1.45F).clientTrackingRange(10)
                     .build(REINDEER_KEY.location().toString()));
 
     public static final ResourceKey<EntityType<?>> PRESENT_GOBLIN_KEY = key("present_goblin");
     /** Not allowed in peaceful, except a goblin holding loot (see {@link PresentGoblin#checkDespawn}). */
     public static final RegistrySupplier<EntityType<PresentGoblin>> PRESENT_GOBLIN = REGISTER.register(PRESENT_GOBLIN_KEY.location(),
             () -> EntityType.Builder.<PresentGoblin>of(PresentGoblin::new, MobCategory.MONSTER)
-                    .sized(0.5F, 0.95F).eyeHeight(0.8F).clientTrackingRange(8).build(PRESENT_GOBLIN_KEY.location().toString()));
+                    .sized(0.5F, 0.95F).clientTrackingRange(8).build(PRESENT_GOBLIN_KEY.location().toString()));
 
     public static final ResourceKey<EntityType<?>> GINGERBREAD_MAN_KEY = key("gingerbread_man");
     public static final RegistrySupplier<EntityType<GingerbreadMan>> GINGERBREAD_MAN = REGISTER.register(GINGERBREAD_MAN_KEY.location(),
             () -> EntityType.Builder.<GingerbreadMan>of(GingerbreadMan::new, MobCategory.MONSTER)
-                    .sized(0.45F, 0.8F).eyeHeight(0.65F).clientTrackingRange(8).build(GINGERBREAD_MAN_KEY.location().toString()));
+                    .sized(0.45F, 0.8F).clientTrackingRange(8).build(GINGERBREAD_MAN_KEY.location().toString()));
 
     public static final ResourceKey<EntityType<?>> EVIL_SNOWMAN_KEY = key("evil_snowman");
     public static final RegistrySupplier<EntityType<EvilSnowman>> EVIL_SNOWMAN = REGISTER.register(EVIL_SNOWMAN_KEY.location(),
             () -> EntityType.Builder.<EvilSnowman>of(EvilSnowman::new, MobCategory.MONSTER)
-                    .sized(0.7F, 1.9F).eyeHeight(1.7F).clientTrackingRange(8).build(EVIL_SNOWMAN_KEY.location().toString()));
+                    .sized(0.7F, 1.9F).clientTrackingRange(8).build(EVIL_SNOWMAN_KEY.location().toString()));
 
     public static final ResourceKey<EntityType<?>> ICE_SNOWBALL_KEY = key("ice_snowball");
     /** Sized, tracked and updated like vanilla's snowball. */
@@ -84,7 +85,7 @@ public final class CozyEntities {
     /** A boss: fire can't hurt him, he never spawns naturally (his lair and his visits bring him). */
     public static final RegistrySupplier<EntityType<Krampus>> KRAMPUS = REGISTER.register(KRAMPUS_KEY.location(),
             () -> EntityType.Builder.<Krampus>of(Krampus::new, MobCategory.MONSTER)
-                    .sized(1.0F, 2.75F).eyeHeight(2.45F).fireImmune().clientTrackingRange(10).build(KRAMPUS_KEY.location().toString()));
+                    .sized(1.0F, 2.75F).fireImmune().clientTrackingRange(10).build(KRAMPUS_KEY.location().toString()));
 
     public static final ResourceKey<EntityType<?>> KRAMPUS_SACK_KEY = key("krampus_sack");
     public static final RegistrySupplier<EntityType<KrampusSack>> KRAMPUS_SACK = REGISTER.register(KRAMPUS_SACK_KEY.location(),
@@ -95,7 +96,7 @@ public final class CozyEntities {
     /** Santa sits at the back; tracked far, so it's seen climbing into the night sky. */
     public static final RegistrySupplier<EntityType<SantasSleigh>> SANTAS_SLEIGH = REGISTER.register(SANTAS_SLEIGH_KEY.location(),
             () -> EntityType.Builder.<SantasSleigh>of(SantasSleigh::new, MobCategory.MISC)
-                    .sized(2.0F, 1.3F).passengerAttachments(new Vec3(0.0, 0.55, -0.55))
+                    .sized(2.0F, 1.3F)
                     .clientTrackingRange(16).updateInterval(1).build(SANTAS_SLEIGH_KEY.location().toString()));
 
     private CozyEntities() {
@@ -116,14 +117,14 @@ public final class CozyEntities {
         EntityAttributeRegistry.register(EVIL_SNOWMAN, () -> EvilSnowman.createAttributes(config.evilSnowman()));
         EntityAttributeRegistry.register(KRAMPUS, () -> Krampus.createAttributes(config.krampus()));
 
-        SpawnPlacementsRegistry.register(REINDEER, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+        SpawnPlacementsRegistry.register(REINDEER, SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Reindeer::checkReindeerSpawnRules);
-        SpawnPlacementsRegistry.register(PRESENT_GOBLIN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+        SpawnPlacementsRegistry.register(PRESENT_GOBLIN, SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkMonsterSpawnRules);
         // any light: their spawns are the camps' overrides only, and the camp is theirs by day too
-        SpawnPlacementsRegistry.register(GINGERBREAD_MAN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+        SpawnPlacementsRegistry.register(GINGERBREAD_MAN, SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Monster::checkAnyLightMonsterSpawnRules);
-        SpawnPlacementsRegistry.register(EVIL_SNOWMAN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+        SpawnPlacementsRegistry.register(EVIL_SNOWMAN, SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 EvilSnowman::checkEvilSnowmanSpawnRules);
         ReindeerSettings reindeer = config.reindeer();
         if (reindeer.spawnWeight() > 0) {

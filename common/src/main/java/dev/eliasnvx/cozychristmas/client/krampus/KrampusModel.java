@@ -59,7 +59,7 @@ public final class KrampusModel extends HumanoidModel<Krampus> {
                         .texOffs(32, 0).addBox(-2.0F, -4.0F, -7.0F, 4, 3, 3)      // muzzle
                         .texOffs(46, 0).addBox(-1.0F, -1.0F, -6.0F, 2, 4, 1),     // goatee
                 PartPose.ZERO);
-        // 1.21.1 HumanoidModel takes the (empty) hat from the root and copies the head's pose onto it
+        // 1.20.1 HumanoidModel takes the (empty) hat from the root and copies the head's pose onto it
         root.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
         head.addOrReplaceChild("tongue", CubeListBuilder.create().texOffs(52, 0).addBox(-1.0F, 0.0F, -0.5F, 2, 7, 1),
                 PartPose.offsetAndRotation(0.0F, -1.5F, -6.5F, 0.15F, 0.0F, 0.0F));
@@ -130,7 +130,7 @@ public final class KrampusModel extends HumanoidModel<Krampus> {
         roarProgress = krampus.roarProgress(partialTick);
     }
 
-    /** His rest pose matches a player's, so the positions 1.21.1 {@link HumanoidModel} sets are already his. */
+    /** His rest pose matches a player's, so the positions 1.20.1 {@link HumanoidModel} sets are already his. */
     @Override
     public void setupAnim(Krampus krampus, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
         super.setupAnim(krampus, walkPos, walkSpeed, ageInTicks, headYaw, headPitch);
@@ -138,7 +138,7 @@ public final class KrampusModel extends HumanoidModel<Krampus> {
         leftLeg.xRot += THIGH;
         tongue.zRot = Mth.sin(ageInTicks * 0.1F) * TONGUE_SWAY;
         tail.zRot = Mth.sin(ageInTicks * 0.07F + 1.0F) * TAIL_SWAY;
-        chain.yScale = 1.0F; // 1.21.1 never resets a part's scale on its own
+        chain.yScale = 1.0F; // 1.20.1 never resets a part's scale on its own
         if (roarProgress > 0.0F) {
             float raise = Mth.sin((1.0F - roarProgress) * Mth.PI);
             rightArm.xRot = -2.7F * raise;

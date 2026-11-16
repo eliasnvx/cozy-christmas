@@ -11,7 +11,6 @@ import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
 import dev.eliasnvx.cozychristmas.stocking.StockingBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -128,16 +127,16 @@ public class TreeStarBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         owner = tag.hasUUID(OWNER) ? tag.getUUID(OWNER) : null;
         ownerName = tag.getString(OWNER_NAME);
         lastMorning = tag.contains(LAST_MORNING) ? tag.getLong(LAST_MORNING) : NEVER;
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         if (owner != null) {
             tag.putUUID(OWNER, owner);
         }

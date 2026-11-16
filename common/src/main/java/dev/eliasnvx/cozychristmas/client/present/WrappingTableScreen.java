@@ -16,14 +16,16 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * The wrapping table: gift and paper on the left, the four designs as buttons in the middle (vanilla's stonecutter
- * button sprites, referenced), the present on the right.
+ * buttons, referenced from its texture: 1.20.1 has no GUI sprites), the present on the right.
  */
 public class WrappingTableScreen extends AbstractContainerScreen<WrappingTableMenu> {
 
     private static final ResourceLocation BACKGROUND = CozyChristmas.id("textures/gui/container/wrapping_table.png");
-    private static final ResourceLocation BUTTON = ResourceLocation.withDefaultNamespace("container/stonecutter/recipe");
-    private static final ResourceLocation BUTTON_SELECTED = ResourceLocation.withDefaultNamespace("container/stonecutter/recipe_selected");
-    private static final ResourceLocation BUTTON_HIGHLIGHTED = ResourceLocation.withDefaultNamespace("container/stonecutter/recipe_highlighted");
+    /** Vanilla's stonecutter texture: its recipe buttons sit below the window, normal, selected, highlighted. */
+    private static final ResourceLocation STONECUTTER = new ResourceLocation("textures/gui/container/stonecutter.png");
+    private static final int BUTTON_V = 166;
+    private static final int BUTTON_SELECTED_V = BUTTON_V + 18;
+    private static final int BUTTON_HIGHLIGHTED_V = BUTTON_V + 36;
     private static final int TEXTURE_SIZE = 256;
     private static final int WIDTH = 176;
     private static final int HEIGHT = 166;
@@ -49,6 +51,7 @@ public class WrappingTableScreen extends AbstractContainerScreen<WrappingTableMe
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
     }
@@ -60,8 +63,8 @@ public class WrappingTableScreen extends AbstractContainerScreen<WrappingTableMe
         for (int i = 0; i < icons.length; i++) {
             int x = leftPos + BUTTONS_X + i * BUTTON_WIDTH;
             int y = topPos + BUTTONS_Y;
-            ResourceLocation sprite = i == menu.design().ordinal() ? BUTTON_SELECTED : i == hovered ? BUTTON_HIGHLIGHTED : BUTTON;
-            graphics.blitSprite(sprite, x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+            int v = i == menu.design().ordinal() ? BUTTON_SELECTED_V : i == hovered ? BUTTON_HIGHLIGHTED_V : BUTTON_V;
+            graphics.blit(STONECUTTER, x, y, 0, v, BUTTON_WIDTH, BUTTON_HEIGHT);
             graphics.renderItem(icons[i], x, y + 1);
         }
     }

@@ -2,6 +2,7 @@ package dev.eliasnvx.cozychristmas.present;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
@@ -22,7 +23,8 @@ public class WrappingTableBlock extends Block {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
         if (!level.isClientSide()) {
             player.openMenu(state.getMenuProvider(level, pos));
         }
@@ -30,7 +32,7 @@ public class WrappingTableBlock extends Block {
     }
 
     @Override
-    protected MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
+    public MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
         return new SimpleMenuProvider((id, inventory, player) ->
                 new WrappingTableMenu(id, inventory, ContainerLevelAccess.create(level, pos)), TITLE);
     }

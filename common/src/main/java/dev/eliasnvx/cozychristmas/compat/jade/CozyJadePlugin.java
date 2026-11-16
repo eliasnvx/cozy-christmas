@@ -9,26 +9,29 @@ import dev.eliasnvx.cozychristmas.stocking.StockingFill;
 import dev.eliasnvx.cozychristmas.tree.TreeStarBlock;
 import dev.eliasnvx.cozychristmas.tree.TreeStarBlockEntity;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
+import snownee.jade.api.IServerDataProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
-import snownee.jade.api.StreamServerDataProvider;
 import snownee.jade.api.WailaPlugin;
 import snownee.jade.api.config.IPluginConfig;
+
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Jade (SPEC compat): whose stocking it is, what it holds and whether it hangs over a fireplace; whose tree a star
  * crowns and how the tree is doing; who wrapped a present. Loaded only by Jade: the {@code jade} entrypoint on Fabric,
- * the annotation on NeoForge. Jade 26.x rejects a provider that is both a data and a component provider, so each
- * block has a pair.
+ * the annotation on Forge. Each block has a pair: a server data provider that writes its {@link LookInfo} into Jade's
+ * server data tag (Jade 11 on 1.20.1 has no stream providers) under its namespaced uid, and the client lines.
  */
 @WailaPlugin(CozyChristmas.MOD_ID)
 public final class CozyJadePlugin implements IWailaPlugin {
@@ -51,11 +54,18 @@ public final class CozyJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(PresentLines.INSTANCE, PresentBlock.class);
     }
 
+    /** What the server sent for this provider, if it did (it has Cozy Christmas and Jade). */
+    private static <T> Optional<T> read(BlockAccessor accessor, ResourceLocation uid, Function<CompoundTag, T> reader) {
+        CompoundTag data = accessor.getServerData();
+        String key = uid.toString();
+        return data.contains(key, Tag.TAG_COMPOUND) ? Optional.of(reader.apply(data.getCompound(key))) : Optional.empty();
+    }
+
     private static Component owner(String name) {
         return Component.translatable("jade.cozychristmas.owner", name).withStyle(ChatFormatting.GRAY);
     }
 
-    enum StockingData implements StreamServerDataProvider<BlockAccessor, LookInfo.Stocking> {
+    enum StockingData implements IServerDataProvider<BlockAccessor> {
         INSTANCE;
 
         @Override
@@ -64,13 +74,10 @@ public final class CozyJadePlugin implements IWailaPlugin {
         }
 
         @Override
-        public LookInfo.Stocking streamData(BlockAccessor accessor) {
-            return LookInfo.Stocking.of((StockingBlockEntity) accessor.getBlockEntity());
-        }
-
-        @Override
-        public StreamCodec<RegistryFriendlyByteBuf, LookInfo.Stocking> streamCodec() {
-            return LookInfo.Stocking.STREAM_CODEC.cast();
+        public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+            if (accessor.getBlockEntity() instanceof StockingBlockEntity stocking) {
+                data.put(STOCKING.toString(), LookInfo.Stocking.of(stocking).write());
+            }
         }
     }
 
@@ -84,7 +91,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
 
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-            StockingData.INSTANCE.decodeFromData(accessor)
+            read(accessor, STOCKING, LookInfo.Stocking::read)
                     .filter(info -> !info.owner().isEmpty())
                     .ifPresent(info -> tooltip.add(owner(info.owner())));
             StockingFill fill = accessor.getBlockState().getValue(StockingBlock.FILL);
@@ -95,7 +102,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
         }
     }
 
-    enum TreeData implements StreamServerDataProvider<BlockAccessor, LookInfo.Tree> {
+    enum TreeData implements IServerDataProvider<BlockAccessor> {
         INSTANCE;
 
         @Override
@@ -104,14 +111,10 @@ public final class CozyJadePlugin implements IWailaPlugin {
         }
 
         @Override
-        public LookInfo.Tree streamData(BlockAccessor accessor) {
-            return LookInfo.Tree.of((ServerLevel) accessor.getLevel(), accessor.getPosition(),
-                    (TreeStarBlockEntity) accessor.getBlockEntity());
-        }
-
-        @Override
-        public StreamCodec<RegistryFriendlyByteBuf, LookInfo.Tree> streamCodec() {
-            return LookInfo.Tree.STREAM_CODEC;
+        public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+            if (accessor.getLevel() instanceof ServerLevel level && accessor.getBlockEntity() instanceof TreeStarBlockEntity star) {
+                data.put(TREE_STAR.toString(), LookInfo.Tree.of(level, accessor.getPosition(), star).write());
+            }
         }
     }
 
@@ -125,7 +128,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
 
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-            TreeData.INSTANCE.decodeFromData(accessor).ifPresent(info -> {
+            read(accessor, TREE_STAR, LookInfo.Tree::read).ifPresent(info -> {
                 if (!info.owner().isEmpty()) {
                     tooltip.add(owner(info.owner()));
                 }
@@ -134,7 +137,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
         }
     }
 
-    enum PresentData implements StreamServerDataProvider<BlockAccessor, LookInfo.Present> {
+    enum PresentData implements IServerDataProvider<BlockAccessor> {
         INSTANCE;
 
         @Override
@@ -143,13 +146,10 @@ public final class CozyJadePlugin implements IWailaPlugin {
         }
 
         @Override
-        public LookInfo.Present streamData(BlockAccessor accessor) {
-            return LookInfo.Present.of((PresentBlockEntity) accessor.getBlockEntity());
-        }
-
-        @Override
-        public StreamCodec<RegistryFriendlyByteBuf, LookInfo.Present> streamCodec() {
-            return LookInfo.Present.STREAM_CODEC.cast();
+        public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+            if (accessor.getBlockEntity() instanceof PresentBlockEntity present) {
+                data.put(PRESENT.toString(), LookInfo.Present.of(present).write());
+            }
         }
     }
 
@@ -163,7 +163,7 @@ public final class CozyJadePlugin implements IWailaPlugin {
 
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-            PresentData.INSTANCE.decodeFromData(accessor).ifPresent(info -> tooltip.add(info.from()
+            read(accessor, PRESENT, LookInfo.Present::read).ifPresent(info -> tooltip.add(info.from()
                     .map(name -> Component.translatable("tooltip.cozychristmas.present.from", name))
                     .orElseGet(() -> Component.translatable("tooltip.cozychristmas.present.mystery"))
                     .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));

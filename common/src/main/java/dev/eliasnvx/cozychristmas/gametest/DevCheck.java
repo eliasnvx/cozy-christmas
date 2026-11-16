@@ -74,8 +74,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Dev-only check in a real client, on both loaders (1.21.1 has no client GameTest API): {@code ./gradlew
- * :fabric:runDevCheck}, {@code :fabric:runProdDevCheck} or {@code :neoforge:runDevCheck} opens the world
+ * Dev-only check in a real client, on both loaders (1.20.1 has no client GameTest API): {@code ./gradlew
+ * :fabric:runDevCheck}, {@code :fabric:runProdDevCheck} or {@code :forge:runDevCheck} opens the world
  * {@code saves/cozychristmas-check} from the title screen (flat; the Gradle tasks delete it first, so every run starts
  * fresh), on a fixed Christmas Eve.
  * It dresses the player in knitwear, lines up the mobs, builds a fireplace with stockings, presents, a decorated tree with
@@ -225,18 +225,18 @@ public final class DevCheck {
 
     private static void openWorld(Minecraft mc) {
         if (mc.getLevelSource().levelExists(WORLD)) {
-            mc.createWorldOpenFlows().openWorld(WORLD, () -> mc.setScreen(new TitleScreen()));
+            mc.createWorldOpenFlows().loadLevel(new TitleScreen(), WORLD);
             return;
         }
         LevelSettings settings = new LevelSettings(WORLD, GameType.SURVIVAL, false, Difficulty.PEACEFUL, true, new GameRules(),
                 WorldDataConfiguration.DEFAULT);
         mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(WORLD.hashCode(), false, false),
                 registries -> registries.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value()
-                        .createWorldDimensions(), new TitleScreen());
+                        .createWorldDimensions());
     }
 
     private static void setUp(MinecraftServer server) {
-        ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+        ServerPlayer player = server.getPlayerList().getPlayers().get(0);
         ServerLevel level = (ServerLevel) player.level();
         // from the world's spawn, not where the player left off last run: the scenes stand in the same place every time
         base = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, level.getSharedSpawnPos());
@@ -402,12 +402,12 @@ public final class DevCheck {
     }
 
     private static void checks(MinecraftServer server) {
-        ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+        ServerPlayer player = server.getPlayerList().getPlayers().get(0);
         ServerLevel level = (ServerLevel) player.level();
         report(CosmeticsManager.get(player).get(CosmeticSlot.BODY).is(CozyItems.REINDEER_SWEATER.get()),
-                "the sweater stored in the loader's attachment");
+                "the sweater stored in the loader's player data");
         List<SantasSleigh> sleighs = level.getEntitiesOfClass(SantasSleigh.class, new AABB(base.north(SLEIGH_NORTH)).inflate(8.0));
-        report(!sleighs.isEmpty() && sleighs.getFirst().isHarnessed(), "the sleigh harnessed its team on Christmas Eve");
+        report(!sleighs.isEmpty() && sleighs.get(0).isHarnessed(), "the sleigh harnessed its team on Christmas Eve");
         if (SnowySpiritGuards.available()) {
             long golems = level.getEntities((Entity) null, new AABB(base.north(LINEUP_NORTH)).inflate(24.0),
                     entity -> SnowySpiritGuards.GINGERBREAD_GOLEM.equals(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()))).size();
@@ -469,7 +469,7 @@ public final class DevCheck {
     private static void shot(Minecraft mc, String name) {
         mc.gui.getChat().clearMessages(false);
         // like F2: a timestamped file in run/screenshots; the log says which shot it is
-        CozyChristmas.LOGGER.info("DEVCHECK screenshot {}{}", Platform.isNeoForge() ? "neoforge_" : "fabric_", name);
+        CozyChristmas.LOGGER.info("DEVCHECK screenshot {}{}", Platform.isForge() ? "forge_" : "fabric_", name);
         Screenshot.grab(mc.gameDirectory, mc.getMainRenderTarget(), message -> {
         });
     }

@@ -44,7 +44,7 @@ public final class CosmeticMenuSlot extends Slot {
         return null;
     }
 
-    /** {@link #slotOfIcon(ResourceLocation)} for a 1.21.1 icon: an atlas and a sprite in it. */
+    /** {@link #slotOfIcon(ResourceLocation)} for a 1.20.1 icon: an atlas and a sprite in it. */
     public static @Nullable CosmeticSlot slotOfIcon(@Nullable Pair<ResourceLocation, ResourceLocation> icon) {
         return icon == null ? null : slotOfIcon(icon.getSecond());
     }
@@ -59,7 +59,7 @@ public final class CosmeticMenuSlot extends Slot {
         return 1;
     }
 
-    /** 1.21.1 draws empty-slot icons from the block atlas: {@code assets/minecraft/atlases/blocks.json} adds them there. */
+    /** 1.20.1 draws empty-slot icons from the block atlas: {@code assets/minecraft/atlases/blocks.json} adds them there. */
     @Override
     public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
         return Pair.of(InventoryMenu.BLOCK_ATLAS, ICONS[getContainerSlot()]);

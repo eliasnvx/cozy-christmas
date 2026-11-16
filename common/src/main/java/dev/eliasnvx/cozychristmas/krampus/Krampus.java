@@ -8,10 +8,8 @@ import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.util.Players;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
@@ -27,10 +25,12 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -66,6 +66,9 @@ import java.util.UUID;
  */
 public class Krampus extends Monster {
 
+    /** Eye height (blocks): 1.20.1 has none in the entity type. */
+    private static final float EYE_HEIGHT = 2.45F;
+
     /** Client: how long each move's animation runs. */
     public static final int LASH_TICKS = 12;
     public static final int SACK_TICKS = 14;
@@ -77,7 +80,7 @@ public class Krampus extends Monster {
     private static final int HOME_RADIUS = 10;
     private static final double FOLLOW_RANGE = 40.0;
     private static final double KNOCKBACK_RESISTANCE = 0.8;
-    private static final double STEP_HEIGHT = 1.0;
+    private static final float STEP_HEIGHT = 1.0F;
     private static final double CHASE = 1.1;
     private static final float LOOK_DISTANCE = 12.0F;
     private static final double SACK_REACH = 3.5;
@@ -112,6 +115,13 @@ public class Krampus extends Monster {
     public Krampus(EntityType<? extends Krampus> type, Level level) {
         super(type, level);
         xpReward = XP;
+        setMaxUpStep(STEP_HEIGHT); // 1.20.1 has no step height attribute
+    }
+
+    /** 1.20.1 has no eye height in the entity type: 26.3's. */
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
+        return EYE_HEIGHT;
     }
 
     private static KrampusSettings settings() {
@@ -125,8 +135,7 @@ public class Krampus extends Monster {
                 .add(Attributes.ATTACK_DAMAGE, settings.attackDamage())
                 .add(Attributes.MOVEMENT_SPEED, settings.speed())
                 .add(Attributes.FOLLOW_RANGE, FOLLOW_RANGE)
-                .add(Attributes.KNOCKBACK_RESISTANCE, KNOCKBACK_RESISTANCE)
-                .add(Attributes.STEP_HEIGHT, STEP_HEIGHT);
+                .add(Attributes.KNOCKBACK_RESISTANCE, KNOCKBACK_RESISTANCE);
     }
 
     @Override
@@ -144,12 +153,13 @@ public class Krampus extends Monster {
     /** In his lair he keeps to the arena and stays for good. */
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData,
+                                                  @Nullable CompoundTag spawnTag) {
         if (reason == MobSpawnType.STRUCTURE) {
             restrictTo(blockPosition(), HOME_RADIUS);
         }
         setPersistenceRequired();
-        return super.finalizeSpawn(level, difficulty, reason, groupData);
+        return super.finalizeSpawn(level, difficulty, reason, groupData, spawnTag);
     }
 
     // --- the fight ------------------------------------------------------------------------------------------------
@@ -225,9 +235,8 @@ public class Krampus extends Monster {
         level.broadcastEntityEvent(this, SACK_EVENT);
     }
 
-    /** The registry's own holder: entities key their effects by holder identity. */
-    private static Holder<MobEffect> sacked() {
-        return BuiltInRegistries.MOB_EFFECT.wrapAsHolder(CozyEffects.SACKED.get());
+    private static MobEffect sacked() {
+        return CozyEffects.SACKED.get();
     }
 
     /** A roar, smoke, and {@code summon_goblins} present goblins at his side, after his target. */
@@ -241,7 +250,7 @@ public class Krampus extends Monster {
                 continue;
             }
             goblin.moveTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, getRandom().nextFloat() * 360.0F, 0.0F);
-            goblin.finalizeSpawn(level, level.getCurrentDifficultyAt(spot), MobSpawnType.MOB_SUMMONED, null);
+            goblin.finalizeSpawn(level, level.getCurrentDifficultyAt(spot), MobSpawnType.MOB_SUMMONED, null, null);
             goblin.setTarget(getTarget());
             level.addFreshEntity(goblin);
             level.sendParticles(ParticleTypes.LARGE_SMOKE, goblin.getX(), goblin.getY() + 0.5, goblin.getZ(), 12, 0.3, 0.4, 0.3, 0.02);
@@ -401,7 +410,7 @@ public class Krampus extends Monster {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("summons", summons);
-        UUIDUtil.CODEC.listOf().encodeStart(NbtOps.INSTANCE, List.copyOf(fighters)).ifSuccess(list -> tag.put("fighters", list));
+        UUIDUtil.CODEC.listOf().encodeStart(NbtOps.INSTANCE, List.copyOf(fighters)).result().ifPresent(list -> tag.put("fighters", list));
         if (visiting != null) {
             tag.putUUID("visiting", visiting);
         }
@@ -413,7 +422,7 @@ public class Krampus extends Monster {
         summons = tag.getInt("summons");
         fighters.clear();
         if (tag.contains("fighters")) {
-            UUIDUtil.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("fighters")).resultOrPartial().ifPresent(fighters::addAll);
+            UUIDUtil.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("fighters")).resultOrPartial(error -> { }).ifPresent(fighters::addAll);
         }
         visiting = tag.hasUUID("visiting") ? tag.getUUID("visiting") : null;
         bossEvent.setName(getDisplayName());

@@ -112,7 +112,7 @@ public final class ReindeerModel extends HierarchicalModel<Reindeer> {
 
     /**
      * Poses the model: saddled shows the saddle and bell collar, fawns have no antlers yet, flying tucks the legs. Every
-     * animated part is set outright (1.21.1 models keep last frame's pose), so a team of four can share one model.
+     * animated part is set outright (1.20.1 models keep last frame's pose), so a team of four can share one model.
      */
     public void pose(boolean saddled, boolean baby, boolean flying, float walkPos, float walkSpeed, float ageInTicks,
                      float headYaw, float headPitch) {

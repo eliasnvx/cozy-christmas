@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:present",
+          "functions": [
+            {
+              "function": "minecraft:copy_nbt",
+              "source": "block_entity",
+              "ops": [
+                {
+                  "source": "contents",
+                  "target": "cozychristmas:present_contents",
+                  "op": "replace"
+                }
+              ]
+            },
+            {
+              "function": "minecraft:copy_state",
+              "block": "cozychristmas:present",
+              "properties": [
+                "design"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cozychristmas:blocks/present"
+}

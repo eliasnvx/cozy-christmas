@@ -64,7 +64,7 @@ class PresentOddsTest {
     @Test
     void allZeroIsAnError() {
         var json = JsonParser.parseString("{\"loot\": 0, \"coal\": 0, \"boom\": 0}");
-        assertTrue(PresentOdds.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(PresentOdds.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 
     private static void assertNear(double expected, int count, int total) {

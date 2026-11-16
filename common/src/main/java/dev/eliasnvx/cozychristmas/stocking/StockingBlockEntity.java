@@ -12,7 +12,6 @@ import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -128,7 +127,7 @@ public class StockingBlockEntity extends BlockEntity {
             PresentDesign[] designs = PresentDesign.values();
             contents = CozyItems.present(designs[level.getRandom().nextInt(designs.length)]);
             if (gift == StockingGift.GIFT) {
-                contents.set(CozyComponents.PRESENT_CONTENTS.get(), new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
+                CozyComponents.PRESENT_CONTENTS.set(contents, new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
             }
         }
         level.setBlock(worldPosition, getBlockState().setValue(StockingBlock.FILL, gift.fill()), StockingBlock.UPDATE_CLIENTS);
@@ -171,27 +170,27 @@ public class StockingBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         owner = tag.hasUUID(OWNER) ? tag.getUUID(OWNER) : null;
         ownerName = tag.getString(OWNER_NAME);
-        contents = ItemStack.parseOptional(registries, tag.getCompound(CONTENTS));
-        hung = ItemStack.parseOptional(registries, tag.getCompound(HUNG));
+        contents = tag.contains(CONTENTS) ? ItemStack.of(tag.getCompound(CONTENTS)) : ItemStack.EMPTY;
+        hung = tag.contains(HUNG) ? ItemStack.of(tag.getCompound(HUNG)) : ItemStack.EMPTY;
         lastMorning = tag.contains(LAST_MORNING) ? tag.getLong(LAST_MORNING) : NEVER;
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         if (owner != null) {
             tag.putUUID(OWNER, owner);
         }
         tag.putString(OWNER_NAME, ownerName);
         if (!contents.isEmpty()) {
-            tag.put(CONTENTS, contents.save(registries));
+            tag.put(CONTENTS, contents.save(new CompoundTag()));
         }
         if (!hung.isEmpty()) {
-            tag.put(HUNG, hung.save(registries));
+            tag.put(HUNG, hung.save(new CompoundTag()));
         }
         tag.putLong(LAST_MORNING, lastMorning);
     }

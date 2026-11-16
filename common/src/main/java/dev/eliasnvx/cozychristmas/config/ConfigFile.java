@@ -47,7 +47,7 @@ public final class ConfigFile<T> {
         }
         try {
             JsonElement json = JsonParser.parseString(Files.readString(path, StandardCharsets.UTF_8));
-            value = codec.parse(JsonOps.INSTANCE, json).getOrThrow(IllegalArgumentException::new);
+            value = codec.parse(JsonOps.INSTANCE, json).getOrThrow(false, error -> { });
             save(value); // rewrite with any newly added options filled in
         } catch (RuntimeException | IOException e) {
             CozyChristmas.LOGGER.error("Config {} is invalid, using defaults (old file kept as .broken): {}", path, e.getMessage());
@@ -65,7 +65,7 @@ public final class ConfigFile<T> {
     private void save(T toSave) {
         try {
             Files.createDirectories(path.getParent());
-            JsonElement json = codec.encodeStart(JsonOps.INSTANCE, toSave).getOrThrow(IllegalStateException::new);
+            JsonElement json = codec.encodeStart(JsonOps.INSTANCE, toSave).getOrThrow(false, error -> { });
             Files.writeString(path, GSON.toJson(json), StandardCharsets.UTF_8);
         } catch (IOException | RuntimeException e) {
             CozyChristmas.LOGGER.error("Could not write config {}", path, e);

@@ -1,0 +1,137 @@
+apply plugin: "com.gradleup.shadow"
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+configurations {
+    common
+    shadowBundle
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentForge.extendsFrom common
+}
+
+dependencies {
+    forge "net.minecraftforge:forge:${rootProject.forge_version}"
+    modImplementation "dev.architectury:architectury-forge:${rootProject.architectury_api_version}"
+    modImplementation "software.bernie.geckolib:geckolib-forge-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+    // GeckoLib ships mclib as jar-in-jar; Forge dev runs do not unpack it, so put it on the dev classpath
+    forgeRuntimeLibrary "com.eliotlash.mclib:mclib:20"
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+
+    // REI finds Forge plugins by an annotation that only its Forge jar has; Curios is Forge only here
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-forge:${rootProject.rei_version}") { transitive false }
+    modCompileOnly("maven.modrinth:curios:${rootProject.curios_forge_version}") { transitive false }
+
+    // Compat checks in the dev runs: -Pcompat=true loads JEI, REI, Jade, Serene Seasons, Snowy Spirit and Curios, or some
+    // of them: -Pcompat=jei,jade,seasons,snowy,curios (JEI and REI both draw an item list)
+    def compat = project.findProperty("compat")?.toString()
+    if (compat != null) {
+        def wanted = { String group -> compat == "true" || compat.split(",")*.trim().contains(group) }
+        if (wanted("jei")) {
+            modRuntimeOnly("mezz.jei:jei-${rootProject.minecraft_version}-forge:${rootProject.jei_version}") { transitive false }
+            modRuntimeOnly("net.mezzdev.config:mezz_config-${rootProject.minecraft_version}-forge:${rootProject.mezz_config_version}") { transitive false }
+        }
+        if (wanted("rei")) {
+            modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-forge:${rootProject.rei_version}") { transitive false }
+            modRuntimeOnly("me.shedaniel.cloth:cloth-config-forge:${rootProject.cloth_config_version}") { transitive false }
+            modRuntimeOnly("me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}") { transitive false }
+        }
+        if (wanted("jade")) {
+            modRuntimeOnly("maven.modrinth:jade:${rootProject.jade_forge_version}") { transitive false }
+        }
+        if (wanted("seasons")) {
+            modRuntimeOnly("maven.modrinth:serene-seasons:${rootProject.serene_seasons_forge_id}") { transitive false }
+            modRuntimeOnly("maven.modrinth:glitchcore:${rootProject.glitchcore_forge_id}") { transitive false }
+        }
+        if (wanted("snowy")) {
+            modRuntimeOnly("maven.modrinth:snowy-spirit:${rootProject.snowy_spirit_forge_id}") { transitive false }
+            modRuntimeOnly("maven.modrinth:moonlight:${rootProject.moonlight_forge_id}") { transitive false }
+            // Moonlight nests libraries (mixinextras, mixinsquared) in its jar, which a real install unpacks and the dev
+            // runtime doesn't. The jar comes straight from the Modrinth maven: resolving a configuration here, while Loom
+            // still sets up its repositories, breaks the setup on this branch.
+            def moonlightId = rootProject.moonlight_forge_id
+            def nestedDir = layout.buildDirectory.dir("nested/moonlight").get().asFile
+            def moonlightJar = new File(nestedDir, "moonlight-${moonlightId}.jar")
+            if (!moonlightJar.exists()) {
+                nestedDir.mkdirs()
+                new URL("https://api.modrinth.com/maven/maven/modrinth/moonlight/${moonlightId}/moonlight-${moonlightId}.jar")
+                        .withInputStream { input -> moonlightJar.withOutputStream { it << input } }
+            }
+            def nested = new File(nestedDir, "libs")
+            copy {
+                from(zipTree(moonlightJar)) { include "META-INF/jars/*.jar" }
+                into nested
+                eachFile { path = name }
+                includeEmptyDirs = false
+            }
+            // libraries, not mods: Forge's dev runtime finds them only on the boot classpath
+            forgeRuntimeLibrary fileTree(nested) { include "*.jar" }
+        }
+        if (wanted("curios")) {
+            modRuntimeOnly("maven.modrinth:curios:${rootProject.curios_forge_version}") { transitive false }
+        }
+    }
+    shadowBundle(project(path: ":common", configuration: "transformProductionForge")) { transitive false }
+}
+
+// Dev-only check on Forge (1.20.1 has no client GameTests): opens run/saves/cozychristmas-check (created flat on the first run),
+// dresses the player, places blocks and mobs, takes screenshots into run/screenshots and quits. ./gradlew :forge:runDevCheck
+loom {
+    forge {
+        // Forge only loads mixin configs listed in the jar manifest; Loom writes it from here
+        mixinConfig "cozychristmas.mixins.json"
+    }
+    runs {
+        devCheck {
+            client()
+            name "Forge Dev Check"
+            property "cozychristmas.devcheck", "true"
+        }
+        // Server GameTests: the shared bodies in common/.../gametest, registered by dev/CozyGameTestsForge
+        gameTestServer {
+            server()
+            forgeTemplate("gameTestServer")
+            // Forge 47 ForgeGameTestHooks reads these (GameTestMain sets the first two as well)
+            property "forge.enableGameTest", "true"
+            property "forge.gameTestServer", "true"
+            property "forge.enabledGameTestNamespaces", "cozychristmas"
+            name "Forge GameTest Server"
+            runDir "build/run/gameTest"
+        }
+    }
+}
+
+// `build` -> `check` -> GameTests on Forge too (Fabric wires runGameTest into build itself)
+tasks.named("check") { dependsOn "runGameTestServer" }
+
+// -Pwith_devcheck=true keeps DevCheck and the GameTest glue in the jar (classifier "devcheck"), to run the check in a
+// client installed with the loader's own installer, outside Gradle. Never a release.
+def withDevCheck = project.findProperty("with_devcheck") == "true"
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = "dev-shadow"
+    exclude "fabric.mod.json"
+    exclude "architectury.common.json"
+    if (!withDevCheck) {
+        exclude "dev/eliasnvx/cozychristmas/forge/dev/**" // DevCheck and the GameTest glue stay out of the released jar
+        exclude "dev/eliasnvx/cozychristmas/gametest/**"
+        exclude "data/cozychristmas/structures/empty.nbt"
+    }
+    from rootProject.file("LICENSE")
+}
+
+remapJar {
+    inputFile.set(shadowJar.archiveFile)
+    archiveClassifier = withDevCheck ? "devcheck" : null
+    archiveVersion = "${project.version}+${rootProject.minecraft_version}-forge"
+}
+
+// Every DevCheck starts in a fresh world: scenes left from an earlier run would stand in the shots
+tasks.matching { it.name == "runDevCheck" }.configureEach {
+    doFirst { delete file("run/saves/cozychristmas-check") }
+}

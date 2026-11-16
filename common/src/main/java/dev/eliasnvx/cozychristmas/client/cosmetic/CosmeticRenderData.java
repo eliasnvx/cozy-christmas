@@ -4,12 +4,11 @@ import dev.eliasnvx.cozychristmas.compat.catgirl.CatgirlEars;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticInventory;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.DyedItemColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -81,10 +80,10 @@ public final class CosmeticRenderData {
         this.source = inventory;
     }
 
-    /** 24-bit dyed color, or -1 if undyed. The component's value carries alpha, so it can't be compared with -1 itself. */
+    /** 24-bit dyed color, or -1 if undyed. */
     public static int dyeOf(ItemStack stack) {
-        DyedItemColor dyed = stack.get(DataComponents.DYED_COLOR);
-        return dyed == null ? -1 : dyed.rgb() & 0xFFFFFF;
+        return stack.getItem() instanceof DyeableLeatherItem dyeable && dyeable.hasCustomColor(stack)
+                ? dyeable.getColor(stack) & 0xFFFFFF : -1;
     }
 
     private void updateMotion(PlayerPose state) {

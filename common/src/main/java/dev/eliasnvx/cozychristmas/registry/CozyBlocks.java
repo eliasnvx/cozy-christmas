@@ -44,9 +44,11 @@ public final class CozyBlocks {
     public static final RegistrySupplier<Block> PRESENT = block("present", PresentBlock::new,
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.5F).sound(SoundType.WOOL).noOcclusion()
                     .ignitedByLava());
-    public static final RegistrySupplier<Item> PRESENT_ITEM = CozyItems.register("present", props -> new PresentItem(PRESENT.get(),
-            props.stacksTo(PRESENT_STACK)
-                    .component(CozyComponents.PRESENT_CONTENTS.get(), PresentContents.SURPRISE)));
+    public static final RegistrySupplier<Item> PRESENT_ITEM = CozyItems.register("present", props -> {
+        PresentItem item = new PresentItem(PRESENT.get(), props.stacksTo(PRESENT_STACK));
+        CozyComponents.PRESENT_CONTENTS.setDefault(item, PresentContents.SURPRISE);
+        return item;
+    });
     public static final RegistrySupplier<BlockEntityType<PresentBlockEntity>> PRESENT_ENTITY = BLOCK_ENTITIES.register("present",
             () -> BlockEntityType.Builder.of(PresentBlockEntity::new, PRESENT.get()).build(null));
 

@@ -1,24 +1,25 @@
 package dev.eliasnvx.cozychristmas.present;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * What's inside a present: the {@code cozychristmas:present_contents} component of the item and the block entity's
- * data, so it survives breaking and placing the present again. Immutable.
+ * What's inside a present: the {@code cozychristmas:present_contents} item data (stack NBT) and the block entity's
+ * data, so it survives breaking and placing the present again. Immutable. Only saved, never synced on its own: the
+ * client sees it in the item's NBT.
  * <ul>
  *     <li>{@link Surprise}: found in the world; karma decides loot, coal or boom ({@link #decided} once someone
  *     came close)</li>
@@ -31,7 +32,6 @@ public sealed interface PresentContents permits PresentContents.Surprise, Presen
     Surprise SURPRISE = new Surprise(Optional.empty());
 
     Codec<PresentContents> CODEC = Kind.CODEC.dispatch("type", PresentContents::kind, Kind::codec);
-    StreamCodec<RegistryFriendlyByteBuf, PresentContents> STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistries(CODEC);
 
     Kind kind();
 
@@ -67,14 +67,18 @@ public sealed interface PresentContents permits PresentContents.Surprise, Presen
 
     /**
      * The wrapped stack. {@link ItemStack} is mutable and compares by identity, so the record keeps its own copy,
-     * never hands it out for changes ({@link #create()} copies) and compares by item, count and components like
-     * vanilla's container contents: the component must stay equal after a round trip through the network or a save.
+     * never hands it out for changes ({@link #create()} copies) and compares by item, count and NBT like
+     * vanilla's container contents: the item data must stay equal after a round trip through the network or a save.
      */
     record Gift(ItemStack item, Optional<Giver> from) implements PresentContents {
 
-        /** {@link ItemStack#CODEC} rejects air and a count of 0: an empty gift can't be loaded. */
+        /** An empty gift can't be loaded (1.20.1's {@link ItemStack#CODEC} reads air and a count of 0 as empty). */
+        private static final Codec<ItemStack> NON_EMPTY_STACK = ExtraCodecs.validate(ItemStack.CODEC, stack -> stack.isEmpty()
+                ? DataResult.error(() -> "A gift can't be empty")
+                : DataResult.success(stack));
+
         static final MapCodec<Gift> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                ItemStack.CODEC.fieldOf("item").forGetter(Gift::item),
+                NON_EMPTY_STACK.fieldOf("item").forGetter(Gift::item),
                 Giver.CODEC.optionalFieldOf("from").forGetter(Gift::from)
         ).apply(i, Gift::new));
 
@@ -102,7 +106,8 @@ public sealed interface PresentContents permits PresentContents.Surprise, Presen
 
         @Override
         public int hashCode() {
-            return 31 * (31 * ItemStack.hashItemAndComponents(item) + item.getCount()) + from.hashCode();
+            return 31 * (31 * (31 * item.getItem().hashCode() + Objects.hashCode(item.getTag())) + item.getCount())
+                    + from.hashCode();
         }
     }
 
@@ -129,7 +134,7 @@ public sealed interface PresentContents permits PresentContents.Surprise, Presen
 
         public static final Codec<Giver> CODEC = RecordCodecBuilder.create(i -> i.group(
                 UUIDUtil.CODEC.fieldOf("id").forGetter(Giver::id),
-                Codec.string(0, MAX_NAME_LENGTH).fieldOf("name").forGetter(Giver::name)
+                ExtraCodecs.sizeLimitedString(0, MAX_NAME_LENGTH).fieldOf("name").forGetter(Giver::name)
         ).apply(i, Giver::new));
 
         public static Giver of(Player player) {
@@ -155,8 +160,9 @@ public sealed interface PresentContents permits PresentContents.Surprise, Presen
             this.codec = codec;
         }
 
-        MapCodec<? extends PresentContents> codec() {
-            return codec.get();
+        /** DFU 6 dispatches to codecs; a map codec's own codec keeps its fields next to {@code type}. */
+        Codec<? extends PresentContents> codec() {
+            return codec.get().codec();
         }
 
         @Override

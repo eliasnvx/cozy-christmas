@@ -39,7 +39,7 @@ public final class SantaModel extends HumanoidModel<Santa> {
                         .texOffs(32, 0).addBox(-4.0F, -3.0F, -5.0F, 8, 7, 2)
                         .texOffs(52, 0).addBox(-1.0F, -5.0F, -5.0F, 2, 2, 1),
                 PartPose.ZERO);
-        // 1.21.1 HumanoidModel takes the hat from the root (26.3: a head child) and copies the head's pose onto it
+        // 1.20.1 HumanoidModel takes the hat from the root (26.3: a head child) and copies the head's pose onto it
         PartDefinition hat = root.addOrReplaceChild("hat", CubeListBuilder.create()
                         .texOffs(0, 16).addBox(-4.5F, -9.0F, -4.5F, 9, 2, 9)
                         .texOffs(36, 16).addBox(-3.5F, -11.0F, -3.5F, 7, 2, 7),
@@ -66,14 +66,14 @@ public final class SantaModel extends HumanoidModel<Santa> {
     @Override
     public void setupAnim(Santa santa, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
         super.setupAnim(santa, walkPos, walkSpeed, ageInTicks, headYaw, headPitch);
-        // 1.21.1 HumanoidModel moves the parts to a player's positions: back to ours
+        // 1.20.1 HumanoidModel moves the parts to a player's positions: back to ours
         restorePosition(head);
         restorePosition(body);
         restorePosition(rightArm);
         restorePosition(leftArm);
         restorePosition(rightLeg);
         restorePosition(leftLeg);
-        // 1.21.1 HumanoidModel never resets the head's roll: do it here so the shake stops
+        // 1.20.1 HumanoidModel never resets the head's roll: do it here so the shake stops
         head.zRot = 0.0F;
         if (santa.getUnhappyCounter() > 0) {
             head.zRot = SHAKE * Mth.sin(SHAKE_SPEED * ageInTicks);

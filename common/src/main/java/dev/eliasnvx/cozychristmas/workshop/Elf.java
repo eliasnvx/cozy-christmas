@@ -17,12 +17,14 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -39,6 +41,7 @@ import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -56,6 +59,9 @@ import java.util.EnumSet;
  * Hurting or killing one is naughty ({@code #cozychristmas:karma_protected}).
  */
 public class Elf extends PathfinderMob {
+
+    /** Eye height (blocks): 1.20.1 has none in the entity type. */
+    private static final float EYE_HEIGHT = 0.9F;
 
     /** Elves placed by the workshop stay around it. */
     private static final int HOME_RADIUS = 24;
@@ -76,10 +82,16 @@ public class Elf extends PathfinderMob {
         setDropChance(EquipmentSlot.MAINHAND, 0.0F); // the present it carries belongs to the workshop
     }
 
+    /** 1.20.1 has no eye height in the entity type: 26.3's. */
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
+        return EYE_HEIGHT;
+    }
+
     public static AttributeSupplier.Builder createAttributes(ElfSettings settings) {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, settings.health())
-                .add(Attributes.MOVEMENT_SPEED, settings.speed()); // 1.21.1's TemptGoal reaches 10 blocks, as 26.3's tempt_range
+                .add(Attributes.MOVEMENT_SPEED, settings.speed()); // 1.20.1's TemptGoal reaches 10 blocks, as 26.3's tempt_range
     }
 
     @Override
@@ -95,7 +107,7 @@ public class Elf extends PathfinderMob {
         goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Player.class, THREAT_DISTANCE, WALK, RUN,
                 entity -> entity instanceof Player player && isThreat(player)));
         goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Monster.class, MONSTER_DISTANCE, WALK, RUN));
-        goalSelector.addGoal(3, new TemptGoal(this, WALK, stack -> stack.is(CozyTags.ELF_TREATS), false));
+        goalSelector.addGoal(3, new TemptGoal(this, WALK, Ingredient.of(CozyTags.ELF_TREATS), false));
         goalSelector.addGoal(4, new CarryPresentGoal());
         goalSelector.addGoal(5, new WorkAtStationGoal());
         goalSelector.addGoal(6, new MoveTowardsRestrictionGoal(this, WALK));
@@ -106,11 +118,12 @@ public class Elf extends PathfinderMob {
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData,
+                                                  @Nullable CompoundTag spawnTag) {
         if (reason == MobSpawnType.STRUCTURE) {
             restrictTo(blockPosition(), HOME_RADIUS);
         }
-        return super.finalizeSpawn(level, difficulty, reason, groupData);
+        return super.finalizeSpawn(level, difficulty, reason, groupData, spawnTag);
     }
 
     @Override

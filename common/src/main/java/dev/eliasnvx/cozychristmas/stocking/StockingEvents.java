@@ -47,7 +47,9 @@ public final class StockingEvents {
                 stocking.hang(player, stack, StockingBlockEntity.morning(level));
             }
             level.playSound(null, pos, SoundEvents.WOOL_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-            stack.consume(1, player);
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
         }
         return EventResult.interruptTrue(); // a success: the client swings the hand
     }

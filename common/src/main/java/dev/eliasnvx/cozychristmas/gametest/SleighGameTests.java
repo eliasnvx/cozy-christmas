@@ -64,21 +64,21 @@ public final class SleighGameTests {
             ItemStack present = new ItemStack(CozyBlocks.PRESENT_ITEM.get());
             player.setItemInHand(InteractionHand.MAIN_HAND, present);
             sleigh.interact(player, InteractionHand.MAIN_HAND);
-            helper.assertValueEqual(sleigh.load(), 0, "no loading in July");
-            helper.assertValueEqual(present.getCount(), 1, "the present stays in hand");
+            GameTestAsserts.assertValueEqual(helper, sleigh.load(), 0, "no loading in July");
+            GameTestAsserts.assertValueEqual(helper, present.getCount(), 1, "the present stays in hand");
 
             ChristmasSeason.setClock(fixed(CHRISTMAS_EVE));
             sleigh.interact(player, InteractionHand.MAIN_HAND);
-            helper.assertValueEqual(sleigh.load(), 1, "on Christmas Eve it goes in");
+            GameTestAsserts.assertValueEqual(helper, sleigh.load(), 1, "on Christmas Eve it goes in");
             helper.assertTrue(present.isEmpty(), "the present is used");
             helper.assertTrue(sleigh.helpers().contains(player.getUUID()), "Santa will remember who helped");
             helper.assertFalse(KarmaManager.rewardGift(player), "it already earned today's gift karma");
 
             ItemStack prank = new ItemStack(CozyBlocks.PRESENT_ITEM.get());
-            prank.set(CozyComponents.PRESENT_CONTENTS.get(), new PresentContents.Prank(Optional.empty()));
+            CozyComponents.PRESENT_CONTENTS.set(prank, new PresentContents.Prank(Optional.empty()));
             player.setItemInHand(InteractionHand.MAIN_HAND, prank);
             sleigh.interact(player, InteractionHand.MAIN_HAND);
-            helper.assertValueEqual(sleigh.load(), 1, "no pranks in Santa's sack");
+            GameTestAsserts.assertValueEqual(helper, sleigh.load(), 1, "no pranks in Santa's sack");
             helper.assertFalse(prank.isEmpty(), "the prank stays in hand");
             helper.succeed();
         } finally {
@@ -94,11 +94,11 @@ public final class SleighGameTests {
             ChristmasSeason.setClock(fixed(JULY));
             elf.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(CozyBlocks.PRESENT_ITEM.get()));
             helper.assertFalse(elf.putPresentAway(), "in July a present goes on the pile");
-            helper.assertValueEqual(sleigh.load(), 0, "the sleigh stays empty");
+            GameTestAsserts.assertValueEqual(helper, sleigh.load(), 0, "the sleigh stays empty");
             ChristmasSeason.setClock(fixed(CHRISTMAS_EVE));
             elf.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(CozyBlocks.PRESENT_ITEM.get()));
             helper.assertTrue(elf.putPresentAway(), "on Christmas Eve it goes into the sleigh");
-            helper.assertValueEqual(sleigh.load(), 1, "one present aboard");
+            GameTestAsserts.assertValueEqual(helper, sleigh.load(), 1, "one present aboard");
             helper.assertFalse(elf.isCarryingPresent(), "the elf's hands are empty");
             helper.succeed();
         } finally {
@@ -118,30 +118,30 @@ public final class SleighGameTests {
             sleigh.advance(level, false); // takes its parking spot
             helper.assertTrue(sleigh.loadPresent(player), "loaded by the player");
             sleigh.advance(level, false);
-            helper.assertValueEqual(sleigh.phase(), SleighFlight.Phase.PARKED, "it waits for the night");
+            GameTestAsserts.assertValueEqual(helper, sleigh.phase(), SleighFlight.Phase.PARKED, "it waits for the night");
             sleigh.advance(level, true);
-            helper.assertValueEqual(sleigh.phase(), SleighFlight.Phase.TAKEOFF, "at night it takes off");
+            GameTestAsserts.assertValueEqual(helper, sleigh.phase(), SleighFlight.Phase.TAKEOFF, "at night it takes off");
             helper.assertTrue(santa.getVehicle() == sleigh, "with Santa aboard");
 
             run(level, sleigh, true, SleighFlight.Phase.AWAY);
             helper.assertTrue(sleigh.isInvisible() && santa.isInvisible(), "gone into the night");
             helper.assertTrue(sleigh.getY() > parked.y + SleighFlight.TOP - 1.0, "high above the workshop");
             sleigh.advance(level, true);
-            helper.assertValueEqual(sleigh.phase(), SleighFlight.Phase.AWAY, "away all night");
+            GameTestAsserts.assertValueEqual(helper, sleigh.phase(), SleighFlight.Phase.AWAY, "away all night");
 
             run(level, sleigh, false, SleighFlight.Phase.PARKED);
             helper.assertTrue(sleigh.position().distanceTo(parked) < 0.01, "back where it was parked, at " + sleigh.position());
             helper.assertFalse(santa.isPassenger(), "Santa gets out");
             helper.assertFalse(sleigh.isInvisible() || santa.isInvisible(), "both seen again");
-            helper.assertValueEqual(sleigh.load(), 0, "the presents are delivered");
+            GameTestAsserts.assertValueEqual(helper, sleigh.load(), 0, "the presents are delivered");
             helper.assertTrue(santa.owesThanks(player.getUUID()), "Santa remembers the helper");
 
             helper.assertTrue(sleigh.loadPresent(null), "loading again");
             sleigh.advance(level, true);
-            helper.assertValueEqual(sleigh.phase(), SleighFlight.Phase.PARKED, "one flight a night");
+            GameTestAsserts.assertValueEqual(helper, sleigh.phase(), SleighFlight.Phase.PARKED, "one flight a night");
 
             santa.interact(player, InteractionHand.MAIN_HAND);
-            helper.assertTrue(player.getInventory().contains(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())),
+            helper.assertTrue(player.getInventory().hasAnyMatching(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())),
                     "a thank-you present for the helper");
             helper.assertFalse(santa.owesThanks(player.getUUID()), "thanked once");
             helper.succeed();
@@ -211,7 +211,7 @@ public final class SleighGameTests {
             KarmaManager.set(flight.player, 60);
             flight.santa.interact(flight.player, InteractionHand.MAIN_HAND);
             helper.assertTrue(flight.santa.getTradingPlayer() == null, "no trading in the air");
-            helper.assertFalse(flight.player.getInventory().contains(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())),
+            helper.assertFalse(flight.player.getInventory().hasAnyMatching(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())),
                     "no daily present in the air");
             helper.assertFalse(flight.santa.hurt(helper.getLevel().damageSources().inWall(), 5.0F),
                     "flying through a hill doesn't hurt him");
@@ -257,7 +257,8 @@ public final class SleighGameTests {
         if (entity == null) {
             throw new AssertionError("couldn't create " + type);
         }
-        entity.moveTo(helper.absoluteVec(at), 0.0F, 0.0F);
+        Vec3 pos = helper.absoluteVec(at);
+        entity.moveTo(pos.x, pos.y, pos.z, 0.0F, 0.0F);
         if (entity instanceof Mob mob) {
             mob.setNoAi(true);
         }

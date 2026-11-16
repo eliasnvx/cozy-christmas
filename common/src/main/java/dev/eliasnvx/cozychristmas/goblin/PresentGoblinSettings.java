@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * The {@code goblins.present_goblin} config section. A present goblin has {@code health}, runs at {@code speed} and
@@ -16,7 +17,7 @@ public record PresentGoblinSettings(double health, double attackDamage, double s
 
     public static final PresentGoblinSettings DEFAULTS = new PresentGoblinSettings(14.0, 2.0, 0.32, true, 6, 1, 2);
 
-    public static final Codec<PresentGoblinSettings> CODEC = RecordCodecBuilder.<PresentGoblinSettings>create(i -> i.group(
+    public static final Codec<PresentGoblinSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<PresentGoblinSettings>create(i -> i.group(
             ConfigCodecs.field(Codec.doubleRange(1.0, 1024.0), "health", DEFAULTS.health)
                     .forGetter(PresentGoblinSettings::health),
             ConfigCodecs.field(Codec.doubleRange(0.0, 100.0), "attack_damage", DEFAULTS.attackDamage)
@@ -30,7 +31,7 @@ public record PresentGoblinSettings(double health, double attackDamage, double s
                     .forGetter(PresentGoblinSettings::minGroup),
             ConfigCodecs.field(Codec.intRange(1, 16), "max_group", DEFAULTS.maxGroup)
                     .forGetter(PresentGoblinSettings::maxGroup)
-    ).apply(i, PresentGoblinSettings::new)).validate(PresentGoblinSettings::validate);
+    ).apply(i, PresentGoblinSettings::new)), PresentGoblinSettings::validate);
 
     private static DataResult<PresentGoblinSettings> validate(PresentGoblinSettings settings) {
         return settings.minGroup <= settings.maxGroup

@@ -19,7 +19,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -79,7 +78,7 @@ public final class WorkshopGameTests {
             elf.hurt(helper.getLevel().damageSources().playerAttack(player), 1.0F);
             helper.assertTrue(santa.isAngryAt(player), "Santa goes after whoever hurt an elf");
             helper.assertTrue(elf.isFleeingFrom(player), "the elf runs from them");
-            helper.assertValueEqual(KarmaManager.get(player), CozyConfig.common().karma().hurtProtected(),
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), CozyConfig.common().karma().hurtProtected(),
                     "karma for hurting an elf");
             helper.succeed();
         } finally {
@@ -94,16 +93,16 @@ public final class WorkshopGameTests {
             // a player's own present is just a present
             presentAt(helper, STOCK, false).open(player);
             helper.assertFalse(santa.isAngryAt(player), "opening an ordinary present is fine");
-            helper.assertValueEqual(KarmaManager.get(player), 0, "karma after an ordinary present");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), 0, "karma after an ordinary present");
 
             presentAt(helper, STOCK, true).open(player);
             helper.assertTrue(santa.isAngryAt(player), "Santa goes after a thief");
-            helper.assertValueEqual(KarmaManager.get(player), CozyConfig.common().karma().stealPresent(), "karma for stealing");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), CozyConfig.common().karma().stealPresent(), "karma for stealing");
 
             KarmaManager.set(player, 0);
             presentAt(helper, STOCK, true);
             player.gameMode.destroyBlock(helper.absolutePos(STOCK));
-            helper.assertValueEqual(KarmaManager.get(player), CozyConfig.common().karma().stealPresent(),
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), CozyConfig.common().karma().stealPresent(),
                     "breaking a stock present is stealing too");
             helper.killAllEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class);
             helper.succeed();
@@ -135,7 +134,7 @@ public final class WorkshopGameTests {
             santa.mobInteract(player, InteractionHand.MAIN_HAND);
             ItemStack present = findPresent(player);
             helper.assertTrue(!present.isEmpty(), "a nice player gets a present in season");
-            helper.assertValueEqual(present.get(CozyComponents.PRESENT_CONTENTS.get()),
+            GameTestAsserts.assertValueEqual(helper, CozyComponents.PRESENT_CONTENTS.get(present),
                     new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)), "Santa's present is a gift");
             helper.assertFalse(player.containerMenu instanceof MerchantMenu, "the present comes first");
 
@@ -154,7 +153,7 @@ public final class WorkshopGameTests {
 
             player.closeContainer();
             for (MerchantOffer offer : santa.getOffers()) {
-                helper.assertValueEqual(offer.getSpecialPriceDiff(), 0, "the discount lasts one visit");
+                GameTestAsserts.assertValueEqual(helper, offer.getSpecialPriceDiff(), 0, "the discount lasts one visit");
             }
             helper.succeed();
         } finally {
@@ -174,8 +173,8 @@ public final class WorkshopGameTests {
                 fed++;
             }
             helper.assertTrue(reindeer.isTamed(), "carrots tame a reindeer");
-            helper.assertValueEqual(player.getMainHandItem().getCount(), 64 - fed, "one carrot per try");
-            helper.assertValueEqual(KarmaManager.get(player), CozyConfig.common().karma().feedReindeer(),
+            GameTestAsserts.assertValueEqual(helper, player.getMainHandItem().getCount(), 64 - fed, "one carrot per try");
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), CozyConfig.common().karma().feedReindeer(),
                     "feeding karma once a day, however many carrots");
             helper.succeed();
         } finally {
@@ -189,10 +188,10 @@ public final class WorkshopGameTests {
         reindeer.setTamed(true);
         reindeer.refreshFlight(true);
         helper.assertFalse(reindeer.canFly(), "no flying without a saddle");
-        reindeer.equipSaddle(new ItemStack(Items.SADDLE), null);
-        helper.assertValueEqual(reindeer.canFly(), CozyConfig.common().reindeer().flight().allows(true), "flight in season");
+        reindeer.equipSaddle(null);
+        GameTestAsserts.assertValueEqual(helper, reindeer.canFly(), CozyConfig.common().reindeer().flight().allows(true), "flight in season");
         reindeer.refreshFlight(false);
-        helper.assertValueEqual(reindeer.canFly(), CozyConfig.common().reindeer().flight().allows(false),
+        GameTestAsserts.assertValueEqual(helper, reindeer.canFly(), CozyConfig.common().reindeer().flight().allows(false),
                 "flight out of season");
         helper.succeed();
     }
@@ -201,11 +200,11 @@ public final class WorkshopGameTests {
     public static void flyingReindeerIsAFlyingVehicle(GameTestHelper helper) {
         Reindeer reindeer = helper.spawn(CozyEntities.REINDEER.get(), HELPER);
         reindeer.setTamed(true);
-        reindeer.equipSaddle(new ItemStack(Items.SADDLE), null);
+        reindeer.equipSaddle(null);
         reindeer.refreshFlight(true);
-        helper.assertValueEqual(reindeer.isFlyingVehicle(), reindeer.canFly(), "a reindeer that may fly is a flying vehicle");
+        GameTestAsserts.assertValueEqual(helper, reindeer.isFlyingVehicle(), reindeer.canFly(), "a reindeer that may fly is a flying vehicle");
         reindeer.refreshFlight(false);
-        helper.assertValueEqual(reindeer.isFlyingVehicle(), reindeer.canFly(), "and one that may not isn't");
+        GameTestAsserts.assertValueEqual(helper, reindeer.isFlyingVehicle(), reindeer.canFly(), "and one that may not isn't");
         helper.succeed();
     }
 
@@ -216,7 +215,7 @@ public final class WorkshopGameTests {
         try {
             helper.assertTrue(santa.angerAt(player), "Santa is angry");
             ServerPlayer back = new ServerPlayer(helper.getLevel().getServer(), helper.getLevel(),
-                    new GameProfile(player.getUUID(), player.getScoreboardName()), ClientInformation.createDefault());
+                    new GameProfile(player.getUUID(), player.getScoreboardName()));
             helper.assertTrue(santa.isAngryAt(back), "still angry at the same player back from a relog");
             helper.succeed();
         } finally {
@@ -229,12 +228,12 @@ public final class WorkshopGameTests {
         ServerPlayer player = TestPlayers.survival(helper, PLAYER);
         BlockPos at = BlockPos.containing(PLAYER).east();
         helper.setBlock(at, CozyBlocks.PRESENT.get());
-        PresentBlockEntity present = helper.<PresentBlockEntity>getBlockEntity(at);
+        PresentBlockEntity present = ((PresentBlockEntity) helper.getBlockEntity(at));
         present.setWorkshopStock(true);
         KarmaManager.set(player, 60);
         helper.runAfterDelay(12, () -> { // past a check (every 10 ticks)
             try {
-                helper.assertValueEqual(present.contents(), PresentContents.SURPRISE, "still undecided with a player beside it");
+                GameTestAsserts.assertValueEqual(helper, present.contents(), PresentContents.SURPRISE, "still undecided with a player beside it");
                 helper.succeed();
             } finally {
                 TestPlayers.remove(helper, player);
@@ -248,13 +247,13 @@ public final class WorkshopGameTests {
         try {
             BlockPos at = BlockPos.containing(PLAYER).east(3);
             helper.setBlock(at, CozyBlocks.PRESENT.get());
-            helper.<PresentBlockEntity>getBlockEntity(at).setWorkshopStock(true);
+            ((PresentBlockEntity) helper.getBlockEntity(at)).setWorkshopStock(true);
             int karma = KarmaManager.get(player);
             Vec3 blast = Vec3.atCenterOf(helper.absolutePos(at));
             PrimedTnt tnt = new PrimedTnt(helper.getLevel(), blast.x, blast.y, blast.z, player);
             helper.getLevel().explode(tnt, blast.x, blast.y, blast.z, 1.5F, Level.ExplosionInteraction.TNT);
             helper.assertBlockPresent(Blocks.AIR, at);
-            helper.assertValueEqual(KarmaManager.get(player), karma + CozyConfig.common().karma().stealPresent(),
+            GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), karma + CozyConfig.common().karma().stealPresent(),
                     "blowing up Santa's presents is stealing them");
             helper.succeed();
         } finally {
@@ -278,14 +277,14 @@ public final class WorkshopGameTests {
         }
         StructureTemplate hall = helper.getLevel().getServer().getStructureManager()
                 .getOrCreate(CozyChristmas.id("workshop/hall"));
-        helper.assertValueEqual(hall.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), Blocks.CRAFTING_TABLE).size(), 4,
+        GameTestAsserts.assertValueEqual(helper, hall.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), Blocks.CRAFTING_TABLE).size(), 4,
                 "workbenches in the hall");
         helper.succeed();
     }
 
     private static PresentBlockEntity presentAt(GameTestHelper helper, BlockPos pos, boolean stock) {
         helper.setBlock(pos, CozyBlocks.PRESENT.get());
-        PresentBlockEntity present = helper.<PresentBlockEntity>getBlockEntity(pos);
+        PresentBlockEntity present = ((PresentBlockEntity) helper.getBlockEntity(pos));
         present.setContents(new PresentContents.Surprise(PresentOutcome.COAL)); // no boom near the test player
         present.setWorkshopStock(stock);
         return present;

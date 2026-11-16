@@ -12,13 +12,13 @@ class EvilSnowmanSettingsTest {
     @Test
     void emptySectionGivesDefaults() {
         var json = JsonParser.parseString("{}");
-        assertEquals(EvilSnowmanSettings.DEFAULTS, EvilSnowmanSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(EvilSnowmanSettings.DEFAULTS, EvilSnowmanSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 
     @Test
     void iceSnowballTakesPartialSettings() {
         var json = JsonParser.parseString("{\"ice_snowball\": {\"chill_ticks\": 0}}");
-        IceSnowballSettings ice = EvilSnowmanSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow().iceSnowball();
+        IceSnowballSettings ice = EvilSnowmanSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }).iceSnowball();
         assertEquals(0, ice.chillTicks());
         assertEquals(IceSnowballSettings.DEFAULTS.damage(), ice.damage());
     }
@@ -26,7 +26,7 @@ class EvilSnowmanSettingsTest {
     @Test
     void rejectsACrossedGroupSize() {
         var json = JsonParser.parseString("{\"min_group\": 3, \"max_group\": 1}");
-        assertTrue(EvilSnowmanSettings.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(EvilSnowmanSettings.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 
     @Test

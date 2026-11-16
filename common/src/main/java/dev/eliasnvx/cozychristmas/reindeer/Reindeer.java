@@ -23,9 +23,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,6 +38,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -69,6 +72,9 @@ public class Reindeer extends AbstractHorse {
     /** Top flying speed is about ten times the per-tick push (drag 0.91). */
     private static final double TOP_SPEED_FACTOR = 10.0;
     private static final String LAST_FED_DAY = "last_fed_day";
+    private static final String NO_GRAVITY = "NoGravity";
+    private static final float EYE_HEIGHT = 1.35F / 1.45F;
+    private static final double PASSENGER_OFFSET = 1.05;
 
     private long lastFedDay = Long.MIN_VALUE;
 
@@ -80,7 +86,7 @@ public class Reindeer extends AbstractHorse {
         return AbstractHorse.createBaseHorseAttributes()
                 .add(Attributes.MAX_HEALTH, settings.health())
                 .add(Attributes.MOVEMENT_SPEED, settings.speed())
-                .add(Attributes.JUMP_STRENGTH, settings.jumpStrength());
+                .add(Attributes.JUMP_STRENGTH, settings.jumpStrength()); // 1.20.1: the horses' jump strength
     }
 
     /** Natural spawns: on {@code #cozychristmas:reindeer_spawnable_on} in daylight, like other animals. */
@@ -90,25 +96,41 @@ public class Reindeer extends AbstractHorse {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder entityData) {
-        super.defineSynchedData(entityData);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
         entityData.define(DATA_CAN_FLY, false);
+    }
+
+    /** 1.20.1 has no eye height in the entity type: 26.3's 1.35 of 1.45 blocks, scaled down for fawns. */
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
+        return dimensions.height * EYE_HEIGHT;
+    }
+
+    /**
+     * 26.3's passenger attachment is 1.3 blocks up; 1.20.1 adds the rider's own offset (a player's -0.35, where 26.3's
+     * vehicle attachment is 0.6 up), so the rider sits 0.25 lower here to sit where it does there.
+     */
+    @Override
+    public double getPassengersRidingOffset() {
+        return PASSENGER_OFFSET;
     }
 
     @Override
     protected void addBehaviourGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(1, new PanicGoal(this, 1.2));
-        goalSelector.addGoal(3, new TemptGoal(this, 1.25, stack -> stack.is(CozyTags.REINDEER_FOOD), false));
+        goalSelector.addGoal(3, new TemptGoal(this, 1.25, Ingredient.of(CozyTags.REINDEER_FOOD), false));
     }
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData,
+                                                  @Nullable CompoundTag spawnTag) {
         if (reason == MobSpawnType.STRUCTURE) {
             restrictTo(blockPosition(), HOME_RADIUS);
         }
-        return super.finalizeSpawn(level, difficulty, reason, groupData);
+        return super.finalizeSpawn(level, difficulty, reason, groupData, spawnTag);
     }
 
     // --- flight --------------------------------------------------------------------------------------------------
@@ -120,7 +142,7 @@ public class Reindeer extends AbstractHorse {
 
     /** In the air under a rider who can make it fly. */
     public boolean isFlying() {
-        return canFly() && !onGround() && !isInLiquid() && getControllingPassenger() instanceof Player;
+        return canFly() && !onGround() && !isInFluid() && getControllingPassenger() instanceof Player;
     }
 
     @Override
@@ -144,7 +166,7 @@ public class Reindeer extends AbstractHorse {
 
     @Override
     public void travel(Vec3 input) {
-        if (getControllingPassenger() instanceof Player rider && canFly() && !onGround() && !isInLiquid()) {
+        if (getControllingPassenger() instanceof Player rider && canFly() && !onGround() && !isInFluid()) {
             travelInFlight(rider, input);
         } else {
             super.travel(input);
@@ -174,26 +196,32 @@ public class Reindeer extends AbstractHorse {
         resetFallDistance();
     }
 
+    /** In water or lava (26.3's {@code isInLiquid}). */
+    private boolean isInFluid() {
+        return isInWaterOrBubble() || isInLava();
+    }
+
     /**
      * A reindeer that may fly is a flying vehicle: otherwise a dedicated server (allow-flight off by default) takes a
      * rider hovering in the air for a cheat and kicks them after a few seconds. (26.3 overrides
-     * {@code Entity#isFlyingVehicle}; 1.21.1 has none, see {@link #getDefaultGravity}.)
+     * {@code Entity#isFlyingVehicle}; 1.20.1 has none, see {@link #isNoGravity}.)
      */
     public boolean isFlyingVehicle() {
         return canFly();
     }
 
     /**
-     * 1.21.1's stand-in for {@code isFlyingVehicle}: {@code ServerGamePacketListenerImpl} never kicks the rider of a
-     * vehicle without gravity ({@code getMaximumFlyingTicks}). Only on the server and only under a player rider, whose
-     * client moves the reindeer (the server doesn't run its travel then), so its physics stay untouched everywhere.
+     * 1.20.1's stand-in for {@code isFlyingVehicle}: {@code ServerGamePacketListenerImpl} never counts a vehicle
+     * without gravity as floating. Only on the server and only under a player rider, whose client moves the reindeer
+     * (the server doesn't run its travel then), so its physics stay untouched everywhere. Not saved: see
+     * {@link #addAdditionalSaveData}.
      */
     @Override
-    protected double getDefaultGravity() {
+    public boolean isNoGravity() {
         if (!level().isClientSide() && isFlyingVehicle() && getControllingPassenger() instanceof Player) {
-            return 0.0;
+            return true;
         }
-        return super.getDefaultGravity();
+        return super.isNoGravity();
     }
 
     /** No jump bar in the air: there the jump key climbs instead. */
@@ -243,7 +271,9 @@ public class Reindeer extends AbstractHorse {
         if (level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        carrot.consume(1, player);
+        if (!player.getAbilities().instabuild) {
+            carrot.shrink(1);
+        }
         playEatSound();
         rewardFeeding(player);
         if (getRandom().nextFloat() < CozyConfig.common().reindeer().tameChance()) {
@@ -258,7 +288,7 @@ public class Reindeer extends AbstractHorse {
     private void playEatSound() {
         SoundEvent sound = getEatingSound();
         if (sound != null) {
-            makeSound(sound);
+            playSound(sound, getSoundVolume(), getVoicePitch());
         }
     }
 
@@ -299,6 +329,9 @@ public class Reindeer extends AbstractHorse {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        if (!super.isNoGravity()) {
+            tag.remove(NO_GRAVITY); // saved while ridden in flight: the stand-in above isn't the reindeer's own flag
+        }
         MobHome.save(this, tag);
         tag.putLong(LAST_FED_DAY, lastFedDay);
     }

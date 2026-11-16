@@ -31,11 +31,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -78,6 +80,9 @@ import java.util.UUID;
  */
 public class Santa extends AbstractVillager {
 
+    /** Eye height (blocks): 1.20.1 has none in the entity type. */
+    private static final float EYE_HEIGHT = 1.7F / 2.0F;
+
     /** Santa placed by the workshop stays around it. */
     private static final int HOME_RADIUS = 20;
     private static final int UNHAPPY_TICKS = 40;
@@ -115,6 +120,12 @@ public class Santa extends AbstractVillager {
         super(type, level);
     }
 
+    /** 1.20.1 has no eye height in the entity type: 26.3's 1.7F of 2.0F blocks. */
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
+        return dimensions.height * EYE_HEIGHT;
+    }
+
     public static AttributeSupplier.Builder createAttributes(SantaSettings settings) {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, settings.health())
@@ -140,11 +151,12 @@ public class Santa extends AbstractVillager {
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData,
+                                                  @Nullable CompoundTag spawnTag) {
         if (reason == MobSpawnType.STRUCTURE) {
             restrictTo(blockPosition(), HOME_RADIUS);
         }
-        return super.finalizeSpawn(level, difficulty, reason, groupData);
+        return super.finalizeSpawn(level, difficulty, reason, groupData, spawnTag);
     }
 
     @Override
@@ -268,9 +280,14 @@ public class Santa extends AbstractVillager {
         openTradingScreen(visitor, getDisplayName(), 1);
     }
 
+    /** At his own volume and pitch (26.3's {@code Mob#makeSound}). */
+    private void speak(SoundEvent sound) {
+        playSound(sound, getSoundVolume(), getVoicePitch());
+    }
+
     private void refuse(ServerPlayer visitor, String why) {
         setUnhappyCounter(UNHAPPY_TICKS);
-        makeSound(CozySounds.SANTA_NO.get());
+        speak(CozySounds.SANTA_NO.get());
         visitor.displayClientMessage(Component.translatable("message.cozychristmas.santa." + why), true);
     }
 
@@ -285,9 +302,9 @@ public class Santa extends AbstractVillager {
         }
         PresentDesign[] designs = PresentDesign.values();
         ItemStack present = CozyItems.present(designs[getRandom().nextInt(designs.length)]);
-        present.set(CozyComponents.PRESENT_CONTENTS.get(), new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
+        CozyComponents.PRESENT_CONTENTS.set(present, new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
         visitor.getInventory().placeItemBackInInventory(present); // drops it if full
-        makeSound(CozySounds.SANTA_GIFT.get());
+        speak(CozySounds.SANTA_GIFT.get());
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.8, getZ(), 8, 0.4, 0.4, 0.4, 0.0);
         visitor.displayClientMessage(Component.translatable("message.cozychristmas.santa.gift"), true);
         return true;
@@ -331,11 +348,11 @@ public class Santa extends AbstractVillager {
             thankedOn.put(visitor.getUUID(), today);
             PresentDesign[] designs = PresentDesign.values();
             ItemStack present = CozyItems.present(designs[getRandom().nextInt(designs.length)]);
-            present.set(CozyComponents.PRESENT_CONTENTS.get(), new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
+            CozyComponents.PRESENT_CONTENTS.set(present, new PresentContents.Surprise(Optional.of(PresentOutcome.LOOT)));
             visitor.getInventory().placeItemBackInInventory(present);
             level.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.8, getZ(), 8, 0.4, 0.4, 0.4, 0.0);
         }
-        makeSound(CozySounds.SANTA_GIFT.get());
+        speak(CozySounds.SANTA_GIFT.get());
         visitor.displayClientMessage(Component.translatable("message.cozychristmas.santa.thanks"), true);
         return true;
     }

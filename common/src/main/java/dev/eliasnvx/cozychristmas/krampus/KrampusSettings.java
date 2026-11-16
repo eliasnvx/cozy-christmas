@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * The {@code krampus} config section. The boss has {@code health}, {@code armor}, hits with his birch switch for
@@ -20,7 +21,7 @@ public record KrampusSettings(double health, double armor, double attackDamage, 
     public static final KrampusSettings DEFAULTS = new KrampusSettings(200.0, 6.0, 9.0, 0.3, 6.0, 3.0, 8.0, 70, 40, 240,
             2, true, KrampusVisitSettings.DEFAULTS);
 
-    public static final Codec<KrampusSettings> CODEC = RecordCodecBuilder.<KrampusSettings>create(i -> i.group(
+    public static final Codec<KrampusSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<KrampusSettings>create(i -> i.group(
             ConfigCodecs.field(Codec.doubleRange(1.0, 2048.0), "health", DEFAULTS.health)
                     .forGetter(KrampusSettings::health),
             ConfigCodecs.field(Codec.doubleRange(0.0, 30.0), "armor", DEFAULTS.armor).forGetter(KrampusSettings::armor),
@@ -44,7 +45,7 @@ public record KrampusSettings(double health, double armor, double attackDamage, 
             ConfigCodecs.field(Codec.BOOL, "clears_karma", DEFAULTS.clearsKarma)
                     .forGetter(KrampusSettings::clearsKarma),
             ConfigCodecs.field(KrampusVisitSettings.CODEC, "visits", DEFAULTS.visits).forGetter(KrampusSettings::visits)
-    ).apply(i, KrampusSettings::new)).validate(KrampusSettings::validate);
+    ).apply(i, KrampusSettings::new)), KrampusSettings::validate);
 
     private static DataResult<KrampusSettings> validate(KrampusSettings settings) {
         return settings.lashMinRange < settings.lashRange

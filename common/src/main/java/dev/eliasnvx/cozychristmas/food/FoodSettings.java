@@ -15,7 +15,7 @@ import java.util.List;
 public record FoodSettings(float chestnutChance, List<ResourceLocation> chestnutLeaves) {
 
     public static final FoodSettings DEFAULTS = new FoodSettings(0.02F,
-            List.of(ResourceLocation.withDefaultNamespace("dark_oak_leaves")));
+            List.of(new ResourceLocation("dark_oak_leaves")));
 
     public static final Codec<FoodSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
             ConfigCodecs.field(Codec.floatRange(0.0F, 1.0F), "chestnut_chance", DEFAULTS.chestnutChance)

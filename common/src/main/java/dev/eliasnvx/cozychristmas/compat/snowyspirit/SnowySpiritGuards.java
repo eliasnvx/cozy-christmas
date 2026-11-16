@@ -24,7 +24,7 @@ import java.util.Optional;
 public final class SnowySpiritGuards {
 
     public static final String MOD_ID = "snowyspirit";
-    public static final ResourceLocation GINGERBREAD_GOLEM = ResourceLocation.fromNamespaceAndPath(MOD_ID, "gingerbread_golem");
+    public static final ResourceLocation GINGERBREAD_GOLEM = new ResourceLocation(MOD_ID, "gingerbread_golem");
     /** Guards stand within this many blocks of Santa's home, and are kept within {@link #GUARD_RANGE} of it. */
     private static final int SPREAD = 4;
     private static final int GUARD_RANGE = 16;
@@ -57,7 +57,7 @@ public final class SnowySpiritGuards {
                 continue;
             }
             guard.moveTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, random.nextFloat() * 360.0F, 0.0F);
-            guard.finalizeSpawn(level, level.getCurrentDifficultyAt(spot), MobSpawnType.STRUCTURE, null);
+            guard.finalizeSpawn(level, level.getCurrentDifficultyAt(spot), MobSpawnType.STRUCTURE, null, null);
             guard.setPersistenceRequired();
             keepNear(guard, home);
             level.addFreshEntity(guard);
@@ -66,7 +66,7 @@ public final class SnowySpiritGuards {
         return spawned;
     }
 
-    /** Guards near {@code home} that wandered off its leash (1.21.1 mobs don't save their home) get it back. */
+    /** Guards near {@code home} that wandered off its leash (1.20.1 mobs don't save their home) get it back. */
     public static void keepGuardsNear(ServerLevel level, BlockPos home) {
         Optional<EntityType<?>> type = golemType();
         if (type.isEmpty()) {

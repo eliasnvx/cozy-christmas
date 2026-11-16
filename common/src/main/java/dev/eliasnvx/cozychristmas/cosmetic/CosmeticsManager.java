@@ -121,7 +121,7 @@ public final class CosmeticsManager {
 
     /** The slot an item is worn in, or null if it is not a cosmetic. */
     public static @Nullable CosmeticSlot slotOf(ItemStack stack) {
-        Cosmetic cosmetic = stack.get(CozyComponents.COSMETIC.get());
+        Cosmetic cosmetic = CozyComponents.COSMETIC.get(stack);
         return cosmetic == null ? null : cosmetic.slot();
     }
 
@@ -142,7 +142,7 @@ public final class CosmeticsManager {
         if (player instanceof ServerPlayer serverPlayer) {
             if (!stack.isEmpty() && !ItemStack.matches(previous, stack)) {
                 // heard by the wearer and players nearby, like putting on leather armor
-                player.level().playSound(null, player, SoundEvents.ARMOR_EQUIP_LEATHER.value(), SoundSource.PLAYERS,
+                player.level().playSound(null, player, SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS,
                         EQUIP_SOUND_VOLUME, EQUIP_SOUND_PITCH);
             }
             CosmeticsSyncPayload.sendToTrackingAndSelf(serverPlayer);

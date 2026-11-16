@@ -1,6 +1,5 @@
 package dev.eliasnvx.cozychristmas.stocking;
 
-import com.mojang.serialization.MapCodec;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.util.Players;
 import net.minecraft.core.BlockPos;
@@ -9,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -60,8 +60,6 @@ public class StockingBlock extends BaseEntityBlock {
         SHAPES.put(Direction.WEST, Block.box(12.0, 0.0, 3.0, 16.0, 16.0, 13.0));
     }
 
-    public static final MapCodec<StockingBlock> CODEC = simpleCodec(StockingBlock::new);
-
     public StockingBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(FILL, StockingFill.EMPTY)
@@ -73,24 +71,19 @@ public class StockingBlock extends BaseEntityBlock {
         builder.add(FACING, FILL, STYLE);
     }
 
-    @Override
-    protected MapCodec<? extends StockingBlock> codec() {
-        return CODEC;
-    }
-
     /** {@link BaseEntityBlock} draws nothing by default; the stocking is a block model. */
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(FACING));
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return Shapes.empty();
     }
 
@@ -109,15 +102,15 @@ public class StockingBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         Direction facing = state.getValue(FACING);
         BlockPos wall = pos.relative(facing.getOpposite());
         return level.getBlockState(wall).isFaceSturdy(level, wall, facing);
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
-                                     BlockPos pos, BlockPos neighborPos) {
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
+                                  BlockPos pos, BlockPos neighborPos) {
         return direction == state.getValue(FACING).getOpposite() && !state.canSurvive(level, pos)
                 ? Blocks.AIR.defaultBlockState()
                 : super.updateShape(state, direction, neighborState, level, pos, neighborPos);
@@ -131,9 +124,10 @@ public class StockingBlock extends BaseEntityBlock {
         }
     }
 
-    /** The owner takes what's inside; anyone else is told whose it is, an empty one says what it waits for. */
+    /** The owner takes what's inside (whatever is in hand); anyone else is told whose it is, an empty one says what it waits for. */
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
         if (!(player instanceof ServerPlayer server) || !(level.getBlockEntity(pos) instanceof StockingBlockEntity stocking)) {
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
@@ -154,7 +148,7 @@ public class StockingBlock extends BaseEntityBlock {
 
     /** Taking the stocking down (not a change of its fill): what it holds and the stocking itself drop. */
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
         if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof StockingBlockEntity stocking) {
             stocking.dropContents();
         }
@@ -162,11 +156,11 @@ public class StockingBlock extends BaseEntityBlock {
     }
 
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (player.isCreative() && level.getBlockEntity(pos) instanceof StockingBlockEntity stocking) {
             stocking.forgetHungItem();
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player);
     }
 
     /**
@@ -174,7 +168,7 @@ public class StockingBlock extends BaseEntityBlock {
      * put up their own in its place.
      */
     @Override
-    protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof StockingBlockEntity stocking && !stocking.isOwner(player) && Players.inPlay(player)) {
             return 0.0F;
         }

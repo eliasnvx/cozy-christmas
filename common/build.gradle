@@ -7,7 +7,8 @@ dependencies {
     compileOnly "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
     modImplementation "dev.architectury:architectury:${rootProject.architectury_api_version}"
-    modImplementation "software.bernie.geckolib:geckolib-common-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+    // 1.20.1 GeckoLib has no common artifact: compile against the Fabric jar (same API)
+    modCompileOnly "software.bernie.geckolib:geckolib-fabric-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
 
     // Soft dependencies: only the plugin classes in compat.* touch them, and only those mods load them.
     // Jade's, Serene Seasons' and Snowy Spirit's APIs are the same in both loader jars; the Fabric ones are used to compile.

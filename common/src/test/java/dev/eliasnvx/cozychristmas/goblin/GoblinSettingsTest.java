@@ -13,19 +13,19 @@ class GoblinSettingsTest {
     @Test
     void emptySectionGivesDefaults() {
         var json = JsonParser.parseString("{}");
-        assertEquals(GoblinSettings.DEFAULTS, GoblinSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(GoblinSettings.DEFAULTS, GoblinSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }));
     }
 
     @Test
     void theftCanBeTurnedOff() {
         var json = JsonParser.parseString("{\"present_goblin\": {\"steals\": false}}");
-        assertFalse(GoblinSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow().presentGoblin().steals());
+        assertFalse(GoblinSettings.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(false, e -> { }).presentGoblin().steals());
     }
 
     @Test
     void rejectsACrossedGroupSize() {
         var json = JsonParser.parseString("{\"min_group\": 3, \"max_group\": 1}");
-        assertTrue(PresentGoblinSettings.CODEC.parse(JsonOps.INSTANCE, json).isError());
+        assertTrue(PresentGoblinSettings.CODEC.parse(JsonOps.INSTANCE, json).error().isPresent());
     }
 
     @Test

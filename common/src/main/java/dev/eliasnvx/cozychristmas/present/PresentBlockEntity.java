@@ -3,17 +3,11 @@ package dev.eliasnvx.cozychristmas.present;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.karma.KarmaManager;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
-import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.workshop.WorkshopAlarm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.RegistryOps;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -31,6 +25,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>A surprise is decided by the karma of the first player who comes within {@code presents.warning_radius} (or opens
  * it from farther away), so the ticking is honest: a boom ticks before it's opened, and breaking it keeps the decision.
+ *
+ * <p>Breaking keeps the contents: the block loot table copies {@code contents} into the item's
+ * {@code cozychristmas:present_contents} NBT, and placing hands them back ({@link PresentItem}).
  *
  * <p>Presents in the warehouse of Santa's workshop are {@linkplain #isWorkshopStock() stock} (set by the structure
  * template): opening or breaking one is theft ({@code WorkshopAlarm#theft}). The mark isn't part of the item, so a
@@ -116,45 +113,26 @@ public class PresentBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         contents = tag.contains(CONTENTS)
-                ? PresentContents.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get(CONTENTS))
-                        .resultOrPartial().orElse(PresentContents.SURPRISE)
+                ? PresentContents.CODEC.parse(NbtOps.INSTANCE, tag.get(CONTENTS)).result().orElse(PresentContents.SURPRISE)
                 : PresentContents.SURPRISE;
         workshopStock = tag.getBoolean(WORKSHOP_STOCK);
     }
 
+    /**
+     * A plain surprise isn't written: it's the default, and the loot table copies {@code contents} into the dropped
+     * item's NBT, where a written surprise would keep it from stacking with fresh presents.
+     */
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        RegistryOps<Tag> ops = registries.createSerializationContext(NbtOps.INSTANCE);
-        PresentContents.CODEC.encodeStart(ops, contents).ifSuccess(encoded -> tag.put(CONTENTS, encoded));
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        if (!contents.equals(PresentContents.SURPRISE)) {
+            PresentContents.CODEC.encodeStart(NbtOps.INSTANCE, contents).result().ifPresent(encoded -> tag.put(CONTENTS, encoded));
+        }
         if (workshopStock) {
             tag.putBoolean(WORKSHOP_STOCK, true);
         }
-    }
-
-    @Override
-    protected void applyImplicitComponents(DataComponentInput components) {
-        super.applyImplicitComponents(components);
-        contents = components.getOrDefault(CozyComponents.PRESENT_CONTENTS.get(), PresentContents.SURPRISE);
-    }
-
-    @Override
-    protected void collectImplicitComponents(DataComponentMap.Builder components) {
-        super.collectImplicitComponents(components);
-        components.set(CozyComponents.PRESENT_CONTENTS.get(), contents);
-        if (contents instanceof PresentContents.Surprise surprise && surprise.decided().isPresent()) {
-            // decided ones don't stack: stacking with a known one would tell loot from coal before opening
-            components.set(DataComponents.MAX_STACK_SIZE, 1);
-        }
-    }
-
-    @Override
-    @SuppressWarnings("deprecation") // Mojang marks it override-only; vanilla's decorated pot overrides it the same way
-    public void removeComponentsFromTag(CompoundTag tag) {
-        super.removeComponentsFromTag(tag);
-        tag.remove(CONTENTS);
     }
 }

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "SSS",
+    "W W"
+  ],
+  "key": {
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "result": {
+    "item": "cozychristmas:ear_warmers"
+  }
+}

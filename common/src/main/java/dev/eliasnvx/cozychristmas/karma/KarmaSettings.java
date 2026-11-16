@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * The {@code karma} config section. Karma above {@code niceAbove} is nice, below {@code naughtyBelow} naughty. It drifts
@@ -22,7 +23,7 @@ public record KarmaSettings(int decayPerDay, int niceAbove, int naughtyBelow, in
     private static final Codec<Integer> KARMA = Codec.intRange(Karma.MIN, Karma.MAX);
     private static final Codec<Integer> PENALTY = Codec.intRange(Karma.MIN, 0);
 
-    public static final Codec<KarmaSettings> CODEC = RecordCodecBuilder.<KarmaSettings>create(i -> i.group(
+    public static final Codec<KarmaSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<KarmaSettings>create(i -> i.group(
             ConfigCodecs.field(Codec.intRange(0, Karma.MAX), "decay_per_day", DEFAULTS.decayPerDay)
                     .forGetter(KarmaSettings::decayPerDay),
             ConfigCodecs.field(KARMA, "nice_above", DEFAULTS.niceAbove).forGetter(KarmaSettings::niceAbove),
@@ -40,7 +41,7 @@ public record KarmaSettings(int decayPerDay, int niceAbove, int naughtyBelow, in
                     .forGetter(KarmaSettings::feedReindeer),
             ConfigCodecs.field(Codec.intRange(0, Karma.MAX), "return_stolen", DEFAULTS.returnStolen)
                     .forGetter(KarmaSettings::returnStolen)
-    ).apply(i, KarmaSettings::new)).validate(KarmaSettings::validate);
+    ).apply(i, KarmaSettings::new)), KarmaSettings::validate);
 
     private static DataResult<KarmaSettings> validate(KarmaSettings settings) {
         return settings.naughtyBelow < settings.niceAbove

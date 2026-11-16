@@ -46,7 +46,7 @@ public final class SackRenderer extends EntityRenderer<KrampusSack> {
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.translate(0.0F, -1.501F, 0.0F);
         model.setupAnim(sack, 0.0F, 0.0F, sack.tickCount + partialTick, 0.0F, 0.0F);
-        model.renderToBuffer(poseStack, buffers.getBuffer(renderType), light, OverlayTexture.NO_OVERLAY);
+        model.renderToBuffer(poseStack, buffers.getBuffer(renderType), light, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
         poseStack.popPose();
         super.render(sack, yaw, partialTick, poseStack, buffers, light);
     }

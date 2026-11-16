@@ -6,8 +6,6 @@ import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.food.ChimesEffect;
 import dev.eliasnvx.cozychristmas.food.WarmEffect;
 import dev.eliasnvx.cozychristmas.krampus.SackedEffect;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffect;
@@ -28,11 +26,10 @@ public final class CozyEffects {
     }
 
     /**
-     * The registry's own holder of one of our effects, for effect instances and {@code hasEffect}. An Architectury 13
-     * {@link RegistrySupplier} is a {@link Holder} too, but not the registry's reference: entities key their effects by
-     * holder, so mixing the two would miss effects given by commands or synced from the server.
+     * The effect itself, for effect instances and {@code hasEffect}: 1.20.1 keys effects by {@link MobEffect}, not by
+     * holder. Kept under the later versions' name so shared code reads the same; {@code effect.get()} is the same.
      */
-    public static Holder<MobEffect> holder(RegistrySupplier<MobEffect> effect) {
-        return BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect.get());
+    public static MobEffect holder(RegistrySupplier<MobEffect> effect) {
+        return effect.get();
     }
 }

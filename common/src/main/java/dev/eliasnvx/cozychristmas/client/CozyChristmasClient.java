@@ -1,5 +1,7 @@
 package dev.eliasnvx.cozychristmas.client;
 
+import dev.architectury.event.events.client.ClientPlayerEvent;
+import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.event.events.client.ClientTooltipEvent;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
 import dev.architectury.registry.client.particle.ParticleProviderRegistry;
@@ -24,6 +26,7 @@ import dev.eliasnvx.cozychristmas.client.workshop.SantaRenderer;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
+import dev.eliasnvx.cozychristmas.network.EarlySyncs;
 import dev.eliasnvx.cozychristmas.present.PresentBlock;
 import dev.eliasnvx.cozychristmas.present.PresentContents;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
@@ -40,18 +43,16 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.BlockItemStateProperties;
-import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,6 +67,8 @@ public final class CozyChristmasClient {
 
     /** The present item's model override predicate (models/item/present.json): the design's ordinal. */
     private static final ResourceLocation PRESENT_DESIGN = CozyChristmas.id("design");
+    /** Item tints are ARGB; dye colors are RGB. */
+    private static final int OPAQUE = 0xFF000000;
 
     private CozyChristmasClient() {
     }
@@ -88,6 +91,12 @@ public final class CozyChristmasClient {
         SackRenderer.registerLayers();
         SleighRenderer.registerLayers();
         SackOverlay.register();
+        ClientTickEvent.CLIENT_POST.register(minecraft -> {
+            if (minecraft.player != null) {
+                EarlySyncs.flush(minecraft.player);
+            }
+        });
+        ClientPlayerEvent.CLIENT_PLAYER_QUIT.register(player -> EarlySyncs.clear());
         EntityRendererRegistry.register(CozyEntities.ELF, ElfRenderer::new);
         EntityRendererRegistry.register(CozyEntities.SANTA, SantaRenderer::new);
         EntityRendererRegistry.register(CozyEntities.REINDEER, ReindeerRenderer::new);
@@ -103,20 +112,26 @@ public final class CozyChristmasClient {
     }
 
     /**
-     * 1.21.1 has no item model tints in data: the dyeable knitwear's grayscale icon layer ({@code layer0}) takes the dye
-     * like leather armor, the white trims ({@code layer1}) stay as drawn. Sweaters, antlers and horns aren't tinted.
+     * 1.20.1 has no item model tints in data: the dyeable knitwear's grayscale icon layer ({@code layer0}) takes the dye
+     * like leather armor ({@code display.color} NBT), the white trims ({@code layer1}) stay as drawn. Sweaters, antlers
+     * and horns aren't tinted.
      */
+    private static int dyeColor(ItemStack stack, int undyed) {
+        return stack.getItem() instanceof DyeableLeatherItem dyeable && dyeable.hasCustomColor(stack)
+                ? dyeable.getColor(stack) : undyed;
+    }
+
     private static void registerItemTints() {
         for (RegistrySupplier<Item> item : CozyItems.dyeable()) {
             int undyed = item == CozyItems.ELF_HAT ? CozyItems.ELF_GREEN : CozyItems.KNIT_RED;
             ColorHandlerRegistry.registerItemColors((stack, tintIndex) -> tintIndex != 0 ? -1
-                    : FastColor.ARGB32.opaque(DyedItemColor.getOrDefault(stack, undyed)), item);
+                    : OPAQUE | dyeColor(stack, undyed), item);
         }
     }
 
     /**
-     * 1.21.1 picks a block's render layer in code: blocks with see-through pixels (the fireplace's flames, stockings,
-     * the tree star, ornaments) are cutout. Registered as soon as each block exists (Fabric has them by now, NeoForge
+     * 1.20.1 picks a block's render layer in code: blocks with see-through pixels (the fireplace's flames, stockings,
+     * the tree star, ornaments) are cutout. Registered as soon as each block exists (Fabric has them by now, Forge
      * registers them later).
      */
     private static void registerBlockRenderTypes() {
@@ -144,13 +159,17 @@ public final class CozyChristmasClient {
 
         @Override
         public float unclampedCall(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-            BlockItemStateProperties state = stack.get(DataComponents.BLOCK_STATE);
-            PresentDesign design = state == null ? null : state.get(PresentBlock.DESIGN);
-            return design == null ? 0.0F : design.ordinal();
+            // the block state the item places, in vanilla's BlockStateTag NBT (1.20.1 has no block state component)
+            CompoundTag tag = stack.getTag();
+            if (tag == null || !tag.contains(BlockItem.BLOCK_STATE_TAG)) {
+                return 0.0F;
+            }
+            String name = tag.getCompound(BlockItem.BLOCK_STATE_TAG).getString(PresentBlock.DESIGN.getName());
+            return PresentBlock.DESIGN.getValue(name).map(PresentDesign::ordinal).orElse(0);
         }
     }
 
-    private static void appendTooltip(ItemStack stack, List<Component> lines, Item.TooltipContext context, TooltipFlag flag) {
+    private static void appendTooltip(ItemStack stack, List<Component> lines, TooltipFlag flag) {
         CosmeticSlot slot = CosmeticsManager.slotOf(stack);
         if (slot != null) {
             lines.add(Component.translatable("tooltip.cozychristmas.slot", Component.translatable(slot.translationKey()))
@@ -159,7 +178,7 @@ public final class CozyChristmasClient {
         if (stack.is(CozyTags.TOASTY_SET)) {
             appendToastySet(lines);
         }
-        PresentContents present = stack.get(CozyComponents.PRESENT_CONTENTS.get());
+        PresentContents present = CozyComponents.PRESENT_CONTENTS.get(stack);
         if (present != null) {
             appendPresent(present, lines);
         }

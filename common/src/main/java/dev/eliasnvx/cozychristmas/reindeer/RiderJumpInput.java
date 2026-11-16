@@ -1,7 +1,7 @@
 package dev.eliasnvx.cozychristmas.reindeer;
 
 /**
- * Whether a living entity holds jump. 26.3 has {@code LivingEntity#isJumping()}; 1.21.1 keeps the flag in the protected
+ * Whether a living entity holds jump. 26.3 has {@code LivingEntity#isJumping()}; 1.20.1 keeps the flag in the protected
  * field {@code jumping} without a getter, so a mixin on {@code LivingEntity} implements this. A flying reindeer climbs
  * while its rider holds jump.
  */

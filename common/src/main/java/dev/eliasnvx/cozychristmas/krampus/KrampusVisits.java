@@ -64,7 +64,7 @@ public final class KrampusVisits {
             return null;
         }
         krampus.moveTo(spot.x, spot.y, spot.z, level.getRandom().nextFloat() * 360.0F, 0.0F);
-        krampus.finalizeSpawn(level, level.getCurrentDifficultyAt(krampus.blockPosition()), MobSpawnType.EVENT, null);
+        krampus.finalizeSpawn(level, level.getCurrentDifficultyAt(krampus.blockPosition()), MobSpawnType.EVENT, null, null);
         krampus.visit(player);
         level.addFreshEntity(krampus);
         KarmaManager.markKrampusVisit(player);

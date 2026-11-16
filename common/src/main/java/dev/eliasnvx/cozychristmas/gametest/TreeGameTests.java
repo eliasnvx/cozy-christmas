@@ -29,8 +29,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 /**
- * The Christmas tree on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, NeoForge:
- * {@code neoforge/.../dev/CozyGameTestsNeoForge}). A small spruce on a stone floor: a trunk three logs high, two
+ * The Christmas tree on a real server, shared by both loaders (Fabric: {@code fabric/src/gametest}, Forge:
+ * {@code forge/.../dev/CozyGameTestsForge}). A small spruce on a stone floor: a trunk three logs high, two
  * tiers of leaves, the star on top and ornaments hung under the lower tier. The season clock is fixed and restored
  * within each test body, which runs in one tick. Dev only: not in the released jars.
  */
@@ -69,7 +69,7 @@ public final class TreeGameTests {
             BlockPos spot = star.tryGift(helper.getLevel());
             helper.assertTrue(spot != null, "a decorated tree brings a present on a new morning");
             BlockPos base = helper.absolutePos(TRUNK);
-            helper.assertValueEqual(helper.getLevel().getBlockState(spot).getBlock(), CozyBlocks.PRESENT.get(), "a present");
+            GameTestAsserts.assertValueEqual(helper, helper.getLevel().getBlockState(spot).getBlock(), CozyBlocks.PRESENT.get(), "a present");
             helper.assertTrue(spot.getY() == base.getY() && spot.distManhattan(base) > 0
                     && Math.max(Math.abs(spot.getX() - base.getX()), Math.abs(spot.getZ() - base.getZ())) <= settings().presentRadius(),
                     "on the ground by the trunk, at " + helper.relativePos(spot));
@@ -77,14 +77,14 @@ public final class TreeGameTests {
             helper.assertTrue(contents instanceof PresentContents.Surprise surprise && surprise.decided().isPresent(),
                     "the owner's karma already decided it, got " + contents);
             helper.assertTrue(star.tryGift(helper.getLevel()) == null, "one present a morning");
-            helper.assertValueEqual(presents(helper), 1, "presents under the tree");
+            GameTestAsserts.assertValueEqual(helper, presents(helper), 1, "presents under the tree");
 
             long morning = StockingBlockEntity.morning(helper.getLevel());
             // as if this morning's present had been yesterday's: the clock can't be moved under the other tests
             star.putUp(owner, morning - 1);
             KarmaManager.takeTreeGift(owner, morning - 1);
             helper.assertTrue(star.tryGift(helper.getLevel()) != null, "another morning, another present");
-            helper.assertValueEqual(presents(helper), 2, "presents under the tree");
+            GameTestAsserts.assertValueEqual(helper, presents(helper), 2, "presents under the tree");
             helper.succeed();
         } finally {
             ChristmasSeason.setClock(Clock.systemDefaultZone());
@@ -98,13 +98,13 @@ public final class TreeGameTests {
         try {
             TreeStarBlockEntity star = tree(helper, owner, settings().minOrnaments() - 1);
             ChristmasTree.Scan scan = ChristmasTree.scan(helper.getLevel(), helper.absolutePos(STAR), settings());
-            helper.assertValueEqual(scan.base(), helper.absolutePos(TRUNK), "the trunk's base");
-            helper.assertValueEqual(scan.ornaments(), settings().minOrnaments() - 1, "ornaments counted");
-            helper.assertValueEqual(ChristmasTree.status(scan, settings()), ChristmasTree.Status.BARE, "too few ornaments");
+            GameTestAsserts.assertValueEqual(helper, scan.base(), helper.absolutePos(TRUNK), "the trunk's base");
+            GameTestAsserts.assertValueEqual(helper, scan.ornaments(), settings().minOrnaments() - 1, "ornaments counted");
+            GameTestAsserts.assertValueEqual(helper, ChristmasTree.status(scan, settings()), ChristmasTree.Status.BARE, "too few ornaments");
             helper.assertTrue(star.tryGift(helper.getLevel()) == null, "a bare tree brings nothing");
 
             hangOrnament(helper, ORNAMENT_SPOTS.get(settings().minOrnaments() - 1), OrnamentColor.GOLD);
-            helper.assertValueEqual(ChristmasTree.status(ChristmasTree.scan(helper.getLevel(), helper.absolutePos(STAR), settings()),
+            GameTestAsserts.assertValueEqual(helper, ChristmasTree.status(ChristmasTree.scan(helper.getLevel(), helper.absolutePos(STAR), settings()),
                     settings()), ChristmasTree.Status.READY, "decorated now");
             ChristmasSeason.setClock(fixed(OUT_OF_SEASON));
             helper.assertTrue(star.tryGift(helper.getLevel()) == null, "nothing outside the Christmas season");
@@ -113,14 +113,14 @@ public final class TreeGameTests {
             // a star set by a structure has no owner and brings nothing
             helper.setBlock(STAR, Blocks.AIR);
             helper.setBlock(STAR, CozyBlocks.TREE_STAR.get());
-            TreeStarBlockEntity ownerless = helper.<TreeStarBlockEntity>getBlockEntity(STAR);
+            TreeStarBlockEntity ownerless = ((TreeStarBlockEntity) helper.getBlockEntity(STAR));
             helper.assertTrue(ownerless.owner() == null && ownerless.tryGift(helper.getLevel()) == null, "no owner, no present");
 
             // a player putting the star up owns the tree
             BlockState starState = helper.getBlockState(STAR);
             starState.getBlock().setPlacedBy(helper.getLevel(), helper.absolutePos(STAR), starState, owner,
                     new ItemStack(CozyBlocks.TREE_STAR_ITEM.get()));
-            helper.assertValueEqual(ownerless.owner(), owner.getUUID(), "whoever puts the star up owns the tree");
+            GameTestAsserts.assertValueEqual(helper, ownerless.owner(), owner.getUUID(), "whoever puts the star up owns the tree");
             helper.assertTrue(ownerless.tryGift(helper.getLevel()) == null, "from the next morning on");
             ownerless.putUp(owner, StockingBlockEntity.morning(helper.getLevel()) - 1);
             helper.assertTrue(ownerless.tryGift(helper.getLevel()) != null, "decorated, in season, owned: a present");
@@ -141,7 +141,7 @@ public final class TreeGameTests {
             helper.setBlock(SMALL_TREE, Blocks.SPRUCE_LOG);
             helper.setBlock(SMALL_TREE.above(), leaves());
             helper.setBlock(SMALL_STAR, CozyBlocks.TREE_STAR.get());
-            TreeStarBlockEntity second = helper.<TreeStarBlockEntity>getBlockEntity(SMALL_STAR);
+            TreeStarBlockEntity second = ((TreeStarBlockEntity) helper.getBlockEntity(SMALL_STAR));
             second.putUp(owner, StockingBlockEntity.morning(helper.getLevel()) - 1);
             helper.assertTrue(first.tryGift(helper.getLevel()) != null, "the first tree brings the morning's present");
             helper.assertTrue(second.tryGift(helper.getLevel()) == null, "the second waits for another morning");
@@ -162,7 +162,7 @@ public final class TreeGameTests {
                 helper.setBlock(heap.get(i), CozyBlocks.PRESENT.get());
             }
             helper.assertTrue(star.tryGift(helper.getLevel()) == null, "no room: presents nobody picked up are still there");
-            helper.setBlock(heap.getFirst(), Blocks.AIR);
+            helper.setBlock(heap.get(0), Blocks.AIR);
             helper.assertTrue(star.tryGift(helper.getLevel()) != null, "one picked up, a new one comes the same morning");
             helper.succeed();
         } finally {
@@ -179,7 +179,7 @@ public final class TreeGameTests {
             tree(helper, owner, 0);
             BlockState state = helper.getBlockState(STAR);
             BlockPos pos = helper.absolutePos(STAR);
-            helper.assertValueEqual(state.getDestroyProgress(other, helper.getLevel(), pos), 0.0F, "another player can't break it");
+            GameTestAsserts.assertValueEqual(helper, state.getDestroyProgress(other, helper.getLevel(), pos), 0.0F, "another player can't break it");
             helper.assertTrue(state.getDestroyProgress(owner, helper.getLevel(), pos) > 0.0F, "its owner can");
             helper.succeed();
         } finally {
@@ -239,7 +239,7 @@ public final class TreeGameTests {
         for (int i = 0; i < ornaments; i++) {
             hangOrnament(helper, ORNAMENT_SPOTS.get(i), OrnamentColor.values()[i % OrnamentColor.values().length]);
         }
-        TreeStarBlockEntity star = helper.<TreeStarBlockEntity>getBlockEntity(STAR);
+        TreeStarBlockEntity star = ((TreeStarBlockEntity) helper.getBlockEntity(STAR));
         star.putUp(owner, StockingBlockEntity.morning(helper.getLevel()) - 1);
         return star;
     }

@@ -12,7 +12,7 @@ public final class CozyChristmasFabric implements ModInitializer {
     public void onInitialize() {
         PlatformHelperImpl.init();
         CozyChristmas.init();
-        // Architectury 13 has no start-tracking event: sync the outfits of players coming into view
+        // Architectury 9 has no start-tracking event: sync the outfits of players coming into view
         EntityTrackingEvents.START_TRACKING.register(CosmeticsEvents::onStartTracking);
     }
 }

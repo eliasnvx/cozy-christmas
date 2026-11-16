@@ -3,6 +3,7 @@ package dev.eliasnvx.cozychristmas.cosmetic;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.PlayerEvent;
+import dev.eliasnvx.cozychristmas.network.CozyNetwork;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -16,11 +17,11 @@ public final class CosmeticsEvents {
     }
 
     public static void register() {
-        CosmeticsSyncPayload.register();
+        CozyNetwork.register();
         PlayerEvent.PLAYER_JOIN.register(CosmeticsSyncPayload::sendToTrackingAndSelf);
-        PlayerEvent.PLAYER_RESPAWN.register((player, conqueredEnd, reason) -> CosmeticsSyncPayload.sendToTrackingAndSelf(player));
+        PlayerEvent.PLAYER_RESPAWN.register((player, conqueredEnd) -> CosmeticsSyncPayload.sendToTrackingAndSelf(player));
         PlayerEvent.CHANGE_DIMENSION.register((player, from, to) -> CosmeticsSyncPayload.sendToTrackingAndSelf(player));
-        // start tracking: Architectury 13 has no event for it, each loader calls onStartTracking
+        // start tracking: Architectury 9 has no event for it, each loader calls onStartTracking
 
         // Tell vanilla what the hand holds now: without it, the use code sees the emptied stack and clears the hand,
         // deleting the swapped-out cosmetic

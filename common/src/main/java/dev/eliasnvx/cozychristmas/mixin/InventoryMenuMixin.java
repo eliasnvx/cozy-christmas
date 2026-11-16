@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * The cosmetic slots are part of the player's own inventory menu, after the vanilla slots (so vanilla indexes stay
- * put). They are a view over the cosmetics attachment like before: clicks, drags and syncing go through the normal
+ * put). They are a view over the stored cosmetics: clicks, drags and syncing go through the normal
  * menu code on both sides. Shift-click puts a cosmetic from the inventory into its empty slot.
  */
 @Mixin(InventoryMenu.class)
@@ -69,7 +69,7 @@ public abstract class InventoryMenuMixin extends AbstractContainerMenu implement
             return;
         }
         if (stack.isEmpty()) {
-            from.setByPlayer(ItemStack.EMPTY, original);
+            from.setByPlayer(ItemStack.EMPTY);
         } else {
             from.setChanged();
         }

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * How a worn item is drawn: its shape and textures. Like leather armor, the base texture is multiplied by the item's
- * dye color ({@code minecraft:dyed_color}, else {@link #defaultColor}) and the optional overlay is drawn on top
+ * dye color (leather-style {@code display.color} NBT, else {@link #defaultColor}) and the optional overlay is drawn on top
  * untinted (white trims, pompom). Untinted looks ({@link #UNTINTED}) draw the base texture as it is.
  */
 public record CosmeticLook(CosmeticShape shape, RenderType base, @Nullable RenderType overlay, int defaultColor) {
@@ -29,6 +29,19 @@ public record CosmeticLook(CosmeticShape shape, RenderType base, @Nullable Rende
             return 0xFFFFFF;
         }
         return dye >= 0 ? dye : defaultColor;
+    }
+
+    /** Channels of a 24-bit color, as 1.20.1's models are drawn with them. */
+    public static float red(int rgb) {
+        return (rgb >> 16 & 0xFF) / 255.0F;
+    }
+
+    public static float green(int rgb) {
+        return (rgb >> 8 & 0xFF) / 255.0F;
+    }
+
+    public static float blue(int rgb) {
+        return (rgb & 0xFF) / 255.0F;
     }
 
     private static RenderType type(String name) {

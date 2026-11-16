@@ -91,7 +91,7 @@ public final class EvilSnowmanModel extends HierarchicalModel<EvilSnowman> {
         upperBody.zRot = -waddle;
         upperBody.yRot = headYaw * Mth.DEG_TO_RAD * BODY_TURN;
         head.zRot = waddle * 0.5F;
-        // 1.21.1 models keep last frame's pose: the throwing arm starts from its rest pose every frame
+        // 1.20.1 models keep last frame's pose: the throwing arm starts from its rest pose every frame
         rightArm.zRot = ARM_RAISE;
         rightArm.xRot = 0.0F;
         if (throwProgress > 0.0F) {

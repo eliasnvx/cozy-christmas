@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "cozychristmas_sweater",
+  "pattern": [
+    "W W",
+    "WCW",
+    "WWW"
+  ],
+  "key": {
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "C": {
+      "item": "minecraft:leather"
+    }
+  },
+  "result": {
+    "item": "cozychristmas:reindeer_sweater"
+  }
+}

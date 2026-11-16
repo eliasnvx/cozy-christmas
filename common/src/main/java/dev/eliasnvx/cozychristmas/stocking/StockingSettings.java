@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * The {@code stockings} config section. A stocking hung over a fireplace fills once a morning (at most one stocking
@@ -14,12 +15,12 @@ public record StockingSettings(boolean seasonOnly, int coalMin, int coalMax) {
 
     public static final StockingSettings DEFAULTS = new StockingSettings(true, 1, 3);
 
-    public static final Codec<StockingSettings> CODEC = RecordCodecBuilder.<StockingSettings>create(i -> i.group(
+    public static final Codec<StockingSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<StockingSettings>create(i -> i.group(
             ConfigCodecs.field(Codec.BOOL, "season_only", DEFAULTS.seasonOnly).forGetter(StockingSettings::seasonOnly),
             ConfigCodecs.field(Codec.intRange(1, 64), "coal_min", DEFAULTS.coalMin)
                     .forGetter(StockingSettings::coalMin),
             ConfigCodecs.field(Codec.intRange(1, 64), "coal_max", DEFAULTS.coalMax).forGetter(StockingSettings::coalMax)
-    ).apply(i, StockingSettings::new)).validate(StockingSettings::validate);
+    ).apply(i, StockingSettings::new)), StockingSettings::validate);
 
     private static DataResult<StockingSettings> validate(StockingSettings settings) {
         return settings.coalMin <= settings.coalMax

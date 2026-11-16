@@ -1,0 +1,53 @@
+modLoader = "javafml"
+# Forge 47 (1.20.1) language provider
+loaderVersion = "[47,)"
+license = "MIT"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${version}"
+displayName = "${mod_name}"
+authors = "eliasnvx"
+displayURL = "https://cubimoon.com"
+description = '''
+A Christmas adventure: Santa's workshop, Krampus's lair and goblin camps in the snow, and presents that hold gifts or coal depending on your karma.
+'''
+
+# Mixins: Forge 47 has no [[mixins]] block, the config is listed in the jar manifest (loom forge.mixinConfig)
+
+[[dependencies.${mod_id}]]
+modId = "forge"
+mandatory = true
+# forge_version is "<mc>-<forge>"; the range only takes the Forge part
+versionRange = "[${forge_version.substring(forge_version.indexOf('-') + 1)},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${minecraft_version},1.20.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "architectury"
+mandatory = true
+versionRange = "[${architectury_api_version},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "geckolib"
+mandatory = true
+versionRange = "[${geckolib_version},)"
+ordering = "AFTER"
+side = "BOTH"
+
+# Soft dependencies (compat.*): used when present, never required; the ranges are the APIs compat.* is built against
+[[dependencies.${mod_id}]]
+modId = "curios"
+mandatory = false
+versionRange = "[5,6)"
+ordering = "NONE"
+side = "BOTH"

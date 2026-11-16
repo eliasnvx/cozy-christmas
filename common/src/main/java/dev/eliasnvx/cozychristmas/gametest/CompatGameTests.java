@@ -33,7 +33,7 @@ import java.util.Optional;
 
 /**
  * Compat on a real server, shared by both loaders. The slot-mod path runs with a stand-in source (Curios itself is
- * checked by the NeoForge-only {@code CuriosGameTest} in a {@code -Pcompat=curios} run); the Serene Seasons check
+ * checked by the Forge-only {@code CuriosGameTest} in a {@code -Pcompat=curios} run); the Serene Seasons check
  * runs its real calendar when that mod is installed ({@code -Pcompat=seasons}) and checks the fallback otherwise.
  * Dev only: not in the released jars.
  */
@@ -59,7 +59,7 @@ public final class CompatGameTests {
                 visitor.accept(new ItemStack(CozyItems.SCARF.get()), ExternalSlots.Role.WORN);
                 visitor.accept(new ItemStack(CozyItems.MITTENS.get()), ExternalSlots.Role.WORN);
                 visitor.accept(new ItemStack(CozyItems.EAR_WARMERS.get()), ExternalSlots.Role.WORN);
-                visitor.accept(new ItemStack(CozyItems.sweaters().getFirst().get()), ExternalSlots.Role.WORN);
+                visitor.accept(new ItemStack(CozyItems.sweaters().get(0).get()), ExternalSlots.Role.WORN);
                 visitor.accept(ItemStack.EMPTY, ExternalSlots.Role.WORN);
             }
         };
@@ -85,7 +85,7 @@ public final class CompatGameTests {
      */
     public static void hiddenAndLookOnlySlots(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survival(helper, PLAYER);
-        ItemStack sweater = new ItemStack(CozyItems.sweaters().getFirst().get());
+        ItemStack sweater = new ItemStack(CozyItems.sweaters().get(0).get());
         ItemStack otherSweater = new ItemStack(CozyItems.sweaters().get(1).get());
         ExternalSlots.Source source = (wearer, visitor) -> {
             if (wearer == player) {
@@ -114,7 +114,7 @@ public final class CompatGameTests {
 
     public static void sereneSeasonsCalendar(GameTestHelper helper) {
         if (!Platform.isModLoaded(SereneSeasonsCalendar.MOD_ID)) {
-            helper.assertValueEqual(ChristmasSeason.calendarMoment(), Optional.empty(), "no seasons mod, no calendar");
+            GameTestAsserts.assertValueEqual(helper, ChristmasSeason.calendarMoment(), Optional.empty(), "no seasons mod, no calendar");
             helper.succeed();
             return;
         }
@@ -124,7 +124,7 @@ public final class CompatGameTests {
         helper.assertTrue(moment.isPresent() && moment.get().subSeason() == SubSeason.MID_WINTER && moment.get().day() == 0,
                 "the calendar reads Serene Seasons' Overworld: " + moment);
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "season set early_summer");
-        helper.assertValueEqual(ChristmasSeason.calendarMoment().map(SeasonMoment::subSeason), Optional.of(SubSeason.EARLY_SUMMER),
+        GameTestAsserts.assertValueEqual(helper, ChristmasSeason.calendarMoment().map(SeasonMoment::subSeason), Optional.of(SubSeason.EARLY_SUMMER),
                 "and follows it");
         helper.succeed();
     }
@@ -132,7 +132,7 @@ public final class CompatGameTests {
     /** Snowy Spirit's sleds take any animal in its puller tag: our reindeer is in it (data, there with or without the mod). */
     public static void reindeerPullSleds(GameTestHelper helper) {
         TagKey<EntityType<?>> pullers = TagKey.create(Registries.ENTITY_TYPE,
-                ResourceLocation.fromNamespaceAndPath(SnowySpiritGuards.MOD_ID, "sled_pullers"));
+                new ResourceLocation(SnowySpiritGuards.MOD_ID, "sled_pullers"));
         helper.assertTrue(CozyEntities.REINDEER.get().is(pullers), "reindeer pull Snowy Spirit's sleds");
         helper.succeed();
     }
@@ -152,7 +152,7 @@ public final class CompatGameTests {
         long guards = helper.getLevel().getEntities((Entity) null, santa.getBoundingBox().inflate(12.0),
                 entity -> SnowySpiritGuards.GINGERBREAD_GOLEM.equals(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()))).size();
         int expected = SnowySpiritGuards.available() ? CozyConfig.common().workshop().santa().snowySpiritGuards() : 0;
-        helper.assertValueEqual(guards, (long) expected, "gingerbread golem guards");
+        GameTestAsserts.assertValueEqual(helper, guards, (long) expected, "gingerbread golem guards");
         helper.getLevel().getEntities((Entity) null, santa.getBoundingBox().inflate(12.0), entity -> !(entity instanceof Player))
                 .forEach(Entity::discard);
         helper.succeed();

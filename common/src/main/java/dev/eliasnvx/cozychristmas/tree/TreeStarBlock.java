@@ -1,6 +1,5 @@
 package dev.eliasnvx.cozychristmas.tree;
 
-import com.mojang.serialization.MapCodec;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
@@ -11,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -44,43 +44,36 @@ public class TreeStarBlock extends BaseEntityBlock {
     public static final int LIGHT = 15;
     private static final VoxelShape SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 15.0, 13.0);
 
-    public static final MapCodec<TreeStarBlock> CODEC = simpleCodec(TreeStarBlock::new);
-
     public TreeStarBlock(Properties properties) {
         super(properties);
     }
 
-    @Override
-    protected MapCodec<? extends TreeStarBlock> codec() {
-        return CODEC;
-    }
-
     /** {@link BaseEntityBlock} draws nothing by default; the star is a block model. */
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return Shapes.empty();
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         BlockPos below = pos.below();
         BlockState under = level.getBlockState(below);
         return under.is(CozyTags.TREE_PARTS) || under.isFaceSturdy(level, below, Direction.UP);
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
-                                     BlockPos pos, BlockPos neighborPos) {
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
+                                  BlockPos pos, BlockPos neighborPos) {
         return direction == Direction.DOWN && !state.canSurvive(level, pos)
                 ? Blocks.AIR.defaultBlockState()
                 : super.updateShape(state, direction, neighborState, level, pos, neighborPos);
@@ -97,7 +90,8 @@ public class TreeStarBlock extends BaseEntityBlock {
 
     /** The owner hears how the tree is doing; anyone else, whose it is. */
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
         if (player instanceof ServerPlayer server && level.getBlockEntity(pos) instanceof TreeStarBlockEntity star) {
             server.displayClientMessage(star.isOwner(player)
                     ? statusMessage(level, pos)
@@ -123,7 +117,7 @@ public class TreeStarBlock extends BaseEntityBlock {
      * put up their own in its place.
      */
     @Override
-    protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
         if (level.getBlockEntity(pos) instanceof TreeStarBlockEntity star && !star.isOwner(player) && Players.inPlay(player)) {
             return 0.0F;
         }

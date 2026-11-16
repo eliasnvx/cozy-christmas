@@ -31,8 +31,8 @@ import java.util.Optional;
 
 /**
  * REI (SPEC compat): the same information pages and wrapping category as {@code CozyJeiPlugin}. Loaded only by REI:
- * the {@code rei_client} entrypoint on Fabric, the annotated subclass in the NeoForge module (the annotation ships
- * only in REI's NeoForge jar).
+ * the {@code rei_client} entrypoint on Fabric, the annotated subclass in the Forge module (the annotation ships
+ * only in REI's Forge jar).
  */
 public class CozyReiPlugin implements REIClientPlugin {
 
@@ -63,7 +63,7 @@ public class CozyReiPlugin implements REIClientPlugin {
         }
         for (RecipeViewerPages.Page page : RecipeViewerPages.pages()) {
             BuiltinClientPlugin.getInstance().registerInformation(EntryIngredients.ofItemStacks(page.items()),
-                    page.items().getFirst().getHoverName(), lines -> {
+                    page.items().get(0).getHoverName(), lines -> {
                         lines.add(page.text());
                         return lines;
                     });
@@ -121,7 +121,7 @@ public class CozyReiPlugin implements REIClientPlugin {
                     Widgets.createSlot(new Point(left, center.y + 2)).entries(display.getInputEntries().get(1)).markInput(),
                     Widgets.createArrow(new Point(left + 26, center.y - 8)),
                     Widgets.createResultSlotBackground(new Point(left + 60, center.y - 8)),
-                    Widgets.createSlot(new Point(left + 60, center.y - 8)).entries(display.getOutputEntries().getFirst())
+                    Widgets.createSlot(new Point(left + 60, center.y - 8)).entries(display.getOutputEntries().get(0))
                             .disableBackground().markOutput());
         }
     }

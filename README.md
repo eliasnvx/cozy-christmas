@@ -90,14 +90,14 @@ All optional; install any of them alongside.
 - **JEI** and **REI**: the wrapping table as a recipe category, information pages for presents, stockings, the tree star and ornaments, the Toasty set, chestnuts, cocoa, ice snowballs and Krampus's trophies.
 - **Jade**: whose stocking it is, what it holds and whether it hangs over a fireplace; whose tree a star crowns and how many ornaments it still needs; who wrapped a present (never what's inside).
 - **Serene Seasons**: set `season.source` to `serene_seasons` and Christmas follows its calendar (early and mid winter by default; Santa loads the sleigh at the start of mid winter).
-- **Curios** (NeoForge): hats, scarves, sweaters and mittens fit its head, necklace, body and hands slots, look the same there and count for the Toasty set.
+- **Curios** (Forge): hats, scarves, sweaters and mittens fit its head, necklace, body and hands slots, look the same there and count for the Toasty set.
 - **Snowy Spirit**: Santa calls two gingerbread golems to guard his workshop (`workshop.santa.snowy_spirit_guards`), and our reindeer pull its sleds.
 - **Catgirl & Catboy Mod**: ear warmers sit over its cat ears. **Femboy Mod**: its socks hang as stockings.
 
 Tradery (Santa trading for its money) comes later.
 
 ## Building
-Java 21 on this branch (Minecraft 1.21.1).
+Java 17 on this branch (Minecraft 1.20.1).
 ```bash
 ./gradlew build
 ```

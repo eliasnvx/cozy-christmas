@@ -52,7 +52,7 @@ public final class ElfModel extends HumanoidModel<Elf> {
                         .texOffs(30, 3).addBox(5.0F, -5.0F, -0.5F, 1, 2, 1)
                         .texOffs(34, 0).addBox(-0.5F, -3.0F, -4.0F, 1, 1, 1),
                 PartPose.offset(0.0F, NECK, 0.0F));
-        // 1.21.1 HumanoidModel takes the hat from the root (26.3: a head child) and copies the head's pose onto it
+        // 1.20.1 HumanoidModel takes the hat from the root (26.3: a head child) and copies the head's pose onto it
         PartDefinition hat = root.addOrReplaceChild("hat", CubeListBuilder.create()
                         .texOffs(0, 12).addBox(-3.5F, -7.0F, -3.5F, 7, 2, 7)
                         .texOffs(0, 21).addBox(-2.5F, -9.0F, -2.5F, 5, 2, 5),
@@ -81,7 +81,7 @@ public final class ElfModel extends HumanoidModel<Elf> {
     @Override
     public void setupAnim(Elf elf, float walkPos, float walkSpeed, float ageInTicks, float headYaw, float headPitch) {
         super.setupAnim(elf, walkPos, walkSpeed, ageInTicks, headYaw, headPitch);
-        // 1.21.1 HumanoidModel moves the parts to a player's positions: back to ours
+        // 1.20.1 HumanoidModel moves the parts to a player's positions: back to ours
         restorePosition(head);
         restorePosition(body);
         restorePosition(rightArm);

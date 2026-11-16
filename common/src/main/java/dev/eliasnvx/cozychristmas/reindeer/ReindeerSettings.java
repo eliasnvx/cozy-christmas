@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * The {@code reindeer} config section. A reindeer has {@code health}, walks at {@code speed} and jumps with
@@ -18,7 +19,7 @@ public record ReindeerSettings(FlightMode flight, double flySpeed, double climbS
     public static final ReindeerSettings DEFAULTS = new ReindeerSettings(FlightMode.SEASON, 0.07, 0.3, 24.0, 0.25, 0.6,
             0.33, 2, 2, 3);
 
-    public static final Codec<ReindeerSettings> CODEC = RecordCodecBuilder.<ReindeerSettings>create(i -> i.group(
+    public static final Codec<ReindeerSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<ReindeerSettings>create(i -> i.group(
             ConfigCodecs.field(FlightMode.CODEC, "flight", DEFAULTS.flight).forGetter(ReindeerSettings::flight),
             ConfigCodecs.field(Codec.doubleRange(0.0, 0.5), "fly_speed", DEFAULTS.flySpeed)
                     .forGetter(ReindeerSettings::flySpeed),
@@ -37,7 +38,7 @@ public record ReindeerSettings(FlightMode flight, double flySpeed, double climbS
                     .forGetter(ReindeerSettings::minGroup),
             ConfigCodecs.field(Codec.intRange(1, 16), "max_group", DEFAULTS.maxGroup)
                     .forGetter(ReindeerSettings::maxGroup)
-    ).apply(i, ReindeerSettings::new)).validate(ReindeerSettings::validate);
+    ).apply(i, ReindeerSettings::new)), ReindeerSettings::validate);
 
     private static DataResult<ReindeerSettings> validate(ReindeerSettings settings) {
         return settings.minGroup <= settings.maxGroup

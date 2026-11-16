@@ -52,7 +52,7 @@ public final class SereneSeasonsCalendar {
         return Optional.of(new SeasonMoment(SubSeason.valueOf(state.getSubSeason().name()), day));
     }
 
-    /** Its 1.21.1 API has no {@code hasSeasons}: the Overworld has seasons when its config whitelists it. */
+    /** Its 1.20.1 API has no {@code hasSeasons}: the Overworld has seasons when its config whitelists it. */
     private static boolean hasSeasons(MinecraftServer current) {
         MethodHandle check = whitelisted;
         if (check == null) {

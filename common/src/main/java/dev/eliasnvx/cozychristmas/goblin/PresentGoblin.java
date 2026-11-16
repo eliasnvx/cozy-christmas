@@ -6,6 +6,7 @@ import dev.eliasnvx.cozychristmas.present.PresentDesign;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.util.Players;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,9 +16,11 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -48,6 +51,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public class PresentGoblin extends Monster {
 
+    /** Eye height (blocks): 1.20.1 has none in the entity type. */
+    private static final float EYE_HEIGHT = 0.8F;
+
     private static final int HOME_RADIUS = 16;
     private static final double FOLLOW_RANGE = 24.0;
     private static final double CHASE = 1.15;
@@ -60,6 +66,12 @@ public class PresentGoblin extends Monster {
     public PresentGoblin(EntityType<? extends PresentGoblin> type, Level level) {
         super(type, level);
         setCanPickUpLoot(false);
+    }
+
+    /** 1.20.1 has no eye height in the entity type: 26.3's. */
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
+        return EYE_HEIGHT;
     }
 
     public static AttributeSupplier.Builder createAttributes(PresentGoblinSettings settings) {
@@ -102,12 +114,13 @@ public class PresentGoblin extends Monster {
 
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData) {
+                                                  MobSpawnType reason, @Nullable SpawnGroupData groupData,
+                                                  @Nullable CompoundTag spawnTag) {
         if (reason == MobSpawnType.STRUCTURE) {
             restrictTo(blockPosition(), HOME_RADIUS);
             setPersistenceRequired();
         }
-        return super.finalizeSpawn(level, difficulty, reason, groupData);
+        return super.finalizeSpawn(level, difficulty, reason, groupData, spawnTag);
     }
 
     /** Holding someone's stolen stack. */

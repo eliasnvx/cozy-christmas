@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -64,6 +65,8 @@ public class SantasSleigh extends Entity {
     private static final String DEPARTED = "departed_morning";
     private static final String HELPERS = "helpers";
 
+    /** Where Santa sits, in the sleigh's frame: 26.3's passenger attachment. */
+    private static final Vec3 SEAT = new Vec3(0.0, 0.55, -0.55);
     private static final int CHECK_INTERVAL = 20;
     private static final int BELL_INTERVAL = 30;
     private static final int TRAIL_INTERVAL = 2;
@@ -86,10 +89,22 @@ public class SantasSleigh extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(DATA_LOAD, 0);
-        builder.define(DATA_PHASE, SleighFlight.Phase.PARKED.ordinal());
-        builder.define(DATA_HARNESSED, false);
+    protected void defineSynchedData() {
+        entityData.define(DATA_LOAD, 0);
+        entityData.define(DATA_PHASE, SleighFlight.Phase.PARKED.ordinal());
+        entityData.define(DATA_HARNESSED, false);
+    }
+
+    /**
+     * Santa sits at the back, 26.3's passenger attachment (0.55 up, 0.55 behind the middle), turned with the sleigh.
+     * 1.20.1's vehicles place their riders here instead.
+     */
+    @Override
+    protected void positionRider(Entity passenger, MoveFunction moveFunction) {
+        if (hasPassenger(passenger)) {
+            Vec3 seat = SEAT.yRot(-getYRot() * Mth.DEG_TO_RAD);
+            moveFunction.accept(passenger, getX() + seat.x, getY() + seat.y + passenger.getMyRidingOffset(), getZ() + seat.z);
+        }
     }
 
     public int load() {
@@ -322,7 +337,9 @@ public class SantasSleigh extends Entity {
         } else if (!loadPresent(server)) {
             server.displayClientMessage(Component.translatable("message.cozychristmas.sleigh.full"), true);
         } else {
-            stack.consume(1, player);
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
             KarmaManager.rewardGift(server);
             server.displayClientMessage(Component.translatable("message.cozychristmas.sleigh.loaded", load(), capacity), true);
         }
@@ -330,7 +347,7 @@ public class SantasSleigh extends Entity {
     }
 
     private static boolean isPrank(ItemStack stack) {
-        PresentContents contents = stack.get(CozyComponents.PRESENT_CONTENTS.get());
+        PresentContents contents = CozyComponents.PRESENT_CONTENTS.get(stack);
         return contents != null && contents.isBoom();
     }
 
