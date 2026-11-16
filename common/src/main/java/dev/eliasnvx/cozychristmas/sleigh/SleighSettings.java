@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.sleigh;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
@@ -13,7 +14,8 @@ public record SleighSettings(boolean flies, int capacity) {
     public static final SleighSettings DEFAULTS = new SleighSettings(true, 24);
 
     public static final Codec<SleighSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Codec.BOOL.fieldOf("flies").orElse(DEFAULTS.flies).forGetter(SleighSettings::flies),
-            Codec.intRange(1, 1000).fieldOf("capacity").orElse(DEFAULTS.capacity).forGetter(SleighSettings::capacity)
+            ConfigCodecs.field(Codec.BOOL, "flies", DEFAULTS.flies).forGetter(SleighSettings::flies),
+            ConfigCodecs.field(Codec.intRange(1, 1000), "capacity", DEFAULTS.capacity)
+                    .forGetter(SleighSettings::capacity)
     ).apply(i, SleighSettings::new));
 }

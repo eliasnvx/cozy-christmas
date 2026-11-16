@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.krampus;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -20,19 +21,29 @@ public record KrampusSettings(double health, double armor, double attackDamage, 
             2, true, KrampusVisitSettings.DEFAULTS);
 
     public static final Codec<KrampusSettings> CODEC = RecordCodecBuilder.<KrampusSettings>create(i -> i.group(
-            Codec.doubleRange(1.0, 2048.0).fieldOf("health").orElse(DEFAULTS.health).forGetter(KrampusSettings::health),
-            Codec.doubleRange(0.0, 30.0).fieldOf("armor").orElse(DEFAULTS.armor).forGetter(KrampusSettings::armor),
-            Codec.doubleRange(0.0, 100.0).fieldOf("attack_damage").orElse(DEFAULTS.attackDamage).forGetter(KrampusSettings::attackDamage),
-            Codec.doubleRange(0.0, 1.0).fieldOf("speed").orElse(DEFAULTS.speed).forGetter(KrampusSettings::speed),
-            Codec.doubleRange(0.0, 100.0).fieldOf("lash_damage").orElse(DEFAULTS.lashDamage).forGetter(KrampusSettings::lashDamage),
-            Codec.doubleRange(0.0, 16.0).fieldOf("lash_min_range").orElse(DEFAULTS.lashMinRange).forGetter(KrampusSettings::lashMinRange),
-            Codec.doubleRange(1.0, 16.0).fieldOf("lash_range").orElse(DEFAULTS.lashRange).forGetter(KrampusSettings::lashRange),
-            Codec.intRange(10, 1200).fieldOf("lash_cooldown").orElse(DEFAULTS.lashCooldown).forGetter(KrampusSettings::lashCooldown),
-            Codec.intRange(0, 200).fieldOf("sack_ticks").orElse(DEFAULTS.sackTicks).forGetter(KrampusSettings::sackTicks),
-            Codec.intRange(20, 6000).fieldOf("sack_cooldown").orElse(DEFAULTS.sackCooldown).forGetter(KrampusSettings::sackCooldown),
-            Codec.intRange(0, 8).fieldOf("summon_goblins").orElse(DEFAULTS.summonGoblins).forGetter(KrampusSettings::summonGoblins),
-            Codec.BOOL.fieldOf("clears_karma").orElse(DEFAULTS.clearsKarma).forGetter(KrampusSettings::clearsKarma),
-            KrampusVisitSettings.CODEC.fieldOf("visits").orElse(DEFAULTS.visits).forGetter(KrampusSettings::visits)
+            ConfigCodecs.field(Codec.doubleRange(1.0, 2048.0), "health", DEFAULTS.health)
+                    .forGetter(KrampusSettings::health),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 30.0), "armor", DEFAULTS.armor).forGetter(KrampusSettings::armor),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 100.0), "attack_damage", DEFAULTS.attackDamage)
+                    .forGetter(KrampusSettings::attackDamage),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "speed", DEFAULTS.speed).forGetter(KrampusSettings::speed),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 100.0), "lash_damage", DEFAULTS.lashDamage)
+                    .forGetter(KrampusSettings::lashDamage),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 16.0), "lash_min_range", DEFAULTS.lashMinRange)
+                    .forGetter(KrampusSettings::lashMinRange),
+            ConfigCodecs.field(Codec.doubleRange(1.0, 16.0), "lash_range", DEFAULTS.lashRange)
+                    .forGetter(KrampusSettings::lashRange),
+            ConfigCodecs.field(Codec.intRange(10, 1200), "lash_cooldown", DEFAULTS.lashCooldown)
+                    .forGetter(KrampusSettings::lashCooldown),
+            ConfigCodecs.field(Codec.intRange(0, 200), "sack_ticks", DEFAULTS.sackTicks)
+                    .forGetter(KrampusSettings::sackTicks),
+            ConfigCodecs.field(Codec.intRange(20, 6000), "sack_cooldown", DEFAULTS.sackCooldown)
+                    .forGetter(KrampusSettings::sackCooldown),
+            ConfigCodecs.field(Codec.intRange(0, 8), "summon_goblins", DEFAULTS.summonGoblins)
+                    .forGetter(KrampusSettings::summonGoblins),
+            ConfigCodecs.field(Codec.BOOL, "clears_karma", DEFAULTS.clearsKarma)
+                    .forGetter(KrampusSettings::clearsKarma),
+            ConfigCodecs.field(KrampusVisitSettings.CODEC, "visits", DEFAULTS.visits).forGetter(KrampusSettings::visits)
     ).apply(i, KrampusSettings::new)).validate(KrampusSettings::validate);
 
     private static DataResult<KrampusSettings> validate(KrampusSettings settings) {

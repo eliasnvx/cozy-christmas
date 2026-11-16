@@ -13,6 +13,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.BlockAttachedEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -77,6 +80,13 @@ public final class PresentBoom {
         @Override
         public float getKnockbackMultiplier(Entity entity) {
             return boom.knockback();
+        }
+
+        /** A prank goes off in faces: it spares items on the ground, armor stands, frames and paintings. */
+        @Override
+        public boolean shouldDamageEntity(Explosion explosion, Entity entity) {
+            boolean spared = entity instanceof ItemEntity || entity instanceof ArmorStand || entity instanceof BlockAttachedEntity;
+            return !spared && super.shouldDamageEntity(explosion, entity);
         }
 
         @Override

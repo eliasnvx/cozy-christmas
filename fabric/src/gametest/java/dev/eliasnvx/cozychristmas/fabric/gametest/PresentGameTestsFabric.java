@@ -49,6 +49,21 @@ public final class PresentGameTestsFabric {
     }
 
     @GameTest
+    public void boomSparesItemsAndDecorations(GameTestHelper helper) {
+        PresentGameTests.boomSparesItemsAndDecorations(helper);
+    }
+
+    @GameTest
+    public void decidedPresentStacksWithNothing(GameTestHelper helper) {
+        PresentGameTests.decidedPresentStacksWithNothing(helper);
+    }
+
+    @GameTest
+    public void snowPresentsOnPowderSnow(GameTestHelper helper) {
+        PresentGameTests.snowPresentsOnPowderSnow(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

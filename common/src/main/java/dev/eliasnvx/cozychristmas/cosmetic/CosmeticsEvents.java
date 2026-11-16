@@ -10,7 +10,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.gamerules.GameRules;
 
 /** Game hooks for cosmetic slots: networking, sync, right-click equip, death drops. */
 public final class CosmeticsEvents {
@@ -28,23 +27,7 @@ public final class CosmeticsEvents {
                 CosmeticsSyncPayload.sendTo(watcher, tracked);
             }
         });
-        EntityEvent.LIVING_DEATH.register((entity, source) -> {
-            if (entity instanceof ServerPlayer player) {
-                dropOnDeath(player);
-            }
-            return EventResult.pass();
-        });
         InteractionEvent.USE_ITEM.register((level, player, hand) -> equipFromHand(player, hand));
-    }
-
-    private static void dropOnDeath(ServerPlayer player) {
-        ServerLevel level = (ServerLevel) player.level();
-        if (level.getGameRules().get(GameRules.KEEP_INVENTORY)) {
-            return; // the attachment is copyOnDeath, so cosmetics carry over to the respawned player
-        }
-        for (ItemStack stack : CosmeticsManager.clear(player)) {
-            player.spawnAtLocation(level, stack);
-        }
     }
 
     /** Right-click a cosmetic in hand to wear it; swaps with whatever was in the slot. */

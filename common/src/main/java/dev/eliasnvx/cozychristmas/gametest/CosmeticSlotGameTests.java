@@ -5,6 +5,7 @@ import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.menu.InventoryMenuCosmetics;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
@@ -46,6 +48,7 @@ public final class CosmeticSlotGameTests {
             new GameTestEntry("right_click_equip", CosmeticSlotGameTests::rightClickEquip),
             new GameTestEntry("creative_slot_packet", CosmeticSlotGameTests::creativeSlotPacket),
             new GameTestEntry("death_drops_once", CosmeticSlotGameTests::deathDropsOnce),
+            new GameTestEntry("cursed_cosmetics_vanish_on_death", CosmeticSlotGameTests::cursedOnesVanish),
             new GameTestEntry("keep_inventory", CosmeticSlotGameTests::keepInventory),
             new GameTestEntry("leaving_the_end", CosmeticSlotGameTests::leavingTheEnd));
 
@@ -297,6 +300,19 @@ public final class CosmeticSlotGameTests {
             rig.respawn(false);
             rig.expectWornEmpty("respawn after death");
             rig.expectTotal(2, "respawn after death");
+        }));
+    }
+
+    /** Like armor: a worn piece with Curse of Vanishing is gone on death, not dropped. */
+    public static void cursedOnesVanish(GameTestHelper helper) {
+        run(helper, rig -> rig.withKeepInventory(false, () -> {
+            ItemStack cursed = hat(DyeColor.RED);
+            cursed.enchant(rig.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+                    .getOrThrow(Enchantments.VANISHING_CURSE), 1);
+            rig.wear(cursed);
+            rig.die();
+            rig.expectWornEmpty("death with a cursed hat");
+            rig.expectTotal(0, "death with a cursed hat");
         }));
     }
 

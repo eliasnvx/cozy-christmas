@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.goblin;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
@@ -13,9 +14,12 @@ public record GingerbreadManSettings(double health, double attackDamage, double 
     public static final GingerbreadManSettings DEFAULTS = new GingerbreadManSettings(6.0, 2.0, 0.36, true);
 
     public static final Codec<GingerbreadManSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Codec.doubleRange(1.0, 1024.0).fieldOf("health").orElse(DEFAULTS.health).forGetter(GingerbreadManSettings::health),
-            Codec.doubleRange(0.0, 100.0).fieldOf("attack_damage").orElse(DEFAULTS.attackDamage).forGetter(GingerbreadManSettings::attackDamage),
-            Codec.doubleRange(0.0, 1.0).fieldOf("speed").orElse(DEFAULTS.speed).forGetter(GingerbreadManSettings::speed),
-            Codec.BOOL.fieldOf("soggy").orElse(DEFAULTS.soggy).forGetter(GingerbreadManSettings::soggy)
+            ConfigCodecs.field(Codec.doubleRange(1.0, 1024.0), "health", DEFAULTS.health)
+                    .forGetter(GingerbreadManSettings::health),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 100.0), "attack_damage", DEFAULTS.attackDamage)
+                    .forGetter(GingerbreadManSettings::attackDamage),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "speed", DEFAULTS.speed)
+                    .forGetter(GingerbreadManSettings::speed),
+            ConfigCodecs.field(Codec.BOOL, "soggy", DEFAULTS.soggy).forGetter(GingerbreadManSettings::soggy)
     ).apply(i, GingerbreadManSettings::new));
 }

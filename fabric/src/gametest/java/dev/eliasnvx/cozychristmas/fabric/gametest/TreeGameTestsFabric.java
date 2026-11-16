@@ -38,6 +38,11 @@ public final class TreeGameTestsFabric {
     }
 
     @GameTest
+    public void onlyTheOwnerTakesTheStarDown(GameTestHelper helper) {
+        TreeGameTests.onlyTheOwnerTakesTheStarDown(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

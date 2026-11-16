@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.season;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
@@ -15,9 +16,11 @@ public record SeasonSettings(SeasonSource source, DateWindow season, DateWindow 
             DateWindow.of(12, 1, 1, 7), DateWindow.of(12, 24, 12, 25), SereneSeasonsSettings.DEFAULTS);
 
     public static final Codec<SeasonSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            SeasonSource.CODEC.fieldOf("source").orElse(DEFAULTS.source).forGetter(SeasonSettings::source),
-            DateWindow.CODEC.fieldOf("season").orElse(DEFAULTS.season).forGetter(SeasonSettings::season),
-            DateWindow.CODEC.fieldOf("workshop_delivery").orElse(DEFAULTS.workshopDelivery).forGetter(SeasonSettings::workshopDelivery),
-            SereneSeasonsSettings.CODEC.fieldOf("serene_seasons").orElse(DEFAULTS.sereneSeasons).forGetter(SeasonSettings::sereneSeasons)
+            ConfigCodecs.field(SeasonSource.CODEC, "source", DEFAULTS.source).forGetter(SeasonSettings::source),
+            ConfigCodecs.field(DateWindow.CODEC, "season", DEFAULTS.season).forGetter(SeasonSettings::season),
+            ConfigCodecs.field(DateWindow.CODEC, "workshop_delivery", DEFAULTS.workshopDelivery)
+                    .forGetter(SeasonSettings::workshopDelivery),
+            ConfigCodecs.field(SereneSeasonsSettings.CODEC, "serene_seasons", DEFAULTS.sereneSeasons)
+                    .forGetter(SeasonSettings::sereneSeasons)
     ).apply(i, SeasonSettings::new));
 }

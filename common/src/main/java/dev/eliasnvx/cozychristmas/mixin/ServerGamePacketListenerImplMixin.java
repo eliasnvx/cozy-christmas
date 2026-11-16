@@ -34,7 +34,10 @@ public abstract class ServerGamePacketListenerImplMixin {
         ci.cancel();
         ItemStack stack = packet.itemStack();
         Slot slot = player.inventoryMenu.getSlot(index);
-        if (player.hasInfiniteMaterials() && (stack.isEmpty() || stack.getCount() == 1 && slot.mayPlace(stack))) {
+        // as vanilla's own check: no items of features this world doesn't have
+        boolean allowed = stack.isEmpty() || stack.getCount() == 1 && slot.mayPlace(stack)
+                && stack.isItemEnabled(player.level().enabledFeatures());
+        if (player.hasInfiniteMaterials() && allowed) {
             slot.setByPlayer(stack);
             player.inventoryMenu.setRemoteSlot(index, stack);
             player.inventoryMenu.broadcastChanges();

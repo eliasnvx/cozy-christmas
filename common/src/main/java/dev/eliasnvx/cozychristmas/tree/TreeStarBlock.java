@@ -5,6 +5,7 @@ import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import dev.eliasnvx.cozychristmas.season.ChristmasSeason;
 import dev.eliasnvx.cozychristmas.stocking.StockingBlockEntity;
+import dev.eliasnvx.cozychristmas.util.Players;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -101,6 +102,18 @@ public class TreeStarBlock extends BaseEntityBlock {
             case READY -> Component.translatable(!settings.seasonOnly() || ChristmasSeason.isActive()
                     ? "message.cozychristmas.tree.ready" : "message.cozychristmas.tree.ready_off_season");
         };
+    }
+
+    /**
+     * Only its owner (or a creative player) takes it down: otherwise anyone could break it and keep what it holds or
+     * put up their own in its place.
+     */
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof TreeStarBlockEntity star && !star.isOwner(player) && Players.inPlay(player)) {
+            return 0.0F;
+        }
+        return super.getDestroyProgress(state, player, level, pos);
     }
 
     @Override

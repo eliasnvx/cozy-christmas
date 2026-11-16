@@ -146,6 +146,18 @@ public class StockingBlock extends BaseEntityBlock {
         return super.playerWillDestroy(level, pos, state, player);
     }
 
+    /**
+     * Only its owner (or a creative player) takes it down: otherwise anyone could break it and keep what it holds or
+     * put up their own in its place.
+     */
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof StockingBlockEntity stocking && !stocking.isOwner(player) && Players.inPlay(player)) {
+            return 0.0F;
+        }
+        return super.getDestroyProgress(state, player, level, pos);
+    }
+
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new StockingBlockEntity(pos, state);

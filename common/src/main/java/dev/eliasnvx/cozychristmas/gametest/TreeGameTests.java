@@ -41,6 +41,7 @@ public final class TreeGameTests {
             new GameTestEntry("tree_needs_ornaments_the_season_and_an_owner", TreeGameTests::needsOrnamentsSeasonAndOwner),
             new GameTestEntry("one_tree_a_morning_per_player", TreeGameTests::oneTreeAMorningPerPlayer),
             new GameTestEntry("presents_under_a_tree_stop_piling_up", TreeGameTests::presentsStopPilingUp),
+            new GameTestEntry("only_the_owner_takes_the_star_down", TreeGameTests::onlyTheOwnerTakesTheStarDown),
             new GameTestEntry("ornaments_and_the_star_hold_on_to_the_tree", TreeGameTests::ornamentsAndStarHoldOn));
 
     private static final int SIZE = 8;
@@ -167,6 +168,23 @@ public final class TreeGameTests {
         } finally {
             ChristmasSeason.setClock(Clock.systemDefaultZone());
             TestPlayers.remove(helper, owner);
+        }
+    }
+
+    /** Breaking someone else's star and putting up your own would take their tree: only the owner takes it down. */
+    public static void onlyTheOwnerTakesTheStarDown(GameTestHelper helper) {
+        ServerPlayer owner = TestPlayers.survival(helper, PLAYER);
+        ServerPlayer other = TestPlayers.survival(helper, new Vec3(7.5, 1.0, 0.5));
+        try {
+            tree(helper, owner, 0);
+            BlockState state = helper.getBlockState(STAR);
+            BlockPos pos = helper.absolutePos(STAR);
+            helper.assertValueEqual(state.getDestroyProgress(other, helper.getLevel(), pos), 0.0F, "another player can't break it");
+            helper.assertTrue(state.getDestroyProgress(owner, helper.getLevel(), pos) > 0.0F, "its owner can");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(helper, owner);
+            TestPlayers.remove(helper, other);
         }
     }
 

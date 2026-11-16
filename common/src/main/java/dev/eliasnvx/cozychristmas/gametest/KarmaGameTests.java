@@ -25,6 +25,7 @@ public final class KarmaGameTests {
     public static final List<GameTestEntry> ALL = List.of(
             new GameTestEntry("karma_stays_in_range", KarmaGameTests::karmaStaysInRange),
             new GameTestEntry("hurting_a_villager_is_naughty", KarmaGameTests::hurtingAVillagerIsNaughty),
+            new GameTestEntry("two_players_hurting_one_villager_both_pay", KarmaGameTests::twoPlayersBothPay),
             new GameTestEntry("hurting_a_zombie_is_fine", KarmaGameTests::hurtingAZombieIsFine),
             new GameTestEntry("killing_a_villager_costs_more", KarmaGameTests::killingAVillagerCostsMore),
             new GameTestEntry("karma_survives_death", KarmaGameTests::karmaSurvivesDeath));
@@ -52,6 +53,25 @@ public final class KarmaGameTests {
             hit(player, villager, 1.0F); // same tick: inside the cooldown, a fast clicker pays once
             helper.assertValueEqual(KarmaManager.get(player), afterOne, "karma after a second hit in the cooldown");
             villager.discard();
+        });
+    }
+
+    /** The cooldown is per player and victim: a second player's blow after the first one's isn't free. */
+    public static void twoPlayersBothPay(GameTestHelper helper) {
+        ServerPlayer first = TestPlayers.survival(helper, TEST_AREA_CENTER);
+        ServerPlayer second = TestPlayers.survival(helper, TEST_AREA_CENTER.add(2.0, 0.0, 0.0));
+        LivingEntity villager = helper.spawn(EntityTypes.VILLAGER, TEST_AREA_CENTER.add(1.0, 0.0, 2.0));
+        hit(first, villager, 1.0F);
+        helper.runAfterDelay(15, () -> { // past the villager's invulnerability, inside the cooldown
+            try {
+                hit(second, villager, 1.0F);
+                helper.assertValueEqual(KarmaManager.get(second), settings().hurtProtected(), "the second player's karma");
+                helper.succeed();
+            } finally {
+                villager.discard();
+                TestPlayers.remove(helper, first);
+                TestPlayers.remove(helper, second);
+            }
         });
     }
 

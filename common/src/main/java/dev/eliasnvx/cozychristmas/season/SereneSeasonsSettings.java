@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.season;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.List;
@@ -16,10 +17,12 @@ public record SereneSeasonsSettings(List<SubSeason> subSeasons, SubSeason delive
             List.of(SubSeason.EARLY_WINTER, SubSeason.MID_WINTER), SubSeason.MID_WINTER, 2);
 
     public static final Codec<SereneSeasonsSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            SubSeason.CODEC.listOf().fieldOf("sub_seasons").orElse(DEFAULTS.subSeasons).forGetter(SereneSeasonsSettings::subSeasons),
-            SubSeason.CODEC.fieldOf("delivery_sub_season").orElse(DEFAULTS.deliverySubSeason)
+            ConfigCodecs.field(SubSeason.CODEC.listOf(), "sub_seasons", DEFAULTS.subSeasons)
+                    .forGetter(SereneSeasonsSettings::subSeasons),
+            ConfigCodecs.field(SubSeason.CODEC, "delivery_sub_season", DEFAULTS.deliverySubSeason)
                     .forGetter(SereneSeasonsSettings::deliverySubSeason),
-            Codec.intRange(0, 64).fieldOf("delivery_days").orElse(DEFAULTS.deliveryDays).forGetter(SereneSeasonsSettings::deliveryDays)
+            ConfigCodecs.field(Codec.intRange(0, 64), "delivery_days", DEFAULTS.deliveryDays)
+                    .forGetter(SereneSeasonsSettings::deliveryDays)
     ).apply(i, SereneSeasonsSettings::new));
 
     public boolean isChristmas(SeasonMoment moment) {

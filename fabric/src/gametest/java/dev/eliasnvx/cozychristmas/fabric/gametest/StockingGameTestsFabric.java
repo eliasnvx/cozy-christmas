@@ -38,6 +38,11 @@ public final class StockingGameTestsFabric {
     }
 
     @GameTest
+    public void onlyTheOwnerTakesItDown(GameTestHelper helper) {
+        StockingGameTests.onlyTheOwnerTakesItDown(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

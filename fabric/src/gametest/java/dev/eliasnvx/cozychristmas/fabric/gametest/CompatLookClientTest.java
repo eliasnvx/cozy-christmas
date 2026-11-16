@@ -13,6 +13,8 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -72,6 +74,14 @@ public final class CompatLookClientTest implements FabricClientGameTest {
                 look(context, world, new Vec3(-2.5, Y, 0.5), new Vec3(-2.5, Y + 1.5, -1.8), "compat_jade_stocking");
                 look(context, world, new Vec3(0.5, Y + 1, 0.5), new Vec3(0.5, Y + 3.4, -2.5), "compat_jade_tree");
                 look(context, world, new Vec3(3.5, Y, -0.5), new Vec3(3.5, Y + 0.4, -2.5), "compat_jade_present");
+            }
+            if (jei || rei) {
+                // the item list keeps clear of the cosmetics panel right of the inventory
+                context.setScreen(() -> new InventoryScreen(Minecraft.getInstance().player));
+                context.waitTicks(SETTLE / 2);
+                shot(context, jei ? "compat_jei_inventory" : "compat_rei_inventory");
+                context.setScreen(() -> null);
+                context.waitTicks(2);
             }
             if (jei) {
                 viewer(context, JeiShots::wrapping, "compat_jei_wrapping");

@@ -30,17 +30,20 @@ public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSe
             KrampusSettings.DEFAULTS, FoodSettings.DEFAULTS, TreeSettings.DEFAULTS);
 
     public static final Codec<CommonConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
-            SeasonSettings.CODEC.fieldOf("season").orElse(DEFAULTS.season).forGetter(CommonConfig::season),
-            KarmaSettings.CODEC.fieldOf("karma").orElse(DEFAULTS.karma).forGetter(CommonConfig::karma),
-            PresentSettings.CODEC.fieldOf("presents").orElse(DEFAULTS.presents).forGetter(CommonConfig::presents),
-            ToastySettings.CODEC.fieldOf("toasty_set").orElse(DEFAULTS.toastySet).forGetter(CommonConfig::toastySet),
-            WorkshopSettings.CODEC.fieldOf("workshop").orElse(DEFAULTS.workshop).forGetter(CommonConfig::workshop),
-            ReindeerSettings.CODEC.fieldOf("reindeer").orElse(DEFAULTS.reindeer).forGetter(CommonConfig::reindeer),
-            GoblinSettings.CODEC.fieldOf("goblins").orElse(DEFAULTS.goblins).forGetter(CommonConfig::goblins),
-            StockingSettings.CODEC.fieldOf("stockings").orElse(DEFAULTS.stockings).forGetter(CommonConfig::stockings),
-            EvilSnowmanSettings.CODEC.fieldOf("evil_snowman").orElse(DEFAULTS.evilSnowman).forGetter(CommonConfig::evilSnowman),
-            KrampusSettings.CODEC.fieldOf("krampus").orElse(DEFAULTS.krampus).forGetter(CommonConfig::krampus),
-            FoodSettings.CODEC.fieldOf("food").orElse(DEFAULTS.food).forGetter(CommonConfig::food),
-            TreeSettings.CODEC.fieldOf("tree").orElse(DEFAULTS.tree).forGetter(CommonConfig::tree)
+            ConfigCodecs.field(SeasonSettings.CODEC, "season", DEFAULTS.season).forGetter(CommonConfig::season),
+            ConfigCodecs.field(KarmaSettings.CODEC, "karma", DEFAULTS.karma).forGetter(CommonConfig::karma),
+            ConfigCodecs.field(PresentSettings.CODEC, "presents", DEFAULTS.presents).forGetter(CommonConfig::presents),
+            ConfigCodecs.field(ToastySettings.CODEC, "toasty_set", DEFAULTS.toastySet)
+                    .forGetter(CommonConfig::toastySet),
+            ConfigCodecs.field(WorkshopSettings.CODEC, "workshop", DEFAULTS.workshop).forGetter(CommonConfig::workshop),
+            ConfigCodecs.field(ReindeerSettings.CODEC, "reindeer", DEFAULTS.reindeer).forGetter(CommonConfig::reindeer),
+            ConfigCodecs.field(GoblinSettings.CODEC, "goblins", DEFAULTS.goblins).forGetter(CommonConfig::goblins),
+            ConfigCodecs.field(StockingSettings.CODEC, "stockings", DEFAULTS.stockings)
+                    .forGetter(CommonConfig::stockings),
+            ConfigCodecs.field(EvilSnowmanSettings.CODEC, "evil_snowman", DEFAULTS.evilSnowman)
+                    .forGetter(CommonConfig::evilSnowman),
+            ConfigCodecs.field(KrampusSettings.CODEC, "krampus", DEFAULTS.krampus).forGetter(CommonConfig::krampus),
+            ConfigCodecs.field(FoodSettings.CODEC, "food", DEFAULTS.food).forGetter(CommonConfig::food),
+            ConfigCodecs.field(TreeSettings.CODEC, "tree", DEFAULTS.tree).forGetter(CommonConfig::tree)
     ).apply(i, CommonConfig::new));
 }

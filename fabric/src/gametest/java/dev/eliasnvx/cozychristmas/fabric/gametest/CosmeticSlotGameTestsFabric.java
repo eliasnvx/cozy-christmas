@@ -68,6 +68,11 @@ public final class CosmeticSlotGameTestsFabric {
     }
 
     @GameTest
+    public void cursedOnesVanish(GameTestHelper helper) {
+        CosmeticSlotGameTests.cursedOnesVanish(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

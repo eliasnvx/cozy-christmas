@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.snowman;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -19,16 +20,26 @@ public record EvilSnowmanSettings(double health, double speed, int throwInterval
             IceSnowballSettings.DEFAULTS);
 
     public static final Codec<EvilSnowmanSettings> CODEC = RecordCodecBuilder.<EvilSnowmanSettings>create(i -> i.group(
-            Codec.doubleRange(1.0, 1024.0).fieldOf("health").orElse(DEFAULTS.health).forGetter(EvilSnowmanSettings::health),
-            Codec.doubleRange(0.0, 1.0).fieldOf("speed").orElse(DEFAULTS.speed).forGetter(EvilSnowmanSettings::speed),
-            Codec.intRange(5, 600).fieldOf("throw_interval").orElse(DEFAULTS.throwInterval).forGetter(EvilSnowmanSettings::throwInterval),
-            Codec.doubleRange(2.0, 32.0).fieldOf("throw_range").orElse(DEFAULTS.throwRange).forGetter(EvilSnowmanSettings::throwRange),
-            Codec.doubleRange(1.0, 100.0).fieldOf("fire_multiplier").orElse(DEFAULTS.fireMultiplier).forGetter(EvilSnowmanSettings::fireMultiplier),
-            Codec.intRange(0, 4).fieldOf("heat_radius").orElse(DEFAULTS.heatRadius).forGetter(EvilSnowmanSettings::heatRadius),
-            Codec.intRange(0, 1000).fieldOf("spawn_weight").orElse(DEFAULTS.spawnWeight).forGetter(EvilSnowmanSettings::spawnWeight),
-            Codec.intRange(1, 16).fieldOf("min_group").orElse(DEFAULTS.minGroup).forGetter(EvilSnowmanSettings::minGroup),
-            Codec.intRange(1, 16).fieldOf("max_group").orElse(DEFAULTS.maxGroup).forGetter(EvilSnowmanSettings::maxGroup),
-            IceSnowballSettings.CODEC.fieldOf("ice_snowball").orElse(DEFAULTS.iceSnowball).forGetter(EvilSnowmanSettings::iceSnowball)
+            ConfigCodecs.field(Codec.doubleRange(1.0, 1024.0), "health", DEFAULTS.health)
+                    .forGetter(EvilSnowmanSettings::health),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "speed", DEFAULTS.speed)
+                    .forGetter(EvilSnowmanSettings::speed),
+            ConfigCodecs.field(Codec.intRange(5, 600), "throw_interval", DEFAULTS.throwInterval)
+                    .forGetter(EvilSnowmanSettings::throwInterval),
+            ConfigCodecs.field(Codec.doubleRange(2.0, 32.0), "throw_range", DEFAULTS.throwRange)
+                    .forGetter(EvilSnowmanSettings::throwRange),
+            ConfigCodecs.field(Codec.doubleRange(1.0, 100.0), "fire_multiplier", DEFAULTS.fireMultiplier)
+                    .forGetter(EvilSnowmanSettings::fireMultiplier),
+            ConfigCodecs.field(Codec.intRange(0, 4), "heat_radius", DEFAULTS.heatRadius)
+                    .forGetter(EvilSnowmanSettings::heatRadius),
+            ConfigCodecs.field(Codec.intRange(0, 1000), "spawn_weight", DEFAULTS.spawnWeight)
+                    .forGetter(EvilSnowmanSettings::spawnWeight),
+            ConfigCodecs.field(Codec.intRange(1, 16), "min_group", DEFAULTS.minGroup)
+                    .forGetter(EvilSnowmanSettings::minGroup),
+            ConfigCodecs.field(Codec.intRange(1, 16), "max_group", DEFAULTS.maxGroup)
+                    .forGetter(EvilSnowmanSettings::maxGroup),
+            ConfigCodecs.field(IceSnowballSettings.CODEC, "ice_snowball", DEFAULTS.iceSnowball)
+                    .forGetter(EvilSnowmanSettings::iceSnowball)
     ).apply(i, EvilSnowmanSettings::new)).validate(EvilSnowmanSettings::validate);
 
     private static DataResult<EvilSnowmanSettings> validate(EvilSnowmanSettings settings) {

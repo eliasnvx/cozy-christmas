@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.workshop;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.eliasnvx.cozychristmas.sleigh.SleighSettings;
 
@@ -13,8 +14,8 @@ public record WorkshopSettings(SantaSettings santa, ElfSettings elf, SleighSetti
     public static final WorkshopSettings DEFAULTS = new WorkshopSettings(SantaSettings.DEFAULTS, ElfSettings.DEFAULTS, SleighSettings.DEFAULTS);
 
     public static final Codec<WorkshopSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            SantaSettings.CODEC.fieldOf("santa").orElse(DEFAULTS.santa).forGetter(WorkshopSettings::santa),
-            ElfSettings.CODEC.fieldOf("elf").orElse(DEFAULTS.elf).forGetter(WorkshopSettings::elf),
-            SleighSettings.CODEC.fieldOf("sleigh").orElse(DEFAULTS.sleigh).forGetter(WorkshopSettings::sleigh)
+            ConfigCodecs.field(SantaSettings.CODEC, "santa", DEFAULTS.santa).forGetter(WorkshopSettings::santa),
+            ConfigCodecs.field(ElfSettings.CODEC, "elf", DEFAULTS.elf).forGetter(WorkshopSettings::elf),
+            ConfigCodecs.field(SleighSettings.CODEC, "sleigh", DEFAULTS.sleigh).forGetter(WorkshopSettings::sleigh)
     ).apply(i, WorkshopSettings::new));
 }

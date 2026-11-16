@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.krampus;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
@@ -16,14 +17,21 @@ public record KrampusVisitSettings(boolean enabled, boolean seasonOnly, int karm
     public static final KrampusVisitSettings DEFAULTS = new KrampusVisitSettings(true, true, -70, 600, 0.08, 3, 16, 24);
 
     public static final Codec<KrampusVisitSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Codec.BOOL.fieldOf("enabled").orElse(DEFAULTS.enabled).forGetter(KrampusVisitSettings::enabled),
-            Codec.BOOL.fieldOf("season_only").orElse(DEFAULTS.seasonOnly).forGetter(KrampusVisitSettings::seasonOnly),
-            Codec.intRange(-100, 0).fieldOf("karma_at_most").orElse(DEFAULTS.karmaAtMost).forGetter(KrampusVisitSettings::karmaAtMost),
-            Codec.intRange(20, 72000).fieldOf("check_ticks").orElse(DEFAULTS.checkTicks).forGetter(KrampusVisitSettings::checkTicks),
-            Codec.doubleRange(0.0, 1.0).fieldOf("chance").orElse(DEFAULTS.chance).forGetter(KrampusVisitSettings::chance),
-            Codec.intRange(0, 365).fieldOf("cooldown_days").orElse(DEFAULTS.cooldownDays).forGetter(KrampusVisitSettings::cooldownDays),
-            Codec.intRange(4, 64).fieldOf("min_distance").orElse(DEFAULTS.minDistance).forGetter(KrampusVisitSettings::minDistance),
-            Codec.intRange(4, 64).fieldOf("max_distance").orElse(DEFAULTS.maxDistance).forGetter(KrampusVisitSettings::maxDistance)
+            ConfigCodecs.field(Codec.BOOL, "enabled", DEFAULTS.enabled).forGetter(KrampusVisitSettings::enabled),
+            ConfigCodecs.field(Codec.BOOL, "season_only", DEFAULTS.seasonOnly)
+                    .forGetter(KrampusVisitSettings::seasonOnly),
+            ConfigCodecs.field(Codec.intRange(-100, 0), "karma_at_most", DEFAULTS.karmaAtMost)
+                    .forGetter(KrampusVisitSettings::karmaAtMost),
+            ConfigCodecs.field(Codec.intRange(20, 72000), "check_ticks", DEFAULTS.checkTicks)
+                    .forGetter(KrampusVisitSettings::checkTicks),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "chance", DEFAULTS.chance)
+                    .forGetter(KrampusVisitSettings::chance),
+            ConfigCodecs.field(Codec.intRange(0, 365), "cooldown_days", DEFAULTS.cooldownDays)
+                    .forGetter(KrampusVisitSettings::cooldownDays),
+            ConfigCodecs.field(Codec.intRange(4, 64), "min_distance", DEFAULTS.minDistance)
+                    .forGetter(KrampusVisitSettings::minDistance),
+            ConfigCodecs.field(Codec.intRange(4, 64), "max_distance", DEFAULTS.maxDistance)
+                    .forGetter(KrampusVisitSettings::maxDistance)
     ).apply(i, KrampusVisitSettings::new));
 
     /**

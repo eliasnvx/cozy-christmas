@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.karma;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -22,16 +23,23 @@ public record KarmaSettings(int decayPerDay, int niceAbove, int naughtyBelow, in
     private static final Codec<Integer> PENALTY = Codec.intRange(Karma.MIN, 0);
 
     public static final Codec<KarmaSettings> CODEC = RecordCodecBuilder.<KarmaSettings>create(i -> i.group(
-            Codec.intRange(0, Karma.MAX).fieldOf("decay_per_day").orElse(DEFAULTS.decayPerDay).forGetter(KarmaSettings::decayPerDay),
-            KARMA.fieldOf("nice_above").orElse(DEFAULTS.niceAbove).forGetter(KarmaSettings::niceAbove),
-            KARMA.fieldOf("naughty_below").orElse(DEFAULTS.naughtyBelow).forGetter(KarmaSettings::naughtyBelow),
-            PENALTY.fieldOf("hurt_protected").orElse(DEFAULTS.hurtProtected).forGetter(KarmaSettings::hurtProtected),
-            PENALTY.fieldOf("kill_protected").orElse(DEFAULTS.killProtected).forGetter(KarmaSettings::killProtected),
-            Codec.intRange(0, 72000).fieldOf("hurt_cooldown_ticks").orElse(DEFAULTS.hurtCooldownTicks).forGetter(KarmaSettings::hurtCooldownTicks),
-            Codec.intRange(0, Karma.MAX).fieldOf("gift_given").orElse(DEFAULTS.giftGiven).forGetter(KarmaSettings::giftGiven),
-            PENALTY.fieldOf("steal_present").orElse(DEFAULTS.stealPresent).forGetter(KarmaSettings::stealPresent),
-            Codec.intRange(0, Karma.MAX).fieldOf("feed_reindeer").orElse(DEFAULTS.feedReindeer).forGetter(KarmaSettings::feedReindeer),
-            Codec.intRange(0, Karma.MAX).fieldOf("return_stolen").orElse(DEFAULTS.returnStolen).forGetter(KarmaSettings::returnStolen)
+            ConfigCodecs.field(Codec.intRange(0, Karma.MAX), "decay_per_day", DEFAULTS.decayPerDay)
+                    .forGetter(KarmaSettings::decayPerDay),
+            ConfigCodecs.field(KARMA, "nice_above", DEFAULTS.niceAbove).forGetter(KarmaSettings::niceAbove),
+            ConfigCodecs.field(KARMA, "naughty_below", DEFAULTS.naughtyBelow).forGetter(KarmaSettings::naughtyBelow),
+            ConfigCodecs.field(PENALTY, "hurt_protected", DEFAULTS.hurtProtected)
+                    .forGetter(KarmaSettings::hurtProtected),
+            ConfigCodecs.field(PENALTY, "kill_protected", DEFAULTS.killProtected)
+                    .forGetter(KarmaSettings::killProtected),
+            ConfigCodecs.field(Codec.intRange(0, 72000), "hurt_cooldown_ticks", DEFAULTS.hurtCooldownTicks)
+                    .forGetter(KarmaSettings::hurtCooldownTicks),
+            ConfigCodecs.field(Codec.intRange(0, Karma.MAX), "gift_given", DEFAULTS.giftGiven)
+                    .forGetter(KarmaSettings::giftGiven),
+            ConfigCodecs.field(PENALTY, "steal_present", DEFAULTS.stealPresent).forGetter(KarmaSettings::stealPresent),
+            ConfigCodecs.field(Codec.intRange(0, Karma.MAX), "feed_reindeer", DEFAULTS.feedReindeer)
+                    .forGetter(KarmaSettings::feedReindeer),
+            ConfigCodecs.field(Codec.intRange(0, Karma.MAX), "return_stolen", DEFAULTS.returnStolen)
+                    .forGetter(KarmaSettings::returnStolen)
     ).apply(i, KarmaSettings::new)).validate(KarmaSettings::validate);
 
     private static DataResult<KarmaSettings> validate(KarmaSettings settings) {

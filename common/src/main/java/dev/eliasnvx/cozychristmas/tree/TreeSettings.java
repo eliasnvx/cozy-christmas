@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.tree;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -17,12 +18,15 @@ public record TreeSettings(boolean seasonOnly, int minOrnaments, int reach, int 
     public static final TreeSettings DEFAULTS = new TreeSettings(true, 6, 5, 24, 3, 3);
 
     public static final Codec<TreeSettings> CODEC = RecordCodecBuilder.<TreeSettings>create(i -> i.group(
-            Codec.BOOL.fieldOf("season_only").orElse(DEFAULTS.seasonOnly).forGetter(TreeSettings::seasonOnly),
-            Codec.intRange(0, 256).fieldOf("min_ornaments").orElse(DEFAULTS.minOrnaments).forGetter(TreeSettings::minOrnaments),
-            Codec.intRange(1, 16).fieldOf("reach").orElse(DEFAULTS.reach).forGetter(TreeSettings::reach),
-            Codec.intRange(2, 64).fieldOf("height").orElse(DEFAULTS.height).forGetter(TreeSettings::height),
-            Codec.intRange(1, 8).fieldOf("present_radius").orElse(DEFAULTS.presentRadius).forGetter(TreeSettings::presentRadius),
-            Codec.intRange(0, 64).fieldOf("max_presents").orElse(DEFAULTS.maxPresents).forGetter(TreeSettings::maxPresents)
+            ConfigCodecs.field(Codec.BOOL, "season_only", DEFAULTS.seasonOnly).forGetter(TreeSettings::seasonOnly),
+            ConfigCodecs.field(Codec.intRange(0, 256), "min_ornaments", DEFAULTS.minOrnaments)
+                    .forGetter(TreeSettings::minOrnaments),
+            ConfigCodecs.field(Codec.intRange(1, 16), "reach", DEFAULTS.reach).forGetter(TreeSettings::reach),
+            ConfigCodecs.field(Codec.intRange(2, 64), "height", DEFAULTS.height).forGetter(TreeSettings::height),
+            ConfigCodecs.field(Codec.intRange(1, 8), "present_radius", DEFAULTS.presentRadius)
+                    .forGetter(TreeSettings::presentRadius),
+            ConfigCodecs.field(Codec.intRange(0, 64), "max_presents", DEFAULTS.maxPresents)
+                    .forGetter(TreeSettings::maxPresents)
     ).apply(i, TreeSettings::new)).validate(TreeSettings::validate);
 
     private static DataResult<TreeSettings> validate(TreeSettings settings) {

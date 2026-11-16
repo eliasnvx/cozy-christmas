@@ -57,6 +57,7 @@ public final class RecipeViewerPages {
         pages.add(page("gingerbread_cookie", stacks(CozyItems.GINGERBREAD_COOKIE.get())));
         pages.add(page("ice_snowball", stacks(CozyItems.ICE_SNOWBALL.get())));
         pages.add(page("krampus_trophies", stacks(CozyItems.KRAMPUS_HORNS.get(), CozyItems.KRAMPUS_CHAIN.get())));
+        pages.removeIf(page -> page.items().isEmpty()); // a data pack may empty a tag: the viewers want items
         return pages;
     }
 
@@ -64,9 +65,11 @@ public final class RecipeViewerPages {
         List<ItemStack> paper = tagged(CozyTags.WRAPPING_PAPER);
         List<ItemStack> gifts = stacks(Items.DIAMOND, CozyItems.GINGERBREAD_COOKIE.get(), CozyItems.POMPOM_HAT.get(),
                 Items.GOLDEN_APPLE, CozyItems.TANGERINE.get(), Items.MUSIC_DISC_CAT);
-        return List.of(
+        List<Wrapping> wrappings = new ArrayList<>(List.of(
                 new Wrapping("gift", gifts, paper, presents()),
-                new Wrapping("prank", tagged(CozyTags.WRAPS_AS_BOOM), paper, presents()));
+                new Wrapping("prank", tagged(CozyTags.WRAPS_AS_BOOM), paper, presents())));
+        wrappings.removeIf(wrapping -> wrapping.gifts().isEmpty() || wrapping.paper().isEmpty());
+        return wrappings;
     }
 
     public static Component title() {

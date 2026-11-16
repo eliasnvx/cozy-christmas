@@ -13,11 +13,14 @@ import dev.eliasnvx.cozychristmas.present.WrappingTableMenu;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyComponents;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -47,8 +50,11 @@ public final class PresentGameTests {
             new GameTestEntry("gift_goes_to_opener_and_thanks_giver", PresentGameTests::giftThanksGiver),
             new GameTestEntry("coal_and_loot_come_out", PresentGameTests::coalAndLoot),
             new GameTestEntry("boom_hurts_but_spares_blocks", PresentGameTests::boomSparesBlocks),
+            new GameTestEntry("boom_spares_items_and_decorations", PresentGameTests::boomSparesItemsAndDecorations),
+            new GameTestEntry("a_decided_present_stacks_with_nothing", PresentGameTests::decidedPresentStacksWithNothing),
             new GameTestEntry("boom_ticks_while_someone_is_near", PresentGameTests::boomTicksNearPlayers),
             new GameTestEntry("wrapping_table_wraps_gifts_and_pranks", PresentGameTests::wrappingTable),
+            new GameTestEntry("snow_presents_land_on_powder_snow", PresentGameTests::snowPresentsOnPowderSnow),
             new GameTestEntry("snow_presents_need_snow_and_room", PresentGameTests::snowPresents));
 
     private static final BlockPos PRESENT = new BlockPos(2, 1, 2);
@@ -233,6 +239,55 @@ public final class PresentGameTests {
         helper.assertBlockPresent(CozyBlocks.PRESENT.get(), inSnowLayer);
         PresentContents contents = helper.getBlockEntity(inSnowLayer, PresentBlockEntity.class).contents();
         helper.assertValueEqual(contents, PresentContents.SURPRISE, "a snow present is an undecided surprise");
+        helper.succeed();
+    }
+
+    /** A prank goes off in your face, not in the loot of the present opened before it or the armor stand by the tree. */
+    public static void boomSparesItemsAndDecorations(GameTestHelper helper) {
+        ServerPlayer opener = TestPlayers.survival(helper, BESIDE);
+        try {
+            Vec3 near = Vec3.atBottomCenterOf(helper.absolutePos(PRESENT)).add(1.0, 0.0, 0.0);
+            ItemEntity diamond = new ItemEntity(helper.getLevel(), near.x, near.y, near.z, new ItemStack(Items.DIAMOND));
+            helper.getLevel().addFreshEntity(diamond);
+            ArmorStand stand = helper.spawn(EntityTypes.ARMOR_STAND, PRESENT.relative(Direction.NORTH));
+            placePresent(helper, PresentDesign.RED, new PresentContents.Surprise(PresentOutcome.BOOM)).open(opener);
+            helper.assertTrue(diamond.isAlive(), "the diamond on the ground survives");
+            helper.assertTrue(stand.isAlive(), "the armor stand survives");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(helper, opener);
+        }
+    }
+
+    /** A decided surprise, broken off as an item, mustn't stack with a known one: stacking would tell loot from coal. */
+    public static void decidedPresentStacksWithNothing(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survival(helper, BESIDE);
+        try {
+            placePresent(helper, PresentDesign.RED, new PresentContents.Surprise(PresentOutcome.LOOT));
+            helper.getLevel().destroyBlock(helper.absolutePos(PRESENT), true, player);
+            ItemStack dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class,
+                            new AABB(helper.absolutePos(PRESENT)).inflate(DROP_RADIUS)).stream()
+                    .map(ItemEntity::getItem).filter(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())).findFirst()
+                    .orElseThrow(() -> new AssertionError("the present drops"));
+            helper.assertValueEqual(dropped.getMaxStackSize(), 1, "a decided present doesn't stack");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(helper, player);
+        }
+    }
+
+    /**
+     * Powder snow is snowy ground too (the decisions say so): presents sit on top of it. It isn't in
+     * {@code #minecraft:blocks_motion_no_leaves}, so the motion heightmap stops in it: the spot handed over is the
+     * powder snow itself. (The test area's barrier roof is in the heightmap's way, so the spot is given directly.)
+     */
+    public static void snowPresentsOnPowderSnow(GameTestHelper helper) {
+        BlockPos column = new BlockPos(6, 0, 6);
+        helper.setBlock(column, Blocks.STONE);
+        helper.setBlock(column.above(), Blocks.POWDER_SNOW);
+        helper.assertTrue(SnowPresents.trySpawnAt(helper.getLevel(), helper.absolutePos(column.above()),
+                helper.getLevel().getRandom(), 0), "a present on powder snow");
+        helper.assertBlockPresent(CozyBlocks.PRESENT.get(), column.above(2));
         helper.succeed();
     }
 

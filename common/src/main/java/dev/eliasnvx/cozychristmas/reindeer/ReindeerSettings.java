@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.reindeer;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -18,16 +19,24 @@ public record ReindeerSettings(FlightMode flight, double flySpeed, double climbS
             0.33, 2, 2, 3);
 
     public static final Codec<ReindeerSettings> CODEC = RecordCodecBuilder.<ReindeerSettings>create(i -> i.group(
-            FlightMode.CODEC.fieldOf("flight").orElse(DEFAULTS.flight).forGetter(ReindeerSettings::flight),
-            Codec.doubleRange(0.0, 0.5).fieldOf("fly_speed").orElse(DEFAULTS.flySpeed).forGetter(ReindeerSettings::flySpeed),
-            Codec.doubleRange(0.0, 1.0).fieldOf("climb_speed").orElse(DEFAULTS.climbSpeed).forGetter(ReindeerSettings::climbSpeed),
-            Codec.doubleRange(1.0, 1024.0).fieldOf("health").orElse(DEFAULTS.health).forGetter(ReindeerSettings::health),
-            Codec.doubleRange(0.0, 1.0).fieldOf("speed").orElse(DEFAULTS.speed).forGetter(ReindeerSettings::speed),
-            Codec.doubleRange(0.0, 2.0).fieldOf("jump_strength").orElse(DEFAULTS.jumpStrength).forGetter(ReindeerSettings::jumpStrength),
-            Codec.doubleRange(0.0, 1.0).fieldOf("tame_chance").orElse(DEFAULTS.tameChance).forGetter(ReindeerSettings::tameChance),
-            Codec.intRange(0, 1000).fieldOf("spawn_weight").orElse(DEFAULTS.spawnWeight).forGetter(ReindeerSettings::spawnWeight),
-            Codec.intRange(1, 16).fieldOf("min_group").orElse(DEFAULTS.minGroup).forGetter(ReindeerSettings::minGroup),
-            Codec.intRange(1, 16).fieldOf("max_group").orElse(DEFAULTS.maxGroup).forGetter(ReindeerSettings::maxGroup)
+            ConfigCodecs.field(FlightMode.CODEC, "flight", DEFAULTS.flight).forGetter(ReindeerSettings::flight),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 0.5), "fly_speed", DEFAULTS.flySpeed)
+                    .forGetter(ReindeerSettings::flySpeed),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "climb_speed", DEFAULTS.climbSpeed)
+                    .forGetter(ReindeerSettings::climbSpeed),
+            ConfigCodecs.field(Codec.doubleRange(1.0, 1024.0), "health", DEFAULTS.health)
+                    .forGetter(ReindeerSettings::health),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "speed", DEFAULTS.speed).forGetter(ReindeerSettings::speed),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 2.0), "jump_strength", DEFAULTS.jumpStrength)
+                    .forGetter(ReindeerSettings::jumpStrength),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "tame_chance", DEFAULTS.tameChance)
+                    .forGetter(ReindeerSettings::tameChance),
+            ConfigCodecs.field(Codec.intRange(0, 1000), "spawn_weight", DEFAULTS.spawnWeight)
+                    .forGetter(ReindeerSettings::spawnWeight),
+            ConfigCodecs.field(Codec.intRange(1, 16), "min_group", DEFAULTS.minGroup)
+                    .forGetter(ReindeerSettings::minGroup),
+            ConfigCodecs.field(Codec.intRange(1, 16), "max_group", DEFAULTS.maxGroup)
+                    .forGetter(ReindeerSettings::maxGroup)
     ).apply(i, ReindeerSettings::new)).validate(ReindeerSettings::validate);
 
     private static DataResult<ReindeerSettings> validate(ReindeerSettings settings) {

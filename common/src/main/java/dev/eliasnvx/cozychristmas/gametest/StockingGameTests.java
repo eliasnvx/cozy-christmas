@@ -41,6 +41,7 @@ public final class StockingGameTests {
             new GameTestEntry("stocking_fills_by_karma_once_a_morning", StockingGameTests::fillsByKarmaOnceAMorning),
             new GameTestEntry("stocking_needs_a_fireplace_and_the_season", StockingGameTests::needsAFireplaceAndTheSeason),
             new GameTestEntry("only_the_owner_empties_a_stocking", StockingGameTests::onlyTheOwnerEmptiesIt),
+            new GameTestEntry("only_the_owner_takes_a_stocking_down", StockingGameTests::onlyTheOwnerTakesItDown),
             new GameTestEntry("taking_a_stocking_down_drops_it_and_its_contents", StockingGameTests::takingItDownDrops),
             new GameTestEntry("fireplace_lights_and_goes_out", StockingGameTests::fireplaceLightsAndGoesOut));
 
@@ -129,6 +130,23 @@ public final class StockingGameTests {
             helper.succeed();
         } finally {
             ChristmasSeason.setClock(Clock.systemDefaultZone());
+            TestPlayers.remove(helper, owner);
+            TestPlayers.remove(helper, other);
+        }
+    }
+
+    /** Someone else can't just break the stocking and keep what's inside: only its owner (or creative) takes it down. */
+    public static void onlyTheOwnerTakesItDown(GameTestHelper helper) {
+        ServerPlayer owner = TestPlayers.survival(helper, PLAYER);
+        ServerPlayer other = TestPlayers.survival(helper, OTHER_PLAYER);
+        try {
+            hang(helper, FIREPLACE, STOCKING, owner);
+            BlockState state = helper.getBlockState(STOCKING);
+            BlockPos pos = helper.absolutePos(STOCKING);
+            helper.assertValueEqual(state.getDestroyProgress(other, helper.getLevel(), pos), 0.0F, "another player can't break it");
+            helper.assertTrue(state.getDestroyProgress(owner, helper.getLevel(), pos) > 0.0F, "its owner can");
+            helper.succeed();
+        } finally {
             TestPlayers.remove(helper, owner);
             TestPlayers.remove(helper, other);
         }

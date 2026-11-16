@@ -9,6 +9,7 @@ import dev.eliasnvx.cozychristmas.workshop.WorkshopAlarm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -138,6 +139,10 @@ public class PresentBlockEntity extends BlockEntity {
     protected void collectImplicitComponents(DataComponentMap.Builder components) {
         super.collectImplicitComponents(components);
         components.set(CozyComponents.PRESENT_CONTENTS.get(), contents);
+        if (contents instanceof PresentContents.Surprise surprise && surprise.decided().isPresent()) {
+            // decided ones don't stack: stacking with a known one would tell loot from coal before opening
+            components.set(DataComponents.MAX_STACK_SIZE, 1);
+        }
     }
 
     @Override

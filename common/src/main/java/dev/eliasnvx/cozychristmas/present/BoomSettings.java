@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.present;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
@@ -17,11 +18,12 @@ public record BoomSettings(float minDamage, float maxDamage, double radius, floa
     private static final Codec<Float> DAMAGE = Codec.floatRange(0.0F, 100.0F);
 
     public static final Codec<BoomSettings> CODEC = RecordCodecBuilder.<BoomSettings>create(i -> i.group(
-            DAMAGE.fieldOf("min_damage").orElse(DEFAULTS.minDamage).forGetter(BoomSettings::minDamage),
-            DAMAGE.fieldOf("max_damage").orElse(DEFAULTS.maxDamage).forGetter(BoomSettings::maxDamage),
-            Codec.doubleRange(1.0, 8.0).fieldOf("radius").orElse(DEFAULTS.radius).forGetter(BoomSettings::radius),
-            Codec.floatRange(0.0F, 4.0F).fieldOf("knockback").orElse(DEFAULTS.knockback).forGetter(BoomSettings::knockback),
-            Codec.BOOL.fieldOf("breaks_blocks").orElse(DEFAULTS.breaksBlocks).forGetter(BoomSettings::breaksBlocks)
+            ConfigCodecs.field(DAMAGE, "min_damage", DEFAULTS.minDamage).forGetter(BoomSettings::minDamage),
+            ConfigCodecs.field(DAMAGE, "max_damage", DEFAULTS.maxDamage).forGetter(BoomSettings::maxDamage),
+            ConfigCodecs.field(Codec.doubleRange(1.0, 8.0), "radius", DEFAULTS.radius).forGetter(BoomSettings::radius),
+            ConfigCodecs.field(Codec.floatRange(0.0F, 4.0F), "knockback", DEFAULTS.knockback)
+                    .forGetter(BoomSettings::knockback),
+            ConfigCodecs.field(Codec.BOOL, "breaks_blocks", DEFAULTS.breaksBlocks).forGetter(BoomSettings::breaksBlocks)
     ).apply(i, BoomSettings::new)).validate(BoomSettings::validate);
 
     private static DataResult<BoomSettings> validate(BoomSettings settings) {

@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.goblin;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -16,13 +17,19 @@ public record PresentGoblinSettings(double health, double attackDamage, double s
     public static final PresentGoblinSettings DEFAULTS = new PresentGoblinSettings(14.0, 2.0, 0.32, true, 6, 1, 2);
 
     public static final Codec<PresentGoblinSettings> CODEC = RecordCodecBuilder.<PresentGoblinSettings>create(i -> i.group(
-            Codec.doubleRange(1.0, 1024.0).fieldOf("health").orElse(DEFAULTS.health).forGetter(PresentGoblinSettings::health),
-            Codec.doubleRange(0.0, 100.0).fieldOf("attack_damage").orElse(DEFAULTS.attackDamage).forGetter(PresentGoblinSettings::attackDamage),
-            Codec.doubleRange(0.0, 1.0).fieldOf("speed").orElse(DEFAULTS.speed).forGetter(PresentGoblinSettings::speed),
-            Codec.BOOL.fieldOf("steals").orElse(DEFAULTS.steals).forGetter(PresentGoblinSettings::steals),
-            Codec.intRange(0, 1000).fieldOf("spawn_weight").orElse(DEFAULTS.spawnWeight).forGetter(PresentGoblinSettings::spawnWeight),
-            Codec.intRange(1, 16).fieldOf("min_group").orElse(DEFAULTS.minGroup).forGetter(PresentGoblinSettings::minGroup),
-            Codec.intRange(1, 16).fieldOf("max_group").orElse(DEFAULTS.maxGroup).forGetter(PresentGoblinSettings::maxGroup)
+            ConfigCodecs.field(Codec.doubleRange(1.0, 1024.0), "health", DEFAULTS.health)
+                    .forGetter(PresentGoblinSettings::health),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 100.0), "attack_damage", DEFAULTS.attackDamage)
+                    .forGetter(PresentGoblinSettings::attackDamage),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "speed", DEFAULTS.speed)
+                    .forGetter(PresentGoblinSettings::speed),
+            ConfigCodecs.field(Codec.BOOL, "steals", DEFAULTS.steals).forGetter(PresentGoblinSettings::steals),
+            ConfigCodecs.field(Codec.intRange(0, 1000), "spawn_weight", DEFAULTS.spawnWeight)
+                    .forGetter(PresentGoblinSettings::spawnWeight),
+            ConfigCodecs.field(Codec.intRange(1, 16), "min_group", DEFAULTS.minGroup)
+                    .forGetter(PresentGoblinSettings::minGroup),
+            ConfigCodecs.field(Codec.intRange(1, 16), "max_group", DEFAULTS.maxGroup)
+                    .forGetter(PresentGoblinSettings::maxGroup)
     ).apply(i, PresentGoblinSettings::new)).validate(PresentGoblinSettings::validate);
 
     private static DataResult<PresentGoblinSettings> validate(PresentGoblinSettings settings) {

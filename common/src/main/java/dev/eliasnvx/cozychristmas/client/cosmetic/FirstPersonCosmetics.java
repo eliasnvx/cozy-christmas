@@ -60,7 +60,7 @@ public final class FirstPersonCosmetics {
                 continue;
             }
             ModelPart part = roots[arms].getChild(side);
-            part.loadPose(arm.storePose());
+            copyPose(arm, part);
             collector.order(BASE_ORDER).submitModelPart(part, pose, look.base(), light, OverlayTexture.NO_OVERLAY, null,
                     ARGB.opaque(look.baseColor(CosmeticRenderData.dyeOf(stack))));
             if (look.overlay() != null) {
@@ -76,5 +76,18 @@ public final class FirstPersonCosmetics {
             BAKED.put(shape, new ModelPart[]{models.bakeLayer(shape.layer(false, false)), models.bakeLayer(shape.layer(false, true))});
         }
         bakedFrom = models;
+    }
+
+    /** The arm's pose onto the piece, field by field: storePose/loadPose would make a PartPose every frame. */
+    private static void copyPose(ModelPart from, ModelPart to) {
+        to.x = from.x;
+        to.y = from.y;
+        to.z = from.z;
+        to.xRot = from.xRot;
+        to.yRot = from.yRot;
+        to.zRot = from.zRot;
+        to.xScale = from.xScale;
+        to.yScale = from.yScale;
+        to.zScale = from.zScale;
     }
 }

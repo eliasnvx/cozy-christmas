@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.present;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -15,12 +16,17 @@ public record SnowPresentSettings(boolean enabled, int intervalTicks, double cha
     public static final SnowPresentSettings DEFAULTS = new SnowPresentSettings(true, 1200, 0.08, 16, 40, 32);
 
     public static final Codec<SnowPresentSettings> CODEC = RecordCodecBuilder.<SnowPresentSettings>create(i -> i.group(
-            Codec.BOOL.fieldOf("enabled").orElse(DEFAULTS.enabled).forGetter(SnowPresentSettings::enabled),
-            Codec.intRange(20, 72000).fieldOf("interval_ticks").orElse(DEFAULTS.intervalTicks).forGetter(SnowPresentSettings::intervalTicks),
-            Codec.doubleRange(0.0, 1.0).fieldOf("chance").orElse(DEFAULTS.chance).forGetter(SnowPresentSettings::chance),
-            Codec.intRange(0, 128).fieldOf("min_distance").orElse(DEFAULTS.minDistance).forGetter(SnowPresentSettings::minDistance),
-            Codec.intRange(1, 128).fieldOf("max_distance").orElse(DEFAULTS.maxDistance).forGetter(SnowPresentSettings::maxDistance),
-            Codec.intRange(0, 128).fieldOf("spacing").orElse(DEFAULTS.spacing).forGetter(SnowPresentSettings::spacing)
+            ConfigCodecs.field(Codec.BOOL, "enabled", DEFAULTS.enabled).forGetter(SnowPresentSettings::enabled),
+            ConfigCodecs.field(Codec.intRange(20, 72000), "interval_ticks", DEFAULTS.intervalTicks)
+                    .forGetter(SnowPresentSettings::intervalTicks),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 1.0), "chance", DEFAULTS.chance)
+                    .forGetter(SnowPresentSettings::chance),
+            ConfigCodecs.field(Codec.intRange(0, 128), "min_distance", DEFAULTS.minDistance)
+                    .forGetter(SnowPresentSettings::minDistance),
+            ConfigCodecs.field(Codec.intRange(1, 128), "max_distance", DEFAULTS.maxDistance)
+                    .forGetter(SnowPresentSettings::maxDistance),
+            ConfigCodecs.field(Codec.intRange(0, 128), "spacing", DEFAULTS.spacing)
+                    .forGetter(SnowPresentSettings::spacing)
     ).apply(i, SnowPresentSettings::new)).validate(SnowPresentSettings::validate);
 
     private static DataResult<SnowPresentSettings> validate(SnowPresentSettings settings) {

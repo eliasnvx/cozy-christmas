@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.present;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.eliasnvx.cozychristmas.karma.KarmaTier;
 
@@ -21,12 +22,13 @@ public record PresentSettings(PresentOdds nice, PresentOdds neutral, PresentOdds
             SnowPresentSettings.DEFAULTS);
 
     public static final Codec<PresentSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            PresentOdds.CODEC.fieldOf("nice").orElse(DEFAULTS.nice).forGetter(PresentSettings::nice),
-            PresentOdds.CODEC.fieldOf("neutral").orElse(DEFAULTS.neutral).forGetter(PresentSettings::neutral),
-            PresentOdds.CODEC.fieldOf("naughty").orElse(DEFAULTS.naughty).forGetter(PresentSettings::naughty),
-            Codec.doubleRange(0.0, 16.0).fieldOf("warning_radius").orElse(DEFAULTS.warningRadius).forGetter(PresentSettings::warningRadius),
-            BoomSettings.CODEC.fieldOf("boom").orElse(DEFAULTS.boom).forGetter(PresentSettings::boom),
-            SnowPresentSettings.CODEC.fieldOf("snow").orElse(DEFAULTS.snow).forGetter(PresentSettings::snow)
+            ConfigCodecs.field(PresentOdds.CODEC, "nice", DEFAULTS.nice).forGetter(PresentSettings::nice),
+            ConfigCodecs.field(PresentOdds.CODEC, "neutral", DEFAULTS.neutral).forGetter(PresentSettings::neutral),
+            ConfigCodecs.field(PresentOdds.CODEC, "naughty", DEFAULTS.naughty).forGetter(PresentSettings::naughty),
+            ConfigCodecs.field(Codec.doubleRange(0.0, 16.0), "warning_radius", DEFAULTS.warningRadius)
+                    .forGetter(PresentSettings::warningRadius),
+            ConfigCodecs.field(BoomSettings.CODEC, "boom", DEFAULTS.boom).forGetter(PresentSettings::boom),
+            ConfigCodecs.field(SnowPresentSettings.CODEC, "snow", DEFAULTS.snow).forGetter(PresentSettings::snow)
     ).apply(i, PresentSettings::new));
 
     public PresentOdds odds(KarmaTier tier) {

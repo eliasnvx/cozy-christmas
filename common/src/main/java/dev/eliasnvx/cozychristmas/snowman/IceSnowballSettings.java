@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.snowman;
 
 import com.mojang.serialization.Codec;
+import dev.eliasnvx.cozychristmas.config.ConfigCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
@@ -15,9 +16,13 @@ public record IceSnowballSettings(double damage, int slownessTicks, int slowness
     public static final IceSnowballSettings DEFAULTS = new IceSnowballSettings(2.0, 80, 0, 60);
 
     public static final Codec<IceSnowballSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Codec.doubleRange(0.0, 100.0).fieldOf("damage").orElse(DEFAULTS.damage).forGetter(IceSnowballSettings::damage),
-            Codec.intRange(0, 1200).fieldOf("slowness_ticks").orElse(DEFAULTS.slownessTicks).forGetter(IceSnowballSettings::slownessTicks),
-            Codec.intRange(0, 4).fieldOf("slowness_amplifier").orElse(DEFAULTS.slownessAmplifier).forGetter(IceSnowballSettings::slownessAmplifier),
-            Codec.intRange(0, 1000).fieldOf("chill_ticks").orElse(DEFAULTS.chillTicks).forGetter(IceSnowballSettings::chillTicks)
+            ConfigCodecs.field(Codec.doubleRange(0.0, 100.0), "damage", DEFAULTS.damage)
+                    .forGetter(IceSnowballSettings::damage),
+            ConfigCodecs.field(Codec.intRange(0, 1200), "slowness_ticks", DEFAULTS.slownessTicks)
+                    .forGetter(IceSnowballSettings::slownessTicks),
+            ConfigCodecs.field(Codec.intRange(0, 4), "slowness_amplifier", DEFAULTS.slownessAmplifier)
+                    .forGetter(IceSnowballSettings::slownessAmplifier),
+            ConfigCodecs.field(Codec.intRange(0, 1000), "chill_ticks", DEFAULTS.chillTicks)
+                    .forGetter(IceSnowballSettings::chillTicks)
     ).apply(i, IceSnowballSettings::new));
 }

@@ -1,6 +1,7 @@
 package dev.eliasnvx.cozychristmas.compat.rei;
 
 import dev.eliasnvx.cozychristmas.CozyChristmas;
+import dev.eliasnvx.cozychristmas.client.cosmetic.CosmeticsPanel;
 import dev.eliasnvx.cozychristmas.compat.RecipeViewerPages;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import me.shedaniel.math.Point;
@@ -12,14 +13,20 @@ import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
+import me.shedaniel.rei.api.client.registry.screen.ExclusionZones;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.DisplaySerializer;
 import me.shedaniel.rei.api.common.display.basic.BasicDisplay;
 import me.shedaniel.rei.api.common.util.EntryIngredients;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import me.shedaniel.rei.plugin.client.BuiltinClientPlugin;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +43,18 @@ public class CozyReiPlugin implements REIClientPlugin {
     public void registerCategories(CategoryRegistry registry) {
         registry.add(new WrappingCategory());
         registry.addWorkstations(WRAPPING, EntryStacks.of(CozyBlocks.WRAPPING_TABLE_ITEM.get()));
+    }
+
+    /** The cosmetics panel sits right of the inventory, where REI puts its item list: REI keeps clear of it. */
+    @Override
+    public void registerExclusionZones(ExclusionZones zones) {
+        zones.register(InventoryScreen.class, CozyReiPlugin::panelArea);
+        zones.register(CreativeModeInventoryScreen.class, CozyReiPlugin::panelArea);
+    }
+
+    private static Collection<Rectangle> panelArea(AbstractContainerScreen<?> screen) {
+        Rect2i area = CosmeticsPanel.area(screen);
+        return area == null ? List.of() : List.of(new Rectangle(area.getX(), area.getY(), area.getWidth(), area.getHeight()));
     }
 
     @Override

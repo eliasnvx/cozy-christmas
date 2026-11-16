@@ -9,7 +9,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 /**
@@ -20,10 +22,11 @@ import java.util.WeakHashMap;
 public final class KarmaRules {
 
     /**
-     * Game time each victim was last charged for. The hurt event fires on every hit attempt, also during invulnerability
-     * frames, so without it a fast clicker would pay many times for one blow. Server thread only.
+     * Game time each player was last charged for each victim. The hurt event fires on every hit attempt, also during
+     * invulnerability frames, so without it a fast clicker would pay many times for one blow; per player, so two
+     * players taking turns both pay. Server thread only.
      */
-    private static final Map<LivingEntity, Long> LAST_CHARGED = new WeakHashMap<>();
+    private static final Map<LivingEntity, Map<UUID, Long>> LAST_CHARGED = new WeakHashMap<>();
 
     private KarmaRules() {
     }
@@ -35,7 +38,7 @@ public final class KarmaRules {
 
     private static EventResult onHurt(LivingEntity victim, DamageSource source, float amount) {
         ServerPlayer player = culprit(victim, source);
-        if (player != null && amount > 0 && takeCharge(victim)) {
+        if (player != null && amount > 0 && takeCharge(victim, player)) {
             KarmaManager.add(player, CozyConfig.common().karma().hurtProtected());
         }
         return EventResult.pass();
@@ -58,13 +61,14 @@ public final class KarmaRules {
         return source.getEntity() instanceof ServerPlayer player ? player : null;
     }
 
-    private static boolean takeCharge(LivingEntity victim) {
+    private static boolean takeCharge(LivingEntity victim, ServerPlayer player) {
         long now = victim.level().getGameTime();
-        Long last = LAST_CHARGED.get(victim);
+        Map<UUID, Long> charged = LAST_CHARGED.computeIfAbsent(victim, v -> new HashMap<>());
+        Long last = charged.get(player.getUUID());
         if (last != null && now - last < CozyConfig.common().karma().hurtCooldownTicks()) {
             return false;
         }
-        LAST_CHARGED.put(victim, now);
+        charged.put(player.getUUID(), now);
         return true;
     }
 }

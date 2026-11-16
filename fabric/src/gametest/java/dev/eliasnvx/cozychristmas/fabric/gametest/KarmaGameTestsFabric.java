@@ -38,6 +38,11 @@ public final class KarmaGameTestsFabric {
     }
 
     @GameTest
+    public void twoPlayersBothPay(GameTestHelper helper) {
+        KarmaGameTests.twoPlayersBothPay(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

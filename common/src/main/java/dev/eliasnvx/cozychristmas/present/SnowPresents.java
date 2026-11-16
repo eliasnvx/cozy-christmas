@@ -65,6 +65,10 @@ public final class SnowPresents {
      * heightmap gives it) if that's in the snow and no present is within {@code spacing}.
      */
     public static boolean trySpawnAt(ServerLevel level, BlockPos pos, RandomSource random, int spacing) {
+        BlockState there = level.getBlockState(pos);
+        if (there.is(CozyTags.SNOW_PRESENT_GROUND) && !there.is(Blocks.SNOW)) {
+            pos = pos.above(); // powder snow doesn't block motion: the heightmap stops in it, the present goes on top
+        }
         if (!isSnowySpot(level, pos) || hasPresentNear(level, pos, spacing)) {
             return false;
         }
