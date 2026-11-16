@@ -1,0 +1,43 @@
+{
+  "variants": {
+    "face=ceiling,facing=north": {
+      "model": "cozychristmas:block/red_ornament_ceiling"
+    },
+    "face=floor,facing=north": {
+      "model": "cozychristmas:block/red_ornament_floor"
+    },
+    "face=wall,facing=north": {
+      "model": "cozychristmas:block/red_ornament_wall"
+    },
+    "face=ceiling,facing=east": {
+      "model": "cozychristmas:block/red_ornament_ceiling"
+    },
+    "face=floor,facing=east": {
+      "model": "cozychristmas:block/red_ornament_floor"
+    },
+    "face=wall,facing=east": {
+      "model": "cozychristmas:block/red_ornament_wall",
+      "y": 90
+    },
+    "face=ceiling,facing=south": {
+      "model": "cozychristmas:block/red_ornament_ceiling"
+    },
+    "face=floor,facing=south": {
+      "model": "cozychristmas:block/red_ornament_floor"
+    },
+    "face=wall,facing=south": {
+      "model": "cozychristmas:block/red_ornament_wall",
+      "y": 180
+    },
+    "face=ceiling,facing=west": {
+      "model": "cozychristmas:block/red_ornament_ceiling"
+    },
+    "face=floor,facing=west": {
+      "model": "cozychristmas:block/red_ornament_floor"
+    },
+    "face=wall,facing=west": {
+      "model": "cozychristmas:block/red_ornament_wall",
+      "y": 270
+    }
+  }
+}

@@ -36,6 +36,12 @@ public final class CozyTags {
     /** Presents appear in December on top of these (and in thin snow layers on solid ground). */
     public static final TagKey<Block> SNOW_PRESENT_GROUND = TagKey.create(Registries.BLOCK, CozyChristmas.id("snow_present_ground"));
 
+    /** A Christmas tree is a column of these under its star (leaves and logs). */
+    public static final TagKey<Block> TREE_PARTS = TagKey.create(Registries.BLOCK, CozyChristmas.id("tree_parts"));
+
+    /** Counted as a tree's ornaments around its star. */
+    public static final TagKey<Block> TREE_ORNAMENTS = TagKey.create(Registries.BLOCK, CozyChristmas.id("tree_ornaments"));
+
     /** Elves work at these: crafting table, wrapping table and other workbenches. */
     public static final TagKey<Block> ELF_WORKSTATIONS = TagKey.create(Registries.BLOCK, CozyChristmas.id("elf_workstations"));
 

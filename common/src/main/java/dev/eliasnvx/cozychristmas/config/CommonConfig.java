@@ -12,6 +12,7 @@ import dev.eliasnvx.cozychristmas.reindeer.ReindeerSettings;
 import dev.eliasnvx.cozychristmas.season.SeasonSettings;
 import dev.eliasnvx.cozychristmas.snowman.EvilSnowmanSettings;
 import dev.eliasnvx.cozychristmas.stocking.StockingSettings;
+import dev.eliasnvx.cozychristmas.tree.TreeSettings;
 import dev.eliasnvx.cozychristmas.workshop.WorkshopSettings;
 
 /**
@@ -21,12 +22,12 @@ import dev.eliasnvx.cozychristmas.workshop.WorkshopSettings;
 public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSettings presents,
                            ToastySettings toastySet, WorkshopSettings workshop, ReindeerSettings reindeer,
                            GoblinSettings goblins, StockingSettings stockings, EvilSnowmanSettings evilSnowman,
-                           KrampusSettings krampus, FoodSettings food) {
+                           KrampusSettings krampus, FoodSettings food, TreeSettings tree) {
 
     public static final CommonConfig DEFAULTS = new CommonConfig(SeasonSettings.DEFAULTS, KarmaSettings.DEFAULTS,
             PresentSettings.DEFAULTS, ToastySettings.DEFAULTS, WorkshopSettings.DEFAULTS, ReindeerSettings.DEFAULTS,
             GoblinSettings.DEFAULTS, StockingSettings.DEFAULTS, EvilSnowmanSettings.DEFAULTS,
-            KrampusSettings.DEFAULTS, FoodSettings.DEFAULTS);
+            KrampusSettings.DEFAULTS, FoodSettings.DEFAULTS, TreeSettings.DEFAULTS);
 
     public static final Codec<CommonConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
             SeasonSettings.CODEC.fieldOf("season").orElse(DEFAULTS.season).forGetter(CommonConfig::season),
@@ -39,6 +40,7 @@ public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSe
             StockingSettings.CODEC.fieldOf("stockings").orElse(DEFAULTS.stockings).forGetter(CommonConfig::stockings),
             EvilSnowmanSettings.CODEC.fieldOf("evil_snowman").orElse(DEFAULTS.evilSnowman).forGetter(CommonConfig::evilSnowman),
             KrampusSettings.CODEC.fieldOf("krampus").orElse(DEFAULTS.krampus).forGetter(CommonConfig::krampus),
-            FoodSettings.CODEC.fieldOf("food").orElse(DEFAULTS.food).forGetter(CommonConfig::food)
+            FoodSettings.CODEC.fieldOf("food").orElse(DEFAULTS.food).forGetter(CommonConfig::food),
+            TreeSettings.CODEC.fieldOf("tree").orElse(DEFAULTS.tree).forGetter(CommonConfig::tree)
     ).apply(i, CommonConfig::new));
 }

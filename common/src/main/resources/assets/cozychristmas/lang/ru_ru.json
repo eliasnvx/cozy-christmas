@@ -130,5 +130,19 @@
   "subtitles.cozychristmas.entity.krampus.sack": "Крампус хватает в мешок",
   "subtitles.cozychristmas.entity.krampus.sack_open": "Мешок разрывается",
   "subtitles.cozychristmas.entity.krampus.roar": "Крампус ревёт",
-  "subtitles.cozychristmas.entity.krampus.chains": "Звенят цепи"
+  "subtitles.cozychristmas.entity.krampus.chains": "Звенят цепи",
+  "block.cozychristmas.tree_star": "Звезда на ёлку",
+  "block.cozychristmas.red_ornament": "Красный шар",
+  "block.cozychristmas.gold_ornament": "Золотой шар",
+  "block.cozychristmas.silver_ornament": "Серебряный шар",
+  "block.cozychristmas.blue_ornament": "Синий шар",
+  "block.cozychristmas.green_ornament": "Зелёный шар",
+  "block.cozychristmas.purple_ornament": "Фиолетовый шар",
+  "tooltip.cozychristmas.tree_star": "Поставь на верхушку наряженной ёлки: рождественским утром под ней будет ждать подарок",
+  "tooltip.cozychristmas.ornament": "Вешается на листву. Ёлке под звездой нужно несколько штук",
+  "message.cozychristmas.tree.no_tree": "Звезде нужна ёлка под ней: листва или ствол",
+  "message.cozychristmas.tree.bare": "Нарядите ёлку: шаров %s из %s",
+  "message.cozychristmas.tree.ready": "Красивая ёлка! Каждое утро под ней будет ждать подарок",
+  "message.cozychristmas.tree.ready_off_season": "Красивая ёлка! Подарки под ней появятся в рождественский сезон",
+  "message.cozychristmas.tree.not_yours": "Это ёлка игрока %s"
 }

@@ -91,4 +91,18 @@ class KarmaTest {
         assertEquals(30, filled.plusGift(3, 9, 1).stockingDay());
         assertEquals(30, filled.withSantaGift(9, 1).stockingDay());
     }
+
+    @Test
+    void treeDayIsKeptThroughEveryChange() {
+        Karma decorated = new Karma(40, 7, 5).withStocking(30).withTree(31);
+        assertEquals(31, decorated.treeDay());
+        assertEquals(30, decorated.stockingDay(), "a tree's present leaves the stocking alone");
+        assertEquals(31, decorated.settle(20, 1).treeDay());
+        assertEquals(31, decorated.plus(-10, 9, 1).treeDay());
+        assertEquals(31, decorated.plusGift(3, 9, 1).treeDay());
+        assertEquals(31, decorated.withSantaGift(9, 1).treeDay());
+        assertEquals(31, decorated.withStocking(32).treeDay());
+        assertEquals(31, decorated.withKrampusVisit(9).treeDay());
+        assertEquals(Karma.NO_GIFT, new Karma(0, 0).treeDay());
+    }
 }

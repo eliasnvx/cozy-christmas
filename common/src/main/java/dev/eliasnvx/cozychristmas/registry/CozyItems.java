@@ -10,6 +10,7 @@ import dev.eliasnvx.cozychristmas.food.TangerineItem;
 import dev.eliasnvx.cozychristmas.present.PresentBlock;
 import dev.eliasnvx.cozychristmas.krampus.KrampusChainItem;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
+import dev.eliasnvx.cozychristmas.tree.OrnamentColor;
 import dev.eliasnvx.cozychristmas.snowman.IceSnowballItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -142,6 +143,10 @@ public final class CozyItems {
                 output.accept(CozyBlocks.WRAPPING_TABLE_ITEM.get());
                 output.accept(CozyBlocks.FIREPLACE_ITEM.get());
                 output.accept(CozyBlocks.STOCKING_ITEM.get());
+                output.accept(CozyBlocks.TREE_STAR_ITEM.get());
+                for (OrnamentColor color : OrnamentColor.values()) {
+                    output.accept(CozyBlocks.ORNAMENT_ITEMS.get(color).get());
+                }
                 for (PresentDesign design : PresentDesign.values()) {
                     output.accept(present(design));
                 }

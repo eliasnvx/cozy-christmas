@@ -12,6 +12,10 @@ import dev.eliasnvx.cozychristmas.present.WrappingTableBlock;
 import dev.eliasnvx.cozychristmas.stocking.FireplaceBlock;
 import dev.eliasnvx.cozychristmas.stocking.StockingBlock;
 import dev.eliasnvx.cozychristmas.stocking.StockingBlockEntity;
+import dev.eliasnvx.cozychristmas.tree.OrnamentBlock;
+import dev.eliasnvx.cozychristmas.tree.OrnamentColor;
+import dev.eliasnvx.cozychristmas.tree.TreeStarBlock;
+import dev.eliasnvx.cozychristmas.tree.TreeStarBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
@@ -21,7 +25,11 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -64,6 +72,33 @@ public final class CozyBlocks {
             props -> new BlockItem(STOCKING.get(), props.useBlockDescriptionPrefix().stacksTo(16)));
     public static final RegistrySupplier<BlockEntityType<StockingBlockEntity>> STOCKING_ENTITY = BLOCK_ENTITIES.register("stocking",
             () -> new BlockEntityType<>(StockingBlockEntity::new, Set.of(STOCKING.get())));
+
+    /** Goes on top of a Christmas tree: a present under it every morning in the season. */
+    public static final RegistrySupplier<Block> TREE_STAR = block("tree_star", TreeStarBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.GOLD).strength(0.3F).sound(SoundType.METAL).noCollision()
+                    .noOcclusion().lightLevel(state -> TreeStarBlock.LIGHT).pushReaction(PushReaction.POPPED));
+    public static final RegistrySupplier<Item> TREE_STAR_ITEM = CozyItems.register("tree_star",
+            props -> new BlockItem(TREE_STAR.get(), props.useBlockDescriptionPrefix().stacksTo(16)));
+    public static final RegistrySupplier<BlockEntityType<TreeStarBlockEntity>> TREE_STAR_ENTITY = BLOCK_ENTITIES.register("tree_star",
+            () -> new BlockEntityType<>(TreeStarBlockEntity::new, Set.of(TREE_STAR.get())));
+
+    /** Glass ornaments, one block (and item) per color. */
+    public static final Map<OrnamentColor, RegistrySupplier<Block>> ORNAMENTS;
+    public static final Map<OrnamentColor, RegistrySupplier<Item>> ORNAMENT_ITEMS;
+
+    static {
+        Map<OrnamentColor, RegistrySupplier<Block>> blocks = new EnumMap<>(OrnamentColor.class);
+        Map<OrnamentColor, RegistrySupplier<Item>> items = new EnumMap<>(OrnamentColor.class);
+        for (OrnamentColor color : OrnamentColor.values()) {
+            RegistrySupplier<Block> block = block(color.blockName(), props -> new OrnamentBlock(color, props),
+                    BlockBehaviour.Properties.of().mapColor(color.mapColor()).strength(0.1F).sound(SoundType.GLASS)
+                            .noCollision().noOcclusion().pushReaction(PushReaction.POPPED));
+            blocks.put(color, block);
+            items.put(color, CozyItems.register(color.blockName(), props -> new BlockItem(block.get(), props.useBlockDescriptionPrefix())));
+        }
+        ORNAMENTS = Collections.unmodifiableMap(blocks);
+        ORNAMENT_ITEMS = Collections.unmodifiableMap(items);
+    }
 
     private CozyBlocks() {
     }

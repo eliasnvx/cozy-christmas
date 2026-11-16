@@ -49,6 +49,11 @@ Build a **fireplace** (bricks round a campfire; light it with flint and steel, p
 
 Blocks that count as a fireplace are the tag `#cozychristmas:fireplaces`; items that hang as a stocking are `#cozychristmas:hangs_as_stocking`.
 
+## The Christmas tree
+Grow or build a tree (leaves on a trunk), hang **ornaments** on its branches (glass balls in six colors; they hold on to leaves from below or from the side) and put the **tree star** on top. Once it has six ornaments, a present waits under it every Christmas-season morning, for whoever put the star up: what's inside follows their karma. One tree per player a morning, and no more than three unopened presents pile up. Click the star to see how your tree is doing. The tree in the plaza of Santa's workshop is decorated the same way.
+
+What counts as part of a tree is the block tag `#cozychristmas:tree_parts` (leaves and logs), what counts as an ornament `#cozychristmas:tree_ornaments`.
+
 ## Evil snowmen
 On snowy nights, under the open sky, evil snowmen come out with glowing icy eyes and pelt you with **ice snowballs**: they hurt, slow you down and chill you (warm clothes keep the freezing out). Snowmen melt: fire hurts them three times over, warm biomes melt them, and so does standing near a lit fire, campfire, furnace or fireplace, so a fire at home keeps them away. They drop snowballs and ice snowballs, which you can throw (or load into a dispenser), and sometimes their coal and carrot.
 
@@ -75,7 +80,7 @@ Every player has a hidden karma from -100 to +100. Hurting villagers, elves and 
 Mobs that count are in the entity tag `#cozychristmas:karma_protected`, so data packs can change them.
 
 ## Config
-`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread), stockings (`stockings`: season only, how much coal), evil snowmen (`evil_snowman`: health, throwing, melting), Krampus (`krampus`: his moves, karma, `visits`), chestnuts from leaves (`food`: which leaves, how often). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
+`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread), stockings (`stockings`: season only, how much coal), evil snowmen (`evil_snowman`: health, throwing, melting), Krampus (`krampus`: his moves, karma, `visits`), chestnuts from leaves (`food`: which leaves, how often), Christmas trees (`tree`: season only, how many ornaments, how far presents land, how many pile up). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
 
 Operators: `/cozychristmas karma get|set|add <players> [value]`, `/cozychristmas season`.
 

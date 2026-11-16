@@ -26,11 +26,13 @@ import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozyTags;
+import dev.eliasnvx.cozychristmas.tree.OrnamentBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -91,6 +93,11 @@ public final class CozyChristmasClient {
             lines.add(Component.translatable("tooltip.cozychristmas.stocking").withStyle(ChatFormatting.GRAY));
         } else if (stack.is(CozyTags.HANGS_AS_STOCKING)) {
             lines.add(Component.translatable("tooltip.cozychristmas.hangs_as_stocking").withStyle(ChatFormatting.GRAY));
+        }
+        if (stack.is(CozyBlocks.TREE_STAR_ITEM.get())) {
+            lines.add(Component.translatable("tooltip.cozychristmas.tree_star").withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof BlockItem item && item.getBlock() instanceof OrnamentBlock) {
+            lines.add(Component.translatable("tooltip.cozychristmas.ornament").withStyle(ChatFormatting.GRAY));
         }
         if (stack.is(CozyItems.KRAMPUS_HORNS.get())) {
             lines.add(Component.translatable("tooltip.cozychristmas.krampus_horns").withStyle(ChatFormatting.GRAY));

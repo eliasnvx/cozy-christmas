@@ -1,0 +1,6 @@
+{
+  "parent": "cozychristmas:block/ornament_wall",
+  "textures": {
+    "ornament": "cozychristmas:block/ornament_blue"
+  }
+}

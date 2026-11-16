@@ -113,6 +113,11 @@
               "max": 6
             }
           }
+        },
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:tree_star",
+          "weight": 2
         }
       ]
     },

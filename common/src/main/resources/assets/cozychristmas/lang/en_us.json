@@ -130,5 +130,19 @@
   "subtitles.cozychristmas.entity.krampus.sack": "Krampus bags someone",
   "subtitles.cozychristmas.entity.krampus.sack_open": "Sack bursts open",
   "subtitles.cozychristmas.entity.krampus.roar": "Krampus roars",
-  "subtitles.cozychristmas.entity.krampus.chains": "Chains rattle"
+  "subtitles.cozychristmas.entity.krampus.chains": "Chains rattle",
+  "block.cozychristmas.tree_star": "Tree Star",
+  "block.cozychristmas.red_ornament": "Red Ornament",
+  "block.cozychristmas.gold_ornament": "Gold Ornament",
+  "block.cozychristmas.silver_ornament": "Silver Ornament",
+  "block.cozychristmas.blue_ornament": "Blue Ornament",
+  "block.cozychristmas.green_ornament": "Green Ornament",
+  "block.cozychristmas.purple_ornament": "Purple Ornament",
+  "tooltip.cozychristmas.tree_star": "Put it on top of a decorated tree: on Christmas mornings a present waits under it",
+  "tooltip.cozychristmas.ornament": "Hangs on leaves. A tree needs a few under its star",
+  "message.cozychristmas.tree.no_tree": "The star needs a tree under it: leaves or a trunk",
+  "message.cozychristmas.tree.bare": "Decorate the tree: %s of %s ornaments",
+  "message.cozychristmas.tree.ready": "A fine tree! A present will wait under it every morning",
+  "message.cozychristmas.tree.ready_off_season": "A fine tree! Presents come under it in the Christmas season",
+  "message.cozychristmas.tree.not_yours": "This is %s's tree"
 }

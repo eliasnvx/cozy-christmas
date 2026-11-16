@@ -80,6 +80,24 @@ public final class KarmaManager {
         return true;
     }
 
+    /** Whether a present already appeared under one of this player's trees on {@code morning} (day-night clock). */
+    public static boolean hadTreeGift(ServerPlayer player, long morning) {
+        return PlatformHelper.getKarma(player).treeDay() == morning;
+    }
+
+    /**
+     * One of a player's trees gets a present a morning: marks {@code morning} and returns true, or false if one of
+     * their trees already had one that morning.
+     */
+    public static boolean takeTreeGift(ServerPlayer player, long morning) {
+        Karma before = PlatformHelper.getKarma(player);
+        if (before.treeDay() == morning) {
+            return false;
+        }
+        PlatformHelper.setKarma(player, before.withTree(morning));
+        return true;
+    }
+
     /** The karma day Krampus last came for this player ({@link Karma#NO_GIFT} if never). */
     public static long lastKrampusVisit(ServerPlayer player) {
         return PlatformHelper.getKarma(player).krampusDay();

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "cozychristmas:ornament",
+  "ingredients": [
+    "minecraft:glass_pane",
+    "minecraft:gold_nugget",
+    "minecraft:blue_dye"
+  ],
+  "result": {
+    "id": "cozychristmas:blue_ornament",
+    "count": 3
+  }
+}
