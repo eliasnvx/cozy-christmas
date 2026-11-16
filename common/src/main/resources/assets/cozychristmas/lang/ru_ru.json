@@ -173,5 +173,10 @@
   "message.cozychristmas.sleigh.loaded": "В мешок! Подарков в санях: %s из %s",
   "message.cozychristmas.sleigh.prank": "Розыгрыш Санта в сани не возьмёт",
   "message.cozychristmas.sleigh.full": "Мешок полон: Санта готов к ночи",
-  "message.cozychristmas.santa.thanks": "Спасибо, что помог загрузить сани!"
+  "message.cozychristmas.santa.thanks": "Спасибо, что помог загрузить сани!",
+  "item.cozychristmas.gingerbread_sweater": "Свитер с пряником",
+  "item.cozychristmas.christmas_tree_sweater": "Свитер с ёлкой",
+  "item.cozychristmas.fox_sweater": "Свитер с лисой",
+  "item.cozychristmas.snowman_sweater": "Свитер со снеговиком",
+  "item.cozychristmas.candy_cane_sweater": "Свитер с леденцом"
 }

@@ -75,6 +75,12 @@ public final class CozyItems {
     public static final RegistrySupplier<Item> CAT_SWEATER = sweater("cat_sweater");
     public static final RegistrySupplier<Item> BEE_SWEATER = sweater("bee_sweater");
     public static final RegistrySupplier<Item> PRESENT_SWEATER = sweater("present_sweater");
+    // SPEC 1.1: more patterns
+    public static final RegistrySupplier<Item> GINGERBREAD_SWEATER = sweater("gingerbread_sweater");
+    public static final RegistrySupplier<Item> CHRISTMAS_TREE_SWEATER = sweater("christmas_tree_sweater");
+    public static final RegistrySupplier<Item> FOX_SWEATER = sweater("fox_sweater");
+    public static final RegistrySupplier<Item> SNOWMAN_SWEATER = sweater("snowman_sweater");
+    public static final RegistrySupplier<Item> CANDY_CANE_SWEATER = sweater("candy_cane_sweater");
 
     // dyed like leather armor (vanilla crafting_dye recipes); undyed they are KNIT_RED unless said otherwise
     public static final RegistrySupplier<Item> POMPOM_HAT = dyeable("pompom_hat", CosmeticSlot.HEAD);

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "cozychristmas_sweater",
+  "pattern": [
+    "W W",
+    "WCW",
+    "WWW"
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "C": "cozychristmas:gingerbread_cookie"
+  },
+  "result": {
+    "id": "cozychristmas:gingerbread_sweater"
+  }
+}

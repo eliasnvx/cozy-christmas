@@ -23,6 +23,11 @@ public final class ToastySetGameTestsFabric {
     }
 
     @GameTest
+    public void everySweaterCraftsAndCounts(GameTestHelper helper) {
+        ToastySetGameTests.everySweaterCraftsAndCounts(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

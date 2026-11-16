@@ -12,7 +12,7 @@ A Christmas adventure mod for Minecraft: the world hides Santa's workshop, Kramp
 Requires [Architectury API](https://modrinth.com/mod/architectury-api) and [GeckoLib](https://modrinth.com/mod/geckolib) (Fabric also needs Fabric API).
 
 ## Knitwear
-Four cosmetic slots next to your inventory (hat, scarf, sweater, mittens), worn on top of armor: right-click a piece or shift-click it into its slot. Sweaters come with snowflakes, a reindeer, a cat, a bee or a present; the pompom hat, scarf and mittens take any dye, like leather armor. Mittens and sleeves show in first person too.
+Four cosmetic slots next to your inventory (hat, scarf, sweater, mittens), worn on top of armor: right-click a piece or shift-click it into its slot. Sweaters come in ten patterns: snowflakes, a reindeer, a cat, a bee, a present, a gingerbread man, a Christmas tree, a fox, a snowman or a candy cane (wool round an ingredient that fits the pattern); the pompom hat, scarf and mittens take any dye, like leather armor. Mittens and sleeves show in first person too.
 
 **Head pieces:** fluffy ear warmers (any dye), an elf hat with a bell (any dye) and an antler headband. With [Catgirl & Catboy Mod](https://github.com/eliasnvx/catgirl-catboy-mod) the ear warmers go over your cat ears and move with them; its cosmetics panel and ours sit side by side.
 

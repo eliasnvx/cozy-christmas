@@ -173,5 +173,10 @@
   "message.cozychristmas.sleigh.loaded": "Into the sack it goes! Presents aboard: %s of %s",
   "message.cozychristmas.sleigh.prank": "Santa won't take a prank on his sleigh",
   "message.cozychristmas.sleigh.full": "The sack is full: Santa is ready for tonight",
-  "message.cozychristmas.santa.thanks": "Thank you for helping me load the sleigh!"
+  "message.cozychristmas.santa.thanks": "Thank you for helping me load the sleigh!",
+  "item.cozychristmas.gingerbread_sweater": "Gingerbread Sweater",
+  "item.cozychristmas.christmas_tree_sweater": "Christmas Tree Sweater",
+  "item.cozychristmas.fox_sweater": "Fox Sweater",
+  "item.cozychristmas.snowman_sweater": "Snowman Sweater",
+  "item.cozychristmas.candy_cane_sweater": "Candy Cane Sweater"
 }

@@ -48,7 +48,8 @@ public final class CosmeticsLookClientTest implements FabricClientGameTest {
     private static final int WIDTH = 1280;
     private static final int HEIGHT = 720;
     /** The knitwear dye worn with each sweater, in {@link CozyItems#sweaters()} order; null = undyed red. */
-    private static final DyeColor[] KNIT_DYES = {null, DyeColor.WHITE, DyeColor.LIGHT_BLUE, DyeColor.BLACK, DyeColor.GREEN};
+    private static final DyeColor[] KNIT_DYES = {null, DyeColor.WHITE, DyeColor.LIGHT_BLUE, DyeColor.BLACK, DyeColor.GREEN,
+            DyeColor.BROWN, DyeColor.WHITE, DyeColor.GREEN, DyeColor.RED, DyeColor.YELLOW};
 
     @Override
     public void runTest(ClientGameTestContext context) {

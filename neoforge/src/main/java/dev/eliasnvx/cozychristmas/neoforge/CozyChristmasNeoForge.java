@@ -27,7 +27,8 @@ public final class CozyChristmasNeoForge {
             Class.forName("dev.eliasnvx.cozychristmas.neoforge.dev.CozyGameTestsNeoForge")
                     .getMethod("register", IEventBus.class).invoke(null, modBus);
         } catch (ReflectiveOperationException e) {
-            CozyChristmas.LOGGER.error("GameTests couldn't be registered", e);
+            // fail the run: a test server that registered none (or few) of the tests would pass the build
+            throw new IllegalStateException("GameTests couldn't be registered", e);
         }
     }
 }

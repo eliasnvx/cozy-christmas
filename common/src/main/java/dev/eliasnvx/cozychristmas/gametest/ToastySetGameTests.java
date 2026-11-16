@@ -5,19 +5,25 @@ import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
+import dev.eliasnvx.cozychristmas.registry.CozyTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -28,7 +34,19 @@ public final class ToastySetGameTests {
 
     public static final List<GameTestEntry> ALL = List.of(
             new GameTestEntry("full_set_keeps_warm", ToastySetGameTests::fullSetKeepsWarm),
-            new GameTestEntry("faster_on_snow_only", ToastySetGameTests::fasterOnSnowOnly));
+            new GameTestEntry("faster_on_snow_only", ToastySetGameTests::fasterOnSnowOnly),
+            new GameTestEntry("every_sweater_crafts_and_counts", ToastySetGameTests::everySweaterCraftsAndCounts));
+
+    /**
+     * Each sweater's pattern ingredient, in the middle of a ring of wool. Built when the test runs: the test lists are
+     * read on NeoForge before our items are registered.
+     */
+    private static Map<String, Item> patternIngredients() {
+        return Map.of("snowflake_sweater", Items.SNOWBALL, "reindeer_sweater", Items.LEATHER, "cat_sweater", Items.COD,
+                "bee_sweater", Items.HONEYCOMB, "present_sweater", Items.PAPER,
+                "gingerbread_sweater", CozyItems.GINGERBREAD_COOKIE.get(), "christmas_tree_sweater", Items.SPRUCE_SAPLING,
+                "fox_sweater", Items.SWEET_BERRIES, "snowman_sweater", Items.CARROT, "candy_cane_sweater", Items.SUGAR);
+    }
 
     private static final Vec3 TEST_AREA_CENTER = new Vec3(1.5, 1.0, 1.5);
     private static final BlockPos FLOOR = new BlockPos(1, 0, 1);
@@ -46,6 +64,25 @@ public final class ToastySetGameTests {
             helper.assertValueEqual(player.canFreeze(), !CozyConfig.common().toastySet().keepsWarm(),
                     "freezing with the whole set");
         });
+    }
+
+    /** Every pattern: crafted from wool round its ingredient, worn as the body piece, part of the set. */
+    public static void everySweaterCraftsAndCounts(GameTestHelper helper) {
+        Map<String, Item> ingredients = patternIngredients();
+        helper.assertValueEqual(CozyItems.sweaters().size(), ingredients.size(), "patterns with a known ingredient");
+        ItemStack wool = new ItemStack(Items.WOOL.white());
+        for (var sweater : CozyItems.sweaters()) {
+            String name = sweater.getId().getPath();
+            ItemStack pattern = new ItemStack(ingredients.get(name));
+            CraftingInput grid = CraftingInput.of(3, 3, List.of(wool, ItemStack.EMPTY, wool, wool, pattern, wool, wool, wool, wool));
+            ItemStack result = helper.getLevel().getServer().getRecipeManager()
+                    .getRecipeFor(RecipeType.CRAFTING, grid, helper.getLevel())
+                    .map(recipe -> recipe.value().assemble(grid)).orElse(ItemStack.EMPTY);
+            helper.assertTrue(result.is(sweater.get()), "crafting " + name + ", got " + result);
+            helper.assertValueEqual(CosmeticsManager.slotOf(result), CosmeticSlot.BODY, "slot of " + name);
+            helper.assertTrue(result.is(CozyTags.SWEATERS) && result.is(CozyTags.TOASTY_SET), name + " is a Toasty sweater");
+        }
+        helper.succeed();
     }
 
     public static void fasterOnSnowOnly(GameTestHelper helper) {
