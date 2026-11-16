@@ -7,9 +7,11 @@ import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.CuriosSlotTypes;
+import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 
 import java.util.UUID;
 
@@ -40,6 +42,23 @@ public final class CuriosGameTest {
         helper.assertTrue(inventory.getStacksHandler("necklace").isPresent(), "players have the necklace slot (data/cozychristmas/curios)");
         inventory.setEquippedCurio("necklace", 0, scarf);
         helper.assertTrue(CosmeticsManager.worn(player).get(CosmeticSlot.NECK).is(CozyItems.SCARF.get()), "a scarf in Curios is worn");
+        helper.assertTrue(CosmeticsManager.looks(player).get(CosmeticSlot.NECK).is(CozyItems.SCARF.get()), "and drawn");
+        ICurioStacksHandler necklace = inventory.getStacksHandler("necklace").orElseThrow();
+        necklace.getRenders().set(0, false);
+        player.tickCount++; // a new tick: the merge is once a tick
+        helper.assertTrue(CosmeticsManager.worn(player).get(CosmeticSlot.NECK).is(CozyItems.SCARF.get()), "hidden, it still counts");
+        helper.assertTrue(CosmeticsManager.looks(player).get(CosmeticSlot.NECK).isEmpty(), "but isn't drawn");
+        necklace.getRenders().set(0, true);
+        if (necklace.hasCosmetic()) {
+            ItemStack blue = CozyItems.dyed(CozyItems.SCARF.get(), DyeColor.BLUE);
+            necklace.getCosmeticStacks().setStackInSlot(0, blue);
+            player.tickCount++;
+            helper.assertTrue(ItemStack.matches(CosmeticsManager.looks(player).get(CosmeticSlot.NECK), blue),
+                    "the cosmetic slot's scarf is what's drawn");
+            helper.assertTrue(ItemStack.matches(CosmeticsManager.worn(player).get(CosmeticSlot.NECK), scarf),
+                    "the worn one is what counts");
+            necklace.getCosmeticStacks().setStackInSlot(0, ItemStack.EMPTY);
+        }
         inventory.setEquippedCurio("necklace", 0, ItemStack.EMPTY);
         helper.succeed();
     }

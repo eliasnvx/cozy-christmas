@@ -3,6 +3,7 @@ package dev.eliasnvx.cozychristmas.gametest;
 import dev.architectury.platform.Platform;
 import dev.eliasnvx.cozychristmas.compat.ExternalSlots;
 import dev.eliasnvx.cozychristmas.compat.sereneseasons.SereneSeasonsCalendar;
+import dev.eliasnvx.cozychristmas.cosmetic.CosmeticInventory;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsManager;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
@@ -28,6 +29,7 @@ public final class CompatGameTests {
 
     public static final List<GameTestEntry> ALL = List.of(
             new GameTestEntry("cosmetics_in_other_mods_slots_count_as_worn", CompatGameTests::otherModsSlotsCount),
+            new GameTestEntry("hidden_and_cosmetic_only_slots_split_looks_from_bonuses", CompatGameTests::hiddenAndLookOnlySlots),
             new GameTestEntry("season_reads_serene_seasons_calendar", CompatGameTests::sereneSeasonsCalendar));
 
     private static final Vec3 PLAYER = new Vec3(2.5, 1.0, 2.5);
@@ -38,13 +40,13 @@ public final class CompatGameTests {
     /** A Toasty set split between our slots and a slot mod's: it counts, ours wins where both hold something. */
     public static void otherModsSlotsCount(GameTestHelper helper) {
         ServerPlayer player = TestPlayers.survival(helper, PLAYER);
-        ExternalSlots.Source source = (wearer, action) -> {
+        ExternalSlots.Source source = (wearer, visitor) -> {
             if (wearer == player) {
-                action.accept(new ItemStack(CozyItems.SCARF.get()));
-                action.accept(new ItemStack(CozyItems.MITTENS.get()));
-                action.accept(new ItemStack(CozyItems.EAR_WARMERS.get()));
-                action.accept(new ItemStack(CozyItems.sweaters().getFirst().get()));
-                action.accept(ItemStack.EMPTY);
+                visitor.accept(new ItemStack(CozyItems.SCARF.get()), ExternalSlots.Role.WORN);
+                visitor.accept(new ItemStack(CozyItems.MITTENS.get()), ExternalSlots.Role.WORN);
+                visitor.accept(new ItemStack(CozyItems.EAR_WARMERS.get()), ExternalSlots.Role.WORN);
+                visitor.accept(new ItemStack(CozyItems.sweaters().getFirst().get()), ExternalSlots.Role.WORN);
+                visitor.accept(ItemStack.EMPTY, ExternalSlots.Role.WORN);
             }
         };
         ExternalSlots.register(source);
@@ -56,6 +58,39 @@ public final class CompatGameTests {
                     "our own slot wins over the other mod's");
             helper.assertTrue(CosmeticsManager.get(player).get(CosmeticSlot.NECK).isEmpty(), "our slots stay as they are");
             helper.assertTrue(ToastySet.isWorn(player), "the set counts across both");
+            helper.succeed();
+        } finally {
+            ExternalSlots.unregister(source);
+            TestPlayers.remove(helper, player);
+        }
+    }
+
+    /**
+     * Curios' semantics: a piece with its slot's show toggle off still counts but isn't drawn; a piece in a cosmetic-only
+     * slot is drawn over what's worn there but counts for nothing.
+     */
+    public static void hiddenAndLookOnlySlots(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+        ItemStack sweater = new ItemStack(CozyItems.sweaters().getFirst().get());
+        ItemStack otherSweater = new ItemStack(CozyItems.sweaters().get(1).get());
+        ExternalSlots.Source source = (wearer, visitor) -> {
+            if (wearer == player) {
+                visitor.accept(new ItemStack(CozyItems.SCARF.get()), ExternalSlots.Role.HIDDEN);
+                visitor.accept(new ItemStack(CozyItems.MITTENS.get()), ExternalSlots.Role.LOOK);
+                visitor.accept(sweater, ExternalSlots.Role.WORN);
+                visitor.accept(otherSweater, ExternalSlots.Role.LOOK);
+            }
+        };
+        ExternalSlots.register(source);
+        try {
+            CosmeticInventory worn = CosmeticsManager.worn(player);
+            CosmeticInventory looks = CosmeticsManager.looks(player);
+            helper.assertTrue(worn.get(CosmeticSlot.NECK).is(CozyItems.SCARF.get()), "a hidden scarf still counts");
+            helper.assertTrue(looks.get(CosmeticSlot.NECK).isEmpty(), "but isn't drawn");
+            helper.assertTrue(worn.get(CosmeticSlot.HANDS).isEmpty(), "cosmetic-only mittens don't count");
+            helper.assertTrue(looks.get(CosmeticSlot.HANDS).is(CozyItems.MITTENS.get()), "but are drawn");
+            helper.assertTrue(worn.get(CosmeticSlot.BODY).is(sweater.getItem()), "the worn sweater counts");
+            helper.assertTrue(looks.get(CosmeticSlot.BODY).is(otherSweater.getItem()), "the cosmetic one is what's drawn");
             helper.succeed();
         } finally {
             ExternalSlots.unregister(source);

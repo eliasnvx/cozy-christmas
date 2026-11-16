@@ -23,6 +23,11 @@ public final class CompatGameTestsFabric {
     }
 
     @GameTest
+    public void hiddenAndLookOnlySlots(GameTestHelper helper) {
+        CompatGameTests.hiddenAndLookOnlySlots(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))
