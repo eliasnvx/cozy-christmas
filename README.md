@@ -61,13 +61,21 @@ Be very naughty in the Christmas season and he may come for you himself one nigh
 
 Where lairs generate is the biome tag `#cozychristmas:has_structure/krampus_lair`, how often the structure set `cozychristmas:krampus_lair`.
 
+## Food
+- **Hot cocoa with marshmallows** comes in a brick mug and warms you through: it thaws you and keeps the frost off for two minutes.
+- **Mulled wine** heals a little (Regeneration I for 10 seconds).
+- **Chestnuts** sometimes fall from dark oak leaves; roast them on a campfire.
+- **Tangerines** and **gingerbread cookies** (elves love those).
+
+Santa sells some of it, and presents and chests hold the rest.
+
 ## Karma
 Every player has a hidden karma from -100 to +100. Hurting villagers, elves and other peaceful folk or stealing from Santa lowers it; giving gifts, feeding reindeer and getting back what goblins stole raises it; it drifts back toward zero by about one point per in-game day. Nice players mostly find gifts in their presents, naughty ones find coal.
 
 Mobs that count are in the entity tag `#cozychristmas:karma_protected`, so data packs can change them.
 
 ## Config
-`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread), stockings (`stockings`: season only, how much coal). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
+`config/cozychristmas-common.json`: season dates (`real_date`, `always` or `never`), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread), stockings (`stockings`: season only, how much coal), evil snowmen (`evil_snowman`: health, throwing, melting), Krampus (`krampus`: his moves, karma, `visits`), chestnuts from leaves (`food`: which leaves, how often). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
 
 Operators: `/cozychristmas karma get|set|add <players> [value]`, `/cozychristmas season`.
 

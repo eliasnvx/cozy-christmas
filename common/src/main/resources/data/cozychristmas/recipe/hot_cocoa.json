@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "cozychristmas:mug",
+    "cozychristmas:mug",
+    "cozychristmas:mug",
+    "minecraft:milk_bucket",
+    "minecraft:cocoa_beans",
+    "minecraft:cocoa_beans",
+    "minecraft:sugar"
+  ],
+  "result": {
+    "id": "cozychristmas:hot_cocoa",
+    "count": 3
+  }
+}

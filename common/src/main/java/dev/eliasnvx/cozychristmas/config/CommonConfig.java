@@ -3,6 +3,7 @@ package dev.eliasnvx.cozychristmas.config;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySettings;
+import dev.eliasnvx.cozychristmas.food.FoodSettings;
 import dev.eliasnvx.cozychristmas.goblin.GoblinSettings;
 import dev.eliasnvx.cozychristmas.karma.KarmaSettings;
 import dev.eliasnvx.cozychristmas.krampus.KrampusSettings;
@@ -20,12 +21,12 @@ import dev.eliasnvx.cozychristmas.workshop.WorkshopSettings;
 public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSettings presents,
                            ToastySettings toastySet, WorkshopSettings workshop, ReindeerSettings reindeer,
                            GoblinSettings goblins, StockingSettings stockings, EvilSnowmanSettings evilSnowman,
-                           KrampusSettings krampus) {
+                           KrampusSettings krampus, FoodSettings food) {
 
     public static final CommonConfig DEFAULTS = new CommonConfig(SeasonSettings.DEFAULTS, KarmaSettings.DEFAULTS,
             PresentSettings.DEFAULTS, ToastySettings.DEFAULTS, WorkshopSettings.DEFAULTS, ReindeerSettings.DEFAULTS,
             GoblinSettings.DEFAULTS, StockingSettings.DEFAULTS, EvilSnowmanSettings.DEFAULTS,
-            KrampusSettings.DEFAULTS);
+            KrampusSettings.DEFAULTS, FoodSettings.DEFAULTS);
 
     public static final Codec<CommonConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
             SeasonSettings.CODEC.fieldOf("season").orElse(DEFAULTS.season).forGetter(CommonConfig::season),
@@ -37,6 +38,7 @@ public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSe
             GoblinSettings.CODEC.fieldOf("goblins").orElse(DEFAULTS.goblins).forGetter(CommonConfig::goblins),
             StockingSettings.CODEC.fieldOf("stockings").orElse(DEFAULTS.stockings).forGetter(CommonConfig::stockings),
             EvilSnowmanSettings.CODEC.fieldOf("evil_snowman").orElse(DEFAULTS.evilSnowman).forGetter(CommonConfig::evilSnowman),
-            KrampusSettings.CODEC.fieldOf("krampus").orElse(DEFAULTS.krampus).forGetter(CommonConfig::krampus)
+            KrampusSettings.CODEC.fieldOf("krampus").orElse(DEFAULTS.krampus).forGetter(CommonConfig::krampus),
+            FoodSettings.CODEC.fieldOf("food").orElse(DEFAULTS.food).forGetter(CommonConfig::food)
     ).apply(i, CommonConfig::new));
 }

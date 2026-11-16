@@ -99,6 +99,10 @@ public final class CozyChristmasClient {
         }
         if (stack.is(CozyItems.ICE_SNOWBALL.get())) {
             lines.add(Component.translatable("tooltip.cozychristmas.ice_snowball").withStyle(ChatFormatting.GRAY));
+        } else if (stack.is(CozyItems.HOT_COCOA.get())) {
+            lines.add(Component.translatable("tooltip.cozychristmas.hot_cocoa").withStyle(ChatFormatting.GRAY));
+        } else if (stack.is(CozyItems.CHESTNUTS.get())) {
+            lines.add(Component.translatable("tooltip.cozychristmas.chestnuts").withStyle(ChatFormatting.GRAY));
         }
     }
 

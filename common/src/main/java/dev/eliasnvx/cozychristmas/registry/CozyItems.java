@@ -6,6 +6,7 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.cosmetic.Cosmetic;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
+import dev.eliasnvx.cozychristmas.food.TangerineItem;
 import dev.eliasnvx.cozychristmas.present.PresentBlock;
 import dev.eliasnvx.cozychristmas.krampus.KrampusChainItem;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
@@ -15,19 +16,24 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +59,11 @@ public final class CozyItems {
     private static final float CHAIN_REACH = 5.0F;
     private static final float CHAIN_CREATIVE_REACH = 6.5F;
     private static final float CHAIN_HITBOX_MARGIN = 0.125F;
+
+    /** SPEC food values. Item definitions like vanilla's: the client builds the same items, so not in the config. */
+    private static final int DRINK_STACK = 16;
+    private static final int WARM_TICKS = 2400;
+    private static final int MULLED_WINE_REGENERATION_TICKS = 200;
 
     private static final List<RegistrySupplier<Item>> SWEATERS = new ArrayList<>();
     private static final List<RegistrySupplier<Item>> DYEABLE = new ArrayList<>();
@@ -98,6 +109,32 @@ public final class CozyItems {
     public static final RegistrySupplier<Item> GINGERBREAD_COOKIE = register("gingerbread_cookie", props -> new Item(props.food(
             new FoodProperties.Builder().nutrition(4).saturationModifier(0.3F).build())));
 
+    /** Brick mug; hot cocoa comes in it and leaves it behind. */
+    public static final RegistrySupplier<Item> MUG = register("mug", Item::new);
+    /** SPEC: cocoa with marshmallows, 6 food, warms: thaws freezing and keeps it off for a while ({@code warm}). */
+    public static final RegistrySupplier<Item> HOT_COCOA = register("hot_cocoa", props -> new Item(props.stacksTo(DRINK_STACK)
+            .component(DataComponents.FOOD, new FoodProperties.Builder().nutrition(6).saturationModifier(0.5F).alwaysEdible().build())
+            // resolved late: our effect may be registered after the items on some loaders
+            .delayedComponent(DataComponents.CONSUMABLE, registries -> Consumables.defaultDrink()
+                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(
+                            registries.lookupOrThrow(Registries.MOB_EFFECT).getOrThrow(CozyEffects.WARM_KEY), WARM_TICKS)))
+                    .build())
+            .usingConvertsTo(MUG.get())));
+    /** SPEC: mulled wine, Regeneration I for 10 s. In a glass bottle, given back. */
+    public static final RegistrySupplier<Item> MULLED_WINE = register("mulled_wine", props -> new Item(props.stacksTo(DRINK_STACK)
+            .food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).alwaysEdible().build(), Consumables.defaultDrink()
+                    .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.REGENERATION,
+                            MULLED_WINE_REGENERATION_TICKS))).build())
+            .usingConvertsTo(Items.GLASS_BOTTLE)));
+    /** Raw: fall from dark oak leaves ({@code food.chestnut_leaves}), roasted on a campfire. Not food yet. */
+    public static final RegistrySupplier<Item> CHESTNUTS = register("chestnuts", Item::new);
+    /** SPEC: 5 food, roasted on a campfire. */
+    public static final RegistrySupplier<Item> ROASTED_CHESTNUTS = register("roasted_chestnuts", props -> new Item(props.food(
+            new FoodProperties.Builder().nutrition(5).saturationModifier(0.6F).build())));
+    /** SPEC: 3 food and an easter egg with no explanation ({@link TangerineItem}). */
+    public static final RegistrySupplier<Item> TANGERINE = register("tangerine", props -> new TangerineItem(props.food(
+            new FoodProperties.Builder().nutrition(3).saturationModifier(0.3F).build())));
+
     public static final RegistrySupplier<CreativeModeTab> TAB = TABS.register("cozychristmas", () -> CreativeTabRegistry.create(builder -> builder
             .title(Component.translatable("itemGroup.cozychristmas"))
             .icon(() -> new ItemStack(POMPOM_HAT.get()))
@@ -124,6 +161,12 @@ public final class CozyItems {
                 output.accept(PRESENT_GOBLIN_SPAWN_EGG.get());
                 output.accept(GINGERBREAD_MAN_SPAWN_EGG.get());
                 output.accept(GINGERBREAD_COOKIE.get());
+                output.accept(MUG.get());
+                output.accept(HOT_COCOA.get());
+                output.accept(MULLED_WINE.get());
+                output.accept(CHESTNUTS.get());
+                output.accept(ROASTED_CHESTNUTS.get());
+                output.accept(TANGERINE.get());
                 output.accept(EVIL_SNOWMAN_SPAWN_EGG.get());
                 output.accept(ICE_SNOWBALL.get());
                 output.accept(KRAMPUS_SPAWN_EGG.get());

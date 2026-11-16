@@ -3,8 +3,11 @@ package dev.eliasnvx.cozychristmas.registry;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
+import dev.eliasnvx.cozychristmas.food.ChimesEffect;
+import dev.eliasnvx.cozychristmas.food.WarmEffect;
 import dev.eliasnvx.cozychristmas.krampus.SackedEffect;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffect;
 
 public final class CozyEffects {
@@ -13,6 +16,11 @@ public final class CozyEffects {
 
     /** In Krampus's sack: can't move. */
     public static final RegistrySupplier<MobEffect> SACKED = REGISTER.register("sacked", SackedEffect::new);
+    /** Hot cocoa: thawed and kept warm. */
+    public static final RegistrySupplier<MobEffect> WARM = REGISTER.register("warm", WarmEffect::new);
+    public static final ResourceKey<MobEffect> WARM_KEY = ResourceKey.create(Registries.MOB_EFFECT, CozyChristmas.id("warm"));
+    /** A tangerine at midnight: the bell strikes twelve. Hidden. */
+    public static final RegistrySupplier<MobEffect> CHIMES = REGISTER.register("chimes", ChimesEffect::new);
 
     private CozyEffects() {
     }

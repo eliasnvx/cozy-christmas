@@ -124,6 +124,32 @@
               "max": 3
             }
           }
+        },
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:tangerine",
+          "weight": 4,
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "min": 2,
+              "max": 5
+            }
+          }
+        },
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:roasted_chestnuts",
+          "weight": 3,
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "min": 2,
+              "max": 6
+            }
+          }
         }
       ]
     },

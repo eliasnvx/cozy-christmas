@@ -5,6 +5,7 @@ import dev.eliasnvx.cozychristmas.command.CozyCommands;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticsEvents;
 import dev.eliasnvx.cozychristmas.cosmetic.ToastySet;
+import dev.eliasnvx.cozychristmas.food.Chestnuts;
 import dev.eliasnvx.cozychristmas.karma.KarmaRules;
 import dev.eliasnvx.cozychristmas.krampus.KrampusVisits;
 import dev.eliasnvx.cozychristmas.present.SnowPresents;
@@ -60,6 +61,7 @@ public final class CozyChristmas {
         ToastySet.register();
         SnowPresents.register();
         KrampusVisits.register();
+        Chestnuts.register();
         KarmaRules.register();
         CommandRegistrationEvent.EVENT.register(CozyCommands::register);
 
