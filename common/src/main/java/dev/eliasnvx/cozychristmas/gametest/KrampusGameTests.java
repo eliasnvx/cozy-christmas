@@ -22,6 +22,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -177,7 +178,9 @@ public final class KrampusGameTests {
             KarmaManager.set(player, NAUGHTY);
             Krampus krampus = KrampusVisits.visit(helper.getLevel(), player);
             helper.assertTrue(krampus != null, "Krampus found room to stand");
-            double distance = krampus.distanceTo(player);
+            // he stands on the surface of a column 16-24 blocks away: the height depends on what stands there (on a test
+            // server, maybe a neighbouring test's build), so the distance is measured across
+            double distance = Math.sqrt(Mth.square(krampus.getX() - player.getX()) + Mth.square(krampus.getZ() - player.getZ()));
             var visits = CozyConfig.common().krampus().visits();
             helper.assertTrue(distance >= visits.minDistance() - 1 && distance <= visits.maxDistance() + 2,
                     "he comes from " + visits.minDistance() + "-" + visits.maxDistance() + " blocks away, got " + distance);
