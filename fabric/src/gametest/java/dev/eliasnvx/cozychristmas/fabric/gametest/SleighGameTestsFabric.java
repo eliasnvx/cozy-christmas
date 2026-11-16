@@ -28,6 +28,26 @@ public final class SleighGameTestsFabric {
     }
 
     @GameTest
+    public void hidesAgainAfterAReload(GameTestHelper helper) {
+        SleighGameTests.hidesAgainAfterAReload(helper);
+    }
+
+    @GameTest
+    public void removingItLetsSantaDown(GameTestHelper helper) {
+        SleighGameTests.removingItLetsSantaDown(helper);
+    }
+
+    @GameTest
+    public void movedSleighComesBackThere(GameTestHelper helper) {
+        SleighGameTests.movedSleighComesBackThere(helper);
+    }
+
+    @GameTest
+    public void santaAboardIsOutOfReach(GameTestHelper helper) {
+        SleighGameTests.santaAboardIsOutOfReach(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

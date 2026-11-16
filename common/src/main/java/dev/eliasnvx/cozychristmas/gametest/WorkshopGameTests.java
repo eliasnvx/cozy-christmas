@@ -1,5 +1,6 @@
 package dev.eliasnvx.cozychristmas.gametest;
 
+import com.mojang.authlib.GameProfile;
 import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.config.CozyConfig;
 import dev.eliasnvx.cozychristmas.karma.KarmaManager;
@@ -18,13 +19,16 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -51,6 +55,10 @@ public final class WorkshopGameTests {
             new GameTestEntry("santa_gives_the_nice_a_present_and_a_discount", WorkshopGameTests::santaGivesTheNice),
             new GameTestEntry("reindeer_tame_with_carrots", WorkshopGameTests::reindeerTameWithCarrots),
             new GameTestEntry("reindeer_fly_in_season", WorkshopGameTests::reindeerFlyInSeason),
+            new GameTestEntry("a_flying_reindeer_is_a_flying_vehicle", WorkshopGameTests::flyingReindeerIsAFlyingVehicle),
+            new GameTestEntry("santa_stays_angry_across_a_relog", WorkshopGameTests::santaStaysAngryAcrossARelog),
+            new GameTestEntry("warehouse_presents_wait_for_their_opener", WorkshopGameTests::stockWaitsForItsOpener),
+            new GameTestEntry("blowing_up_the_warehouse_is_theft", WorkshopGameTests::blowingUpTheWarehouseIsTheft),
             new GameTestEntry("workshop_data_loads", WorkshopGameTests::workshopDataLoads));
 
     private static final Vec3 PLAYER = new Vec3(1.5, 1.0, 1.5);
@@ -188,6 +196,71 @@ public final class WorkshopGameTests {
         helper.assertValueEqual(reindeer.canFly(), CozyConfig.common().reindeer().flight().allows(false),
                 "flight out of season");
         helper.succeed();
+    }
+
+    /** A dedicated server kicks a rider whose mount floats unless it says it flies (allow-flight is off by default). */
+    public static void flyingReindeerIsAFlyingVehicle(GameTestHelper helper) {
+        Reindeer reindeer = helper.spawn(CozyEntities.REINDEER.get(), HELPER);
+        reindeer.setTamed(true);
+        reindeer.setItemSlot(EquipmentSlot.SADDLE, new ItemStack(Items.SADDLE));
+        reindeer.refreshFlight(true);
+        helper.assertValueEqual(reindeer.isFlyingVehicle(), reindeer.canFly(), "a reindeer that may fly is a flying vehicle");
+        reindeer.refreshFlight(false);
+        helper.assertValueEqual(reindeer.isFlyingVehicle(), reindeer.canFly(), "and one that may not isn't");
+        helper.succeed();
+    }
+
+    /** Santa's anger follows the player, not the player object: logging out and back in doesn't calm him. */
+    public static void santaStaysAngryAcrossARelog(GameTestHelper helper) {
+        Santa santa = helper.spawn(CozyEntities.SANTA.get(), SANTA);
+        ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+        try {
+            helper.assertTrue(santa.angerAt(player), "Santa is angry");
+            ServerPlayer back = new ServerPlayer(helper.getLevel().getServer(), helper.getLevel(),
+                    new GameProfile(player.getUUID(), player.getScoreboardName()), ClientInformation.createDefault());
+            helper.assertTrue(santa.isAngryAt(back), "still angry at the same player back from a relog");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(helper, player);
+        }
+    }
+
+    /** A warehouse present isn't decided by whoever walks past: the thief's karma, after the theft, decides it. */
+    public static void stockWaitsForItsOpener(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+        BlockPos at = BlockPos.containing(PLAYER).east();
+        helper.setBlock(at, CozyBlocks.PRESENT.get());
+        PresentBlockEntity present = helper.getBlockEntity(at, PresentBlockEntity.class);
+        present.setWorkshopStock(true);
+        KarmaManager.set(player, 60);
+        helper.runAfterDelay(12, () -> { // past a check (every 10 ticks), within Fabric's 20
+            try {
+                helper.assertValueEqual(present.contents(), PresentContents.SURPRISE, "still undecided with a player beside it");
+                helper.succeed();
+            } finally {
+                TestPlayers.remove(helper, player);
+            }
+        });
+    }
+
+    /** TNT a player lit in the warehouse is their theft, like breaking the presents by hand. */
+    public static void blowingUpTheWarehouseIsTheft(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+        try {
+            BlockPos at = BlockPos.containing(PLAYER).east(3);
+            helper.setBlock(at, CozyBlocks.PRESENT.get());
+            helper.getBlockEntity(at, PresentBlockEntity.class).setWorkshopStock(true);
+            int karma = KarmaManager.get(player);
+            Vec3 blast = Vec3.atCenterOf(helper.absolutePos(at));
+            PrimedTnt tnt = new PrimedTnt(helper.getLevel(), blast.x, blast.y, blast.z, player);
+            helper.getLevel().explode(tnt, blast.x, blast.y, blast.z, 1.5F, Level.ExplosionInteraction.TNT);
+            helper.assertBlockPresent(Blocks.AIR, at);
+            helper.assertValueEqual(KarmaManager.get(player), karma + CozyConfig.common().karma().stealPresent(),
+                    "blowing up Santa's presents is stealing them");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(helper, player);
+        }
     }
 
     /** The structure, its set and pools are registered, and every piece's template loads. */

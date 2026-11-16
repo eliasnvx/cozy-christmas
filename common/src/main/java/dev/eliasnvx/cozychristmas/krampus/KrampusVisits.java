@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -43,10 +44,10 @@ public final class KrampusVisits {
         }
     }
 
-    /** Whether {@code player} may get a visit right now (chance aside). */
+    /** Whether {@code player} may get a visit right now (chance aside). Never in peaceful: he'd vanish at once. */
     public static boolean mayVisit(ServerLevel level, ServerPlayer player) {
         KrampusVisitSettings visits = CozyConfig.common().krampus().visits();
-        return Players.inPlay(player) && level.dimension() == Level.OVERWORLD
+        return Players.inPlay(player) && level.dimension() == Level.OVERWORLD && level.getDifficulty() != Difficulty.PEACEFUL
                 && visits.mayVisit(KarmaManager.get(player), level.isDarkOutside(), ChristmasSeason.isActive(),
                 KarmaManager.today(level), KarmaManager.lastKrampusVisit(player));
     }

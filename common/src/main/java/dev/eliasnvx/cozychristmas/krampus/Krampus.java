@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -88,11 +89,16 @@ public class Krampus extends Monster {
     private static final int VANISH_PARTICLES = 40;
     private static final int XP = 50;
 
+    /** Blocks from him within which a player sees his boss bar (fighters always do). */
+    private static final double BOSS_BAR_RANGE = 40.0;
+    private static final int BOSS_BAR_CHECK = 20;
     private final ServerBossEvent bossEvent = new ServerBossEvent(UUID.randomUUID(), getDisplayName(),
             BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
     private final Set<UUID> fighters = new HashSet<>();
     private int summons;
     private @Nullable UUID visiting;
+    /** Players whose clients track him; the boss bar goes to those of them near or fighting ({@link #updateBossBar}). */
+    private final Set<ServerPlayer> seenBy = new HashSet<>();
     private int lashCooldown;
     private int sackCooldown;
     // client animation counters
@@ -149,6 +155,9 @@ public class Krampus extends Monster {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         bossEvent.setProgress(getHealth() / getMaxHealth());
+        if (tickCount % BOSS_BAR_CHECK == 0) {
+            seenBy.forEach(this::updateBossBar);
+        }
         if (lashCooldown > 0) {
             lashCooldown--;
         }
@@ -336,16 +345,39 @@ public class Krampus extends Monster {
 
     // --- boss bar, saving, client -------------------------------------------------------------------------------
 
+    /**
+     * The bar is for those near him or fighting him, not for everyone whose client tracks him: the lair is underground,
+     * and a bar showing up over a mountain would give it away.
+     */
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
-        bossEvent.addPlayer(player);
+        seenBy.add(player);
+        updateBossBar(player);
     }
 
     @Override
     public void stopSeenByPlayer(ServerPlayer player) {
         super.stopSeenByPlayer(player);
+        seenBy.remove(player);
         bossEvent.removePlayer(player);
+    }
+
+    private void updateBossBar(ServerPlayer player) {
+        if (player.distanceTo(this) <= BOSS_BAR_RANGE || fighters.contains(player.getUUID())) {
+            bossEvent.addPlayer(player);
+        } else {
+            bossEvent.removePlayer(player);
+        }
+    }
+
+    /** Peaceful removes monsters; Krampus in his lair stays (he can't hurt anyone there), a visiting one goes. */
+    @Override
+    public void checkDespawn() {
+        if (visiting == null && level().getDifficulty() == Difficulty.PEACEFUL) {
+            return;
+        }
+        super.checkDespawn();
     }
 
     @Override

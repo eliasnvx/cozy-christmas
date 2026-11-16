@@ -148,8 +148,14 @@ public class SantasSleigh extends Entity {
         }
         SleighFlight.Phase phase = phase();
         switch (phase) {
-            case PARKED -> tryDepart(level, night);
+            case PARKED -> {
+                // where it stands is where it comes back to, even if something moved it
+                origin = position();
+                originYaw = getYRot();
+                tryDepart(level, night);
+            }
             case AWAY -> {
+                setHidden(true); // invisibility isn't saved: hide again after a reload
                 if (!night) {
                     startPhase(SleighFlight.Phase.DESCENT);
                     setHidden(false);
@@ -248,6 +254,28 @@ public class SantasSleigh extends Entity {
         level.playSound(null, getX(), getY(), getZ(), CozySounds.SANTA_GIFT.get(), SoundSource.NEUTRAL, 1.5F, 1.0F);
     }
 
+    /**
+     * Removed in flight (a creative player's hit, /kill): Santa is set down where it was parked, seen again, and
+     * remembers who helped.
+     */
+    @Override
+    public void remove(RemovalReason reason) {
+        if (level() instanceof ServerLevel && phase().isFlying() && origin != null) {
+            Vec3 base = origin;
+            Vec3 side = Vec3.directionFromRotation(0.0F, originYaw + 90.0F).scale(1.8);
+            for (Entity passenger : List.copyOf(getPassengers())) {
+                passenger.stopRiding();
+                passenger.setInvisible(false);
+                passenger.teleportTo(base.x + side.x, base.y, base.z + side.z);
+                passenger.resetFallDistance();
+                if (passenger instanceof Santa santa) {
+                    santa.thank(helpers);
+                }
+            }
+        }
+        super.remove(reason);
+    }
+
     private void setHidden(boolean hidden) {
         setInvisible(hidden);
         for (Entity passenger : getPassengers()) {
@@ -341,8 +369,10 @@ public class SantasSleigh extends Entity {
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
-        output.storeNullable(ORIGIN, Vec3.CODEC, origin);
-        output.putFloat(ORIGIN_YAW, originYaw);
+        if (phase().isFlying()) { // parked, where it stands is the origin (and a saved template mustn't carry it)
+            output.storeNullable(ORIGIN, Vec3.CODEC, origin);
+            output.putFloat(ORIGIN_YAW, originYaw);
+        }
         output.putInt(PHASE, phase().ordinal());
         output.putInt(PHASE_TICK, phaseTick);
         output.putInt(LOAD, load());

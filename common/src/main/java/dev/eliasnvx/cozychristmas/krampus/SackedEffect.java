@@ -1,14 +1,17 @@
 package dev.eliasnvx.cozychristmas.krampus;
 
 import dev.eliasnvx.cozychristmas.CozyChristmas;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
- * In Krampus's sack (SPEC: "puts you in his sack, 2 seconds unable to move"): no walking, no jumping. The sack
- * itself is a {@link KrampusSack} entity over the victim, so everyone sees it; the victim sees burlap.
+ * In Krampus's sack (SPEC: "puts you in his sack, 2 seconds unable to move"): no walking, no jumping, no getting on
+ * a mount or a boat, no gliding off. The sack itself is a {@link KrampusSack} entity over the victim, so everyone sees
+ * it; the victim sees burlap.
  */
 public class SackedEffect extends MobEffect {
 
@@ -20,5 +23,21 @@ public class SackedEffect extends MobEffect {
                 AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         addAttributeModifier(Attributes.JUMP_STRENGTH, CozyChristmas.id("sacked_jump"), -1.0,
                 AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+    }
+
+    @Override
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
+        return true;
+    }
+
+    @Override
+    public boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
+        if (entity.isPassenger()) {
+            entity.stopRiding();
+        }
+        if (entity.isFallFlying()) {
+            entity.stopFallFlying();
+        }
+        return true;
     }
 }

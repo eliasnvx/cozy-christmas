@@ -50,6 +50,11 @@ public final class KrampusGameTestsFabric {
     }
 
     @GameTest
+    public void noRidingOffInTheSack(GameTestHelper helper) {
+        KrampusGameTests.noRidingOffInTheSack(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

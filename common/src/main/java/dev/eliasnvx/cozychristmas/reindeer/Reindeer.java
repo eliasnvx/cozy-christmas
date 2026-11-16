@@ -173,6 +173,15 @@ public class Reindeer extends AbstractHorse {
         resetFallDistance();
     }
 
+    /**
+     * A reindeer that may fly is a flying vehicle: otherwise a dedicated server (allow-flight off by default) takes a
+     * rider hovering in the air for a cheat and kicks them after a few seconds.
+     */
+    @Override
+    public boolean isFlyingVehicle() {
+        return canFly();
+    }
+
     /** No jump bar in the air: there the jump key climbs instead. */
     @Override
     public boolean canJump() {

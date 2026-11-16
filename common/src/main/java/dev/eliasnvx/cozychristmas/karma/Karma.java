@@ -12,9 +12,11 @@ import net.minecraft.util.Mth;
  * {@code KarmaManager#takeSantaGift}), {@code stockingDay} the last morning one of their stockings was filled (by the
  * day-night clock, see {@code KarmaManager#takeStockingGift}), {@code krampusDay} the last day Krampus came for them
  * (see {@code KrampusVisits}), {@code treeDay} the last morning a present appeared under one of their trees (see
- * {@code KarmaManager#takeTreeGift}). Immutable: the attachment always holds a whole new record.
+ * {@code KarmaManager#takeTreeGift}), {@code returnDay} the last game day getting a goblin's loot back was rewarded
+ * (see {@code KarmaManager#takeReturnReward}). Immutable: the attachment always holds a whole new record.
  */
-public record Karma(int value, long day, long giftDay, long santaGiftDay, long stockingDay, long krampusDay, long treeDay) {
+public record Karma(int value, long day, long giftDay, long santaGiftDay, long stockingDay, long krampusDay, long treeDay,
+                    long returnDay) {
 
     public static final int MIN = -100;
     public static final int MAX = 100;
@@ -30,7 +32,8 @@ public record Karma(int value, long day, long giftDay, long santaGiftDay, long s
             Codec.LONG.optionalFieldOf("santa_gift_day", NO_GIFT).forGetter(Karma::santaGiftDay),
             Codec.LONG.optionalFieldOf("stocking_day", NO_GIFT).forGetter(Karma::stockingDay),
             Codec.LONG.optionalFieldOf("krampus_day", NO_GIFT).forGetter(Karma::krampusDay),
-            Codec.LONG.optionalFieldOf("tree_day", NO_GIFT).forGetter(Karma::treeDay)
+            Codec.LONG.optionalFieldOf("tree_day", NO_GIFT).forGetter(Karma::treeDay),
+            Codec.LONG.optionalFieldOf("return_day", NO_GIFT).forGetter(Karma::returnDay)
     ).apply(i, Karma::new));
 
     public Karma {
@@ -38,15 +41,15 @@ public record Karma(int value, long day, long giftDay, long santaGiftDay, long s
     }
 
     public Karma(int value, long day) {
-        this(value, day, NO_GIFT, NO_GIFT, NO_GIFT, NO_GIFT, NO_GIFT);
+        this(value, day, NO_GIFT, NO_GIFT, NO_GIFT, NO_GIFT, NO_GIFT, NO_GIFT);
     }
 
     public Karma(int value, long day, long giftDay) {
-        this(value, day, giftDay, NO_GIFT, NO_GIFT, NO_GIFT, NO_GIFT);
+        this(value, day, giftDay, NO_GIFT, NO_GIFT, NO_GIFT, NO_GIFT, NO_GIFT);
     }
 
     public Karma(int value, long day, long giftDay, long santaGiftDay, long stockingDay) {
-        this(value, day, giftDay, santaGiftDay, stockingDay, NO_GIFT, NO_GIFT);
+        this(value, day, giftDay, santaGiftDay, stockingDay, NO_GIFT, NO_GIFT, NO_GIFT);
     }
 
     /** This karma on {@code today}, after {@code decayPerDay} of drift toward 0 for every day since {@link #day}. */
@@ -74,33 +77,38 @@ public record Karma(int value, long day, long giftDay, long santaGiftDay, long s
             return settle(today, decayPerDay);
         }
         Karma rewarded = plus(gift, today, decayPerDay);
-        return new Karma(rewarded.value, today, today, santaGiftDay, stockingDay, krampusDay, treeDay);
+        return new Karma(rewarded.value, today, today, santaGiftDay, stockingDay, krampusDay, treeDay, returnDay);
     }
 
     /** Settles and marks {@code today} as the day Santa gave a present. */
     public Karma withSantaGift(long today, int decayPerDay) {
         Karma settled = settle(today, decayPerDay);
-        return new Karma(settled.value, today, giftDay, today, stockingDay, krampusDay, treeDay);
+        return new Karma(settled.value, today, giftDay, today, stockingDay, krampusDay, treeDay, returnDay);
     }
 
     /** Marks {@code morning} (a day of the day-night clock, not of {@link #day}) as the day a stocking was filled. */
     public Karma withStocking(long morning) {
-        return new Karma(value, day, giftDay, santaGiftDay, morning, krampusDay, treeDay);
+        return new Karma(value, day, giftDay, santaGiftDay, morning, krampusDay, treeDay, returnDay);
     }
 
     /** Marks {@code today} (a karma game day) as the day Krampus came. */
     public Karma withKrampusVisit(long today) {
-        return new Karma(value, day, giftDay, santaGiftDay, stockingDay, today, treeDay);
+        return new Karma(value, day, giftDay, santaGiftDay, stockingDay, today, treeDay, returnDay);
     }
 
     /** Marks {@code morning} (a day of the day-night clock) as the day a present appeared under one of their trees. */
     public Karma withTree(long morning) {
-        return new Karma(value, day, giftDay, santaGiftDay, stockingDay, krampusDay, morning);
+        return new Karma(value, day, giftDay, santaGiftDay, stockingDay, krampusDay, morning, returnDay);
+    }
+
+    /** Marks {@code today} (a karma game day) as the day returned goblin loot was rewarded. */
+    public Karma withReturn(long today) {
+        return new Karma(value, day, giftDay, santaGiftDay, stockingDay, krampusDay, treeDay, today);
     }
 
     /** The same days, another value as of {@code newDay}. */
     public Karma withValue(int newValue, long newDay) {
-        return new Karma(newValue, newDay, giftDay, santaGiftDay, stockingDay, krampusDay, treeDay);
+        return new Karma(newValue, newDay, giftDay, santaGiftDay, stockingDay, krampusDay, treeDay, returnDay);
     }
 
     public static int clamp(long value) {

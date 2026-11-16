@@ -48,6 +48,26 @@ public final class WorkshopGameTestsFabric {
     }
 
     @GameTest
+    public void flyingReindeerIsAFlyingVehicle(GameTestHelper helper) {
+        WorkshopGameTests.flyingReindeerIsAFlyingVehicle(helper);
+    }
+
+    @GameTest
+    public void santaStaysAngryAcrossARelog(GameTestHelper helper) {
+        WorkshopGameTests.santaStaysAngryAcrossARelog(helper);
+    }
+
+    @GameTest
+    public void stockWaitsForItsOpener(GameTestHelper helper) {
+        WorkshopGameTests.stockWaitsForItsOpener(helper);
+    }
+
+    @GameTest
+    public void blowingUpTheWarehouseIsTheft(GameTestHelper helper) {
+        WorkshopGameTests.blowingUpTheWarehouseIsTheft(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

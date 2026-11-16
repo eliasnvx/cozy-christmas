@@ -22,10 +22,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.vehicle.boat.Boat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.level.GameType;
@@ -48,6 +50,7 @@ public final class KrampusGameTests {
     public static final List<GameTestEntry> ALL = List.of(
             new GameTestEntry("krampus_lash_hurts_and_pulls", KrampusGameTests::lashHurtsAndPulls),
             new GameTestEntry("krampus_sack_holds_a_player_still", KrampusGameTests::sackHoldsAPlayerStill),
+            new GameTestEntry("no_riding_off_in_the_sack", KrampusGameTests::noRidingOffInTheSack),
             new GameTestEntry("krampus_calls_goblins", KrampusGameTests::callsGoblins),
             new GameTestEntry("beating_krampus_clears_bad_karma", KrampusGameTests::beatingHimClearsBadKarma),
             new GameTestEntry("krampus_visits_a_naughty_player", KrampusGameTests::visitsANaughtyPlayer),
@@ -114,6 +117,17 @@ public final class KrampusGameTests {
             helper.assertTrue(sacks(helper).isEmpty(), "the sacks burst");
             helper.succeed();
         });
+    }
+
+    /** Sacked, you can't get on a horse or into a boat and ride away. */
+    public static void noRidingOffInTheSack(GameTestHelper helper) {
+        Pig pig = helper.spawn(EntityTypes.PIG, new Vec3(1.5, 1.0, 1.5));
+        Boat boat = helper.spawn(EntityTypes.OAK_BOAT, new Vec3(1.5, 1.0, 1.5));
+        pig.addEffect(new MobEffectInstance(CozyEffects.SACKED.asHolder(), 40, 0, false, false, true));
+        pig.startRiding(boat, true, true);
+        pig.tick();
+        helper.assertFalse(pig.isPassenger(), "a sacked pig doesn't ride off in a boat");
+        helper.succeed();
     }
 
     public static void callsGoblins(GameTestHelper helper) {

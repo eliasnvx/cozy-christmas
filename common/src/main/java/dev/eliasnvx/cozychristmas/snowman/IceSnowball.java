@@ -16,6 +16,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import dev.eliasnvx.cozychristmas.util.Players;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -65,7 +67,9 @@ public class IceSnowball extends ThrowableItemProjectile {
         IceSnowballSettings settings = CozyConfig.common().evilSnowman().iceSnowball();
         Entity target = hit.getEntity();
         boolean hurt = target.hurtServer(server, damageSources().thrown(this, getOwner()), (float) settings.damage());
-        if ((hurt || settings.damage() == 0.0) && target instanceof LivingEntity living) {
+        // with no damage set, "hurt" is always false: then hit whoever could have been hurt (not creative players)
+        boolean struck = hurt || settings.damage() == 0.0 && !(target instanceof Player player && !Players.inPlay(player));
+        if (struck && target instanceof LivingEntity living) {
             if (settings.slownessTicks() > 0) {
                 living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, settings.slownessTicks(), settings.slownessAmplifier()),
                         getEffectSource());

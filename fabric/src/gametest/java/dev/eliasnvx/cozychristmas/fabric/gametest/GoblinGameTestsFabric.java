@@ -43,6 +43,21 @@ public final class GoblinGameTestsFabric {
     }
 
     @GameTest
+    public void neverTakeATotem(GameTestHelper helper) {
+        GoblinGameTests.neverTakeATotem(helper);
+    }
+
+    @GameTest
+    public void lootComesBackWhateverTheRules(GameTestHelper helper) {
+        GoblinGameTests.lootComesBackWhateverTheRules(helper);
+    }
+
+    @GameTest
+    public void returningLootRewardsOnceADay(GameTestHelper helper) {
+        GoblinGameTests.returningLootRewardsOnceADay(helper);
+    }
+
+    @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
                 .filter(method -> method.isAnnotationPresent(GameTest.class))

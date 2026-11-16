@@ -39,7 +39,11 @@ public final class SleighGameTests {
     public static final List<GameTestEntry> ALL = List.of(
             new GameTestEntry("sleigh_takes_presents_on_delivery_days", SleighGameTests::takesPresentsOnDeliveryDays),
             new GameTestEntry("elves_load_the_sleigh_on_delivery_days", SleighGameTests::elvesLoadIt),
-            new GameTestEntry("santa_flies_the_sleigh_on_a_delivery_night", SleighGameTests::santaFliesIt));
+            new GameTestEntry("santa_flies_the_sleigh_on_a_delivery_night", SleighGameTests::santaFliesIt),
+            new GameTestEntry("the_sleigh_hides_again_after_a_reload", SleighGameTests::hidesAgainAfterAReload),
+            new GameTestEntry("removing_a_flying_sleigh_lets_santa_down", SleighGameTests::removingItLetsSantaDown),
+            new GameTestEntry("a_moved_sleigh_comes_back_to_its_new_spot", SleighGameTests::movedSleighComesBackThere),
+            new GameTestEntry("santa_aboard_is_out_of_reach", SleighGameTests::santaAboardIsOutOfReach));
 
     private static final Vec3 SLEIGH = new Vec3(3.5, 1.0, 3.5);
     private static final Vec3 PLAYER = new Vec3(0.5, 1.0, 6.5);
@@ -143,6 +147,95 @@ public final class SleighGameTests {
             helper.assertFalse(santa.owesThanks(player.getUUID()), "thanked once");
             helper.succeed();
         } finally {
+            ChristmasSeason.setClock(Clock.systemDefaultZone());
+            sleigh.ejectPassengers();
+            sleigh.discard();
+            santa.discard();
+            TestPlayers.remove(helper, player);
+        }
+    }
+
+    /** Invisibility isn't saved: a sleigh reloaded while away must hide itself and Santa again. */
+    public static void hidesAgainAfterAReload(GameTestHelper helper) {
+        Flight flight = Flight.start(helper);
+        try {
+            run(helper.getLevel(), flight.sleigh, true, SleighFlight.Phase.AWAY);
+            flight.sleigh.setInvisible(false); // as loaded from disk
+            flight.santa.setInvisible(false);
+            flight.sleigh.advance(helper.getLevel(), true);
+            helper.assertTrue(flight.sleigh.isInvisible() && flight.santa.isInvisible(), "both hidden again while away");
+            helper.succeed();
+        } finally {
+            flight.end(helper);
+        }
+    }
+
+    /** Removed in flight (a creative player, /kill): Santa is set down where it was parked, seen, and still grateful. */
+    public static void removingItLetsSantaDown(GameTestHelper helper) {
+        Flight flight = Flight.start(helper);
+        try {
+            run(helper.getLevel(), flight.sleigh, true, SleighFlight.Phase.AWAY);
+            flight.sleigh.discard();
+            helper.assertFalse(flight.santa.isPassenger(), "Santa is out");
+            helper.assertFalse(flight.santa.isInvisible(), "and seen");
+            helper.assertTrue(Math.abs(flight.santa.getY() - flight.parked.y) < 1.5, "on the ground, at y " + flight.santa.getY());
+            helper.assertTrue(flight.santa.owesThanks(flight.player.getUUID()), "he still thanks the helper");
+            helper.succeed();
+        } finally {
+            flight.end(helper);
+        }
+    }
+
+    /** Moved while parked (a piston, /tp): it flies from and lands at the new spot. */
+    public static void movedSleighComesBackThere(GameTestHelper helper) {
+        Flight flight = Flight.start(helper);
+        try {
+            Vec3 moved = flight.parked.add(0.0, 0.0, 2.0);
+            flight.sleigh.setPos(moved);
+            flight.sleigh.advance(helper.getLevel(), false);
+            flight.sleigh.advance(helper.getLevel(), true);
+            run(helper.getLevel(), flight.sleigh, true, SleighFlight.Phase.AWAY);
+            run(helper.getLevel(), flight.sleigh, false, SleighFlight.Phase.PARKED);
+            helper.assertTrue(flight.sleigh.position().distanceTo(moved) < 0.01, "back at the new spot, at " + flight.sleigh.position());
+            helper.succeed();
+        } finally {
+            flight.end(helper);
+        }
+    }
+
+    /** Aboard, Santa can't be talked to (no trading, no presents in the air) or hurt by the blocks he flies through. */
+    public static void santaAboardIsOutOfReach(GameTestHelper helper) {
+        Flight flight = Flight.start(helper);
+        try {
+            flight.sleigh.advance(helper.getLevel(), true);
+            helper.assertTrue(flight.santa.isPassenger(), "Santa is aboard");
+            KarmaManager.set(flight.player, 60);
+            flight.santa.interact(flight.player, InteractionHand.MAIN_HAND, Vec3.ZERO);
+            helper.assertTrue(flight.santa.getTradingPlayer() == null, "no trading in the air");
+            helper.assertFalse(flight.player.getInventory().contains(stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())),
+                    "no daily present in the air");
+            helper.assertFalse(flight.santa.hurtServer(helper.getLevel(), helper.getLevel().damageSources().inWall(), 5.0F),
+                    "flying through a hill doesn't hurt him");
+            helper.succeed();
+        } finally {
+            flight.end(helper);
+        }
+    }
+
+    /** A loaded sleigh with Santa by it, on Christmas Eve; its parking spot taken. */
+    private record Flight(ServerPlayer player, SantasSleigh sleigh, Santa santa, Vec3 parked) {
+
+        static Flight start(GameTestHelper helper) {
+            ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+            SantasSleigh sleigh = spawn(helper, CozyEntities.SANTAS_SLEIGH.get(), SLEIGH);
+            Santa santa = spawn(helper, CozyEntities.SANTA.get(), SANTA);
+            ChristmasSeason.setClock(fixed(CHRISTMAS_EVE));
+            sleigh.advance(helper.getLevel(), false);
+            sleigh.loadPresent(player);
+            return new Flight(player, sleigh, santa, sleigh.position());
+        }
+
+        void end(GameTestHelper helper) {
             ChristmasSeason.setClock(Clock.systemDefaultZone());
             sleigh.ejectPassengers();
             sleigh.discard();

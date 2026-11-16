@@ -76,6 +76,9 @@ public final class SleighRenderer extends EntityRenderer<SantasSleigh, SleighRen
 
     @Override
     public void submit(SleighRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        if (state.isInvisible) {
+            return; // away delivering: the base renderer only hides the shadow of a non-living entity
+        }
         poseStack.pushPose();
         poseStack.rotateDegrees(Axis.YP, 180.0F - state.yRot);
         poseStack.scale(-1.0F, -1.0F, 1.0F);

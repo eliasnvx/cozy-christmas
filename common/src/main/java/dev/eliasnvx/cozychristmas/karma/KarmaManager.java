@@ -80,6 +80,20 @@ public final class KarmaManager {
         return true;
     }
 
+    /**
+     * Getting a goblin's stolen stack back is rewarded (karma, a present) once a game day: marks today and returns true,
+     * or false if it already was today (so feeding goblins junk isn't a karma and present tap).
+     */
+    public static boolean takeReturnReward(ServerPlayer player) {
+        Karma before = PlatformHelper.getKarma(player);
+        long today = today(player);
+        if (before.returnDay() == today) {
+            return false;
+        }
+        PlatformHelper.setKarma(player, before.withReturn(today));
+        return true;
+    }
+
     /** Whether a present already appeared under one of this player's trees on {@code morning} (day-night clock). */
     public static boolean hadTreeGift(ServerPlayer player, long morning) {
         return PlatformHelper.getKarma(player).treeDay() == morning;

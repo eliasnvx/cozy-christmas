@@ -29,6 +29,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -104,7 +105,7 @@ public class Santa extends AbstractVillager {
      * Who Santa is angry at and until when (game time). Kept apart from the attack target: on peaceful he can't attack
      * a player, but still won't trade with them. Not saved, like the target.
      */
-    private @Nullable LivingEntity angryAt;
+    private @Nullable UUID angryAt;
     private long angryUntil;
     /** Players who helped load the sleigh and haven't been thanked yet. */
     private final Set<UUID> owedThanks = new HashSet<>();
@@ -180,24 +181,31 @@ public class Santa extends AbstractVillager {
         if (getTradingPlayer() == culprit) {
             stopTrading();
         }
-        angryAt = culprit;
+        angryAt = culprit.getUUID();
         angryUntil = level().getGameTime() + CozyConfig.common().workshop().santa().angerTicks();
         setTarget(culprit);
         return true;
     }
 
+    /** By UUID: a player who logs out and back in (or dies) is still the one he's angry at. */
     public boolean isAngryAt(LivingEntity entity) {
-        return angryAt == entity && level().getGameTime() < angryUntil;
+        return entity.getUUID().equals(angryAt) && level().getGameTime() < angryUntil;
     }
 
     @Override
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
-        if (angryAt != null && (level.getGameTime() >= angryUntil || !WorkshopAlarm.canBeBlamed(angryAt))) {
-            if (getTarget() == angryAt) {
+        if (angryAt == null) {
+            return;
+        }
+        LivingEntity culprit = level.getEntity(angryAt) instanceof LivingEntity living ? living : null;
+        if (level.getGameTime() >= angryUntil || culprit != null && culprit.isAlive() && !WorkshopAlarm.canBeBlamed(culprit)) {
+            if (getTarget() != null && angryAt.equals(getTarget().getUUID())) {
                 setTarget(null);
             }
             angryAt = null;
+        } else if (culprit != null && culprit.isAlive() && getTarget() == null) {
+            setTarget(culprit); // back from a relog or a respawn
         }
     }
 
@@ -222,6 +230,9 @@ public class Santa extends AbstractVillager {
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (isPassenger()) {
+            return InteractionResult.PASS; // aboard his sleigh: no trading, no presents in the air
+        }
         ItemStack held = player.getItemInHand(hand);
         if (held.is(CozyItems.SANTA_SPAWN_EGG.get()) || !isAlive() || isTrading() || isBaby()) {
             return super.mobInteract(player, hand);
@@ -424,6 +435,12 @@ public class Santa extends AbstractVillager {
         public void stop() {
             sleigh = null;
         }
+    }
+
+    /** Flying through a hillside or a tree aboard his sleigh doesn't hurt him. */
+    @Override
+    public boolean isInvulnerableTo(ServerLevel level, DamageSource source) {
+        return source.is(DamageTypes.IN_WALL) && getVehicle() instanceof SantasSleigh || super.isInvulnerableTo(level, source);
     }
 
     // --- sounds --------------------------------------------------------------------------------------------------

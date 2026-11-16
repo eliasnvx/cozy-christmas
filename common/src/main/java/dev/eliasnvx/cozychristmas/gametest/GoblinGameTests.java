@@ -13,18 +13,20 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.random.WeightedList;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.util.random.WeightedList;
-import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -33,6 +35,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Present goblins, gingerbread men and their camp on a real server, shared by both loaders (Fabric:
@@ -45,6 +48,9 @@ public final class GoblinGameTests {
             new GameTestEntry("present_goblin_snatches_a_hotbar_stack", GoblinGameTests::snatchesAHotbarStack),
             new GameTestEntry("present_goblin_leaves_creative_players_alone", GoblinGameTests::leavesCreativeAlone),
             new GameTestEntry("killing_a_thief_returns_the_loot", GoblinGameTests::killingAThiefReturnsTheLoot),
+            new GameTestEntry("goblins_never_take_a_totem", GoblinGameTests::neverTakeATotem),
+            new GameTestEntry("stolen_loot_comes_back_whatever_the_rules", GoblinGameTests::lootComesBackWhateverTheRules),
+            new GameTestEntry("returning_stolen_loot_rewards_once_a_day", GoblinGameTests::returningLootRewardsOnceADay),
             new GameTestEntry("gingerbread_men_go_soggy", GoblinGameTests::gingerbreadMenGoSoggy),
             new GameTestEntry("goblin_camp_data_loads", GoblinGameTests::goblinCampDataLoads),
             new GameTestEntry("goblins_and_reindeer_spawn_in_snowy_biomes", GoblinGameTests::spawnInSnowyBiomes));
@@ -120,6 +126,80 @@ public final class GoblinGameTests {
         } finally {
             TestPlayers.remove(helper, player);
         }
+    }
+
+    /** A stolen totem would save the goblin from the killing blow and be used up: goblins leave totems alone. */
+    public static void neverTakeATotem(GameTestHelper helper) {
+        PresentGoblin goblin = helper.spawn(CozyEntities.PRESENT_GOBLIN.get(), GOBLIN);
+        ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+        try {
+            player.getInventory().setItem(0, new ItemStack(Items.TOTEM_OF_UNDYING));
+            helper.assertFalse(goblin.canRob(player), "a totem alone is nothing to take");
+            player.getInventory().setItem(1, new ItemStack(Items.DIRT, 3));
+            helper.assertTrue(goblin.steal(player), "the dirt goes");
+            helper.assertTrue(goblin.getMainHandItem().is(Items.DIRT), "not the totem, got " + goblin.getMainHandItem());
+            helper.assertTrue(player.getInventory().getItem(0).is(Items.TOTEM_OF_UNDYING), "the totem stays");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(helper, player);
+        }
+    }
+
+    /** The stack is the player's: it drops with mob loot off, and even with Curse of Vanishing on it. */
+    public static void lootComesBackWhateverTheRules(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+        var rules = helper.getLevel().getGameRules();
+        boolean mobDrops = rules.get(GameRules.MOB_DROPS);
+        try {
+            rules.set(GameRules.MOB_DROPS, false, helper.getLevel().getServer());
+            PresentGoblin first = helper.spawn(CozyEntities.PRESENT_GOBLIN.get(), GOBLIN);
+            player.getInventory().setItem(0, new ItemStack(Items.DIAMOND, 5));
+            helper.assertTrue(first.steal(player), "the goblin steals the diamonds");
+            first.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1000.0F);
+            helper.assertTrue(dropped(helper, first, stack -> stack.is(Items.DIAMOND) && stack.getCount() == 5),
+                    "the diamonds come back with mob loot off");
+            rules.set(GameRules.MOB_DROPS, true, helper.getLevel().getServer());
+
+            PresentGoblin second = helper.spawn(CozyEntities.PRESENT_GOBLIN.get(), GOBLIN.add(0.0, 0.0, 3.0));
+            ItemStack sword = new ItemStack(Items.IRON_SWORD);
+            sword.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+                    .getOrThrow(Enchantments.VANISHING_CURSE), 1);
+            player.getInventory().setItem(0, sword);
+            helper.assertTrue(second.steal(player), "the goblin steals the cursed sword");
+            second.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1000.0F);
+            helper.assertTrue(dropped(helper, second, stack -> stack.is(Items.IRON_SWORD)), "the cursed sword comes back");
+            helper.succeed();
+        } finally {
+            rules.set(GameRules.MOB_DROPS, mobDrops, helper.getLevel().getServer());
+            TestPlayers.remove(helper, player);
+        }
+    }
+
+    /** Feeding goblins junk and killing them mustn't mint karma and presents: the reward is once a game day. */
+    public static void returningLootRewardsOnceADay(GameTestHelper helper) {
+        ServerPlayer player = TestPlayers.survival(helper, PLAYER);
+        try {
+            int karma = KarmaManager.get(player);
+            for (int round = 0; round < 2; round++) {
+                PresentGoblin goblin = helper.spawn(CozyEntities.PRESENT_GOBLIN.get(), GOBLIN.add(0.0, 0.0, round * 3.0));
+                player.getInventory().setItem(0, new ItemStack(Items.COBBLESTONE, 64));
+                helper.assertTrue(goblin.steal(player), "the goblin steals the cobblestone");
+                goblin.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1000.0F);
+                helper.assertTrue(dropped(helper, goblin, stack -> stack.is(Items.COBBLESTONE)), "the cobblestone comes back");
+                helper.assertValueEqual(dropped(helper, goblin, stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())), round == 0,
+                        "a present only the first time today, round " + round);
+            }
+            helper.assertValueEqual(KarmaManager.get(player), karma + CozyConfig.common().karma().returnStolen(),
+                    "karma for returned loot once a day");
+            helper.succeed();
+        } finally {
+            TestPlayers.remove(helper, player);
+        }
+    }
+
+    private static boolean dropped(GameTestHelper helper, PresentGoblin goblin, Predicate<ItemStack> what) {
+        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, goblin.getBoundingBox().inflate(1.5)).stream()
+                .anyMatch(drop -> what.test(drop.getItem()));
     }
 
     public static void gingerbreadMenGoSoggy(GameTestHelper helper) {

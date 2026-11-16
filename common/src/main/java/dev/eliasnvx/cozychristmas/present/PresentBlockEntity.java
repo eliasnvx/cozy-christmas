@@ -76,7 +76,8 @@ public class PresentBlockEntity extends BlockEntity {
         Player near = radius > 0.0
                 ? level.getNearestPlayer(center.x, center.y, center.z, radius, EntitySelector.NO_SPECTATORS)
                 : null;
-        if (near instanceof ServerPlayer player) {
+        // Santa's stock waits for whoever opens it: the theft comes first, then the thief's own karma decides
+        if (near instanceof ServerPlayer player && !present.workshopStock) {
             present.decideFor(player);
         }
         boolean ticking = near != null && present.contents.isBoom();

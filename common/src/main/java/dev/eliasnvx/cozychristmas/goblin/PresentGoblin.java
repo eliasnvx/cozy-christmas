@@ -148,24 +148,25 @@ public class PresentGoblin extends Monster {
         return super.doHurtTarget(level, target);
     }
 
+    /**
+     * The stolen stack is the player's: it drops whatever the gamerules (mob loot off) or its curses (vanishing) say,
+     * so it's dropped here, not as equipment. A player's kill earns {@code karma.return_stolen} and a surprise present
+     * once a game day.
+     */
     @Override
     public void die(DamageSource source) {
-        if (hasLoot() && !isRemoved() && !dead && source.getEntity() instanceof ServerPlayer killer) {
-            KarmaManager.add(killer, CozyConfig.common().karma().returnStolen());
-            killer.sendOverlayMessage(Component.translatable("message.cozychristmas.present_goblin.returned"));
+        if (hasLoot() && !isRemoved() && !dead && level() instanceof ServerLevel level) {
+            ItemStack loot = getMainHandItem();
+            setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            spawnAtLocation(level, loot);
+            if (source.getEntity() instanceof ServerPlayer killer && KarmaManager.takeReturnReward(killer)) {
+                KarmaManager.add(killer, CozyConfig.common().karma().returnStolen());
+                PresentDesign[] designs = PresentDesign.values();
+                spawnAtLocation(level, CozyItems.present(designs[getRandom().nextInt(designs.length)]));
+                killer.sendOverlayMessage(Component.translatable("message.cozychristmas.present_goblin.returned"));
+            }
         }
         super.die(source);
-    }
-
-    /** The stolen stack drops (guaranteed), and with it a surprise present. */
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        boolean carried = hasLoot();
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-        if (carried) {
-            PresentDesign[] designs = PresentDesign.values();
-            spawnAtLocation(level, CozyItems.present(designs[getRandom().nextInt(designs.length)]));
-        }
     }
 
     /** Peaceful removes monsters; a goblin with someone's things stays (and can't attack there anyway). */

@@ -3,10 +3,13 @@ package dev.eliasnvx.cozychristmas.present;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.workshop.WorkshopAlarm;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -22,6 +25,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.BiConsumer;
 
 /**
  * A present on the ground. Right-click opens it ({@link PresentBlockEntity#open}); breaking it drops the present with
@@ -70,6 +75,17 @@ public class PresentBlock extends BaseEntityBlock {
             WorkshopAlarm.theft(thief.level(), pos, thief);
         }
         return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    /** Blowing up the warehouse is theft too, by whoever lit the TNT or fired the shot. */
+    @Override
+    protected void onExplosionHit(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion,
+                                  BiConsumer<ItemStack, BlockPos> drops) {
+        if (explosion.getIndirectSourceEntity() instanceof ServerPlayer thief
+                && level.getBlockEntity(pos) instanceof PresentBlockEntity present && present.isWorkshopStock()) {
+            WorkshopAlarm.theft(level, pos, thief);
+        }
+        super.onExplosionHit(state, level, pos, explosion, drops);
     }
 
     /** Any hand opens it: block use comes before item use, and sneaking with an item still places blocks against it. */
