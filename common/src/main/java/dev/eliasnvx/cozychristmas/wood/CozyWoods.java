@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CeilingHangingSignBlock;
 import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.ShelfBlock;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.WallHangingSignBlock;
 import net.minecraft.world.level.block.WallSignBlock;
@@ -90,6 +91,7 @@ public final class CozyWoods {
         set.stairs.listen(block -> burn(block, PLANKS_IGNITE, PLANKS_BURN));
         set.fence.listen(block -> burn(block, PLANKS_IGNITE, PLANKS_BURN));
         set.fenceGate.listen(block -> burn(block, PLANKS_IGNITE, PLANKS_BURN));
+        set.shelf.listen(block -> burn(block, PLANKS_IGNITE, PLANKS_BURN));
         for (var log : List.of(set.log, set.strippedLog, set.wood, set.strippedWood)) {
             log.listen(block -> burn(block, LOG_IGNITE, LOG_BURN));
         }
@@ -107,6 +109,10 @@ public final class CozyWoods {
 
     public static boolean isHangingSign(Block block) {
         return ours(block) && (block instanceof CeilingHangingSignBlock || block instanceof WallHangingSignBlock);
+    }
+
+    public static boolean isShelf(Block block) {
+        return ours(block) && block instanceof ShelfBlock;
     }
 
     private static boolean ours(Block block) {

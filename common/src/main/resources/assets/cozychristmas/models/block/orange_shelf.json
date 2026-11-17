@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/template_shelf_body",
+  "textures": {
+    "all": "cozychristmas:block/orange_shelf",
+    "particle": "cozychristmas:block/stripped_orange_log"
+  }
+}

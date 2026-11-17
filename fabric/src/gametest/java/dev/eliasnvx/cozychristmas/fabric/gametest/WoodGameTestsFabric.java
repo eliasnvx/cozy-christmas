@@ -33,6 +33,11 @@ public final class WoodGameTestsFabric {
     }
 
     @GameTest
+    public void boatsFloat(GameTestHelper helper) {
+        WoodGameTests.boatsFloat(helper);
+    }
+
+    @GameTest
     public void axeStrips(GameTestHelper helper) {
         WoodGameTests.axeStrips(helper);
     }
@@ -50,6 +55,11 @@ public final class WoodGameTestsFabric {
     @GameTest
     public void grovesAreInTheirBiomes(GameTestHelper helper) {
         WoodGameTests.grovesAreInTheirBiomes(helper);
+    }
+
+    @GameTest
+    public void boneMealRipens(GameTestHelper helper) {
+        WoodGameTests.boneMealRipens(helper);
     }
 
     @GameTest

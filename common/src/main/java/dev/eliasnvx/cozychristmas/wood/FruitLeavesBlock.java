@@ -11,6 +11,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.BonemealSource;
+import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.sounds.AmbientLeavesBlockSoundPlayer;
@@ -26,10 +29,11 @@ import java.util.function.Supplier;
 
 /**
  * Leaves of a fruit tree. {@code age} 0 is plain foliage, 1 blossoms, 2 ripe fruit: random ticks move it on
- * ({@link CitrusSettings#growChance()}), a right click picks the fruit and sends it back to plain leaves, and breaking
+ * ({@link CitrusSettings#growChance()}) and so does bone meal (a stage each time, always), a right click picks the fruit
+ * and sends it back to plain leaves, and breaking
  * ripe leaves drops the fruit too (loot table). Untinted: the leaf textures carry their own green.
  */
-public class FruitLeavesBlock extends LeavesBlock {
+public class FruitLeavesBlock extends LeavesBlock implements BonemealableBlock {
 
     public static final IntegerProperty AGE = BlockStateProperties.AGE_2;
     public static final int RIPE = 2;
@@ -88,5 +92,20 @@ public class FruitLeavesBlock extends LeavesBlock {
             server.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, picked));
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, BonemealSource source) {
+        return state.getValue(AGE) < RIPE && !decaying(state);
+    }
+
+    @Override
+    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {
+        return true;
+    }
+
+    @Override
+    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {
+        level.setBlock(pos, state.setValue(AGE, Math.min(RIPE, state.getValue(AGE) + 1)), Block.UPDATE_CLIENTS);
     }
 }

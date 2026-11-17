@@ -27,7 +27,7 @@ public final class WoodLookClientTest implements FabricClientGameTest {
             "stripped_%s_wood[axis=y]", "%s_planks", "%s_stairs[facing=south]", "%s_slab", "%s_fence", "%s_fence_gate[facing=south]",
             "%s_door[facing=south,half=lower]", "%s_trapdoor[facing=south,half=bottom,open=false]",
             "%s_button[face=wall,facing=south]", "%s_pressure_plate", "%s_sign[rotation=8]", "%s_wall_sign[facing=south]",
-            "%s_hanging_sign[rotation=8,attached=false]", "%s_leaves[age=0,persistent=true]",
+            "%s_hanging_sign[rotation=8,attached=false]", "%s_shelf[facing=south]", "%s_leaves[age=0,persistent=true]",
             "%s_leaves[age=1,persistent=true]", "%s_leaves[age=2,persistent=true]", "%s_sapling", "potted_%s_sapling");
 
     @Override
@@ -53,7 +53,11 @@ public final class WoodLookClientTest implements FabricClientGameTest {
                 shot(context, set.name + "_row_right", true);
                 room(world);
                 cmd(world, "place feature cozychristmas:%s_tree_wild 0 %d 3", set.name, Y);
-                cmd(world, "tp @p 0.5 %d 12.5 180 -8", Y);
+                cmd(world, "place feature cozychristmas:%s_tree_grand_wild -9 %d 3", set.name, Y);
+                cmd(world, "place feature cozychristmas:%s_tree_wild 8 %d 4", set.name, Y);
+                cmd(world, "summon cozychristmas:%s_boat -4 %d 8", set.name, Y);
+                cmd(world, "summon cozychristmas:%s_chest_boat 4 %d 8", set.name, Y);
+                cmd(world, "tp @p 0.5 %d 11.5 180 -14", Y);
                 context.waitTicks(SETTLE);
                 world.getConnection().waitForChunksRender();
                 shot(context, set.name + "_tree", true);

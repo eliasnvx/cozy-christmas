@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/template_shelf_inventory",
+  "textures": {
+    "all": "cozychristmas:block/tangerine_shelf",
+    "particle": "cozychristmas:block/stripped_tangerine_log"
+  }
+}

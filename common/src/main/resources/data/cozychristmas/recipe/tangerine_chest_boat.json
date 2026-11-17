@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "chest_boat",
+  "ingredients": [
+    "minecraft:chest",
+    "cozychristmas:tangerine_boat"
+  ],
+  "result": {
+    "id": "cozychristmas:tangerine_chest_boat"
+  }
+}

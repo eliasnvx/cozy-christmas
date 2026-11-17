@@ -215,5 +215,15 @@
   "block.cozychristmas.orange_leaves": "Апельсиновая листва",
   "block.cozychristmas.orange_sapling": "Апельсиновый саженец",
   "block.cozychristmas.potted_orange_sapling": "Горшок с апельсиновым саженцем",
-  "item.cozychristmas.orange": "Апельсин"
+  "item.cozychristmas.orange": "Апельсин",
+  "block.cozychristmas.tangerine_shelf": "Мандариновая полка",
+  "item.cozychristmas.tangerine_boat": "Мандариновая лодка",
+  "entity.cozychristmas.tangerine_boat": "Мандариновая лодка",
+  "item.cozychristmas.tangerine_chest_boat": "Мандариновая лодка с сундуком",
+  "entity.cozychristmas.tangerine_chest_boat": "Мандариновая лодка с сундуком",
+  "block.cozychristmas.orange_shelf": "Апельсиновая полка",
+  "item.cozychristmas.orange_boat": "Апельсиновая лодка",
+  "entity.cozychristmas.orange_boat": "Апельсиновая лодка",
+  "item.cozychristmas.orange_chest_boat": "Апельсиновая лодка с сундуком",
+  "entity.cozychristmas.orange_chest_boat": "Апельсиновая лодка с сундуком"
 }

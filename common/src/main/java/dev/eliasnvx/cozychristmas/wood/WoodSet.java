@@ -7,6 +7,17 @@ import dev.eliasnvx.cozychristmas.mixin.WoodTypeInvoker;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import net.minecraft.core.Direction;
+import net.minecraft.core.dispenser.BoatDispenseItemBehavior;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.boat.Boat;
+import net.minecraft.world.entity.vehicle.boat.ChestBoat;
+import net.minecraft.world.item.BoatItem;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.ShelfBlock;
+import dev.eliasnvx.cozychristmas.registry.CozyEntities;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.Weighted;
@@ -52,10 +63,15 @@ import java.util.function.Supplier;
 
 /**
  * One wood, with the whole set vanilla woods have: logs, planks, stairs, slabs, fence and gate, door, trapdoor, button,
- * pressure plate, both signs, plus leaves that bear fruit, a sapling and the potted sapling. {@code name} is the wood
+ * pressure plate, both signs, a shelf, a boat and a chest boat, plus leaves that bear fruit, a sapling and the potted
+ * sapling. {@code name} is the wood
  * ({@code tangerine}); block and item ids are {@code <name>_log} and so on, like vanilla's.
  */
 public final class WoodSet {
+
+    /** A sapling grows the common tree this often to the grand one's once (the wild groves roll the same in their feature). */
+    private static final int GROWN_COMMON = 85;
+    private static final int GROWN_GRAND = 15;
 
     public final String name;
     public final WoodType woodType;
@@ -83,6 +99,9 @@ public final class WoodSet {
     public final RegistrySupplier<Block> leaves;
     public final RegistrySupplier<Block> sapling;
     public final RegistrySupplier<Block> pottedSapling;
+    public final RegistrySupplier<Block> shelf;
+    public final RegistrySupplier<EntityType<Boat>> boat;
+    public final RegistrySupplier<EntityType<ChestBoat>> chestBoat;
 
     /** Everything that has an item, in the order of the creative tab. */
     private final List<RegistrySupplier<Item>> items = new ArrayList<>();
@@ -135,12 +154,16 @@ public final class WoodSet {
         leaves = block(name + "_leaves", props -> new FruitLeavesBlock(fruit, props), () -> leavesProperties());
         ResourceKey<Feature> treeKey =
                 ResourceKey.create(Registries.FEATURE, CozyChristmas.id(name + "_tree"));
-        WeightedList<ResourceKey<Feature>> trees = WeightedList.<ResourceKey<Feature>>of(new Weighted<>(treeKey, 1));
+        ResourceKey<Feature> grandKey = ResourceKey.create(Registries.FEATURE, CozyChristmas.id(name + "_tree_grand"));
+        WeightedList<ResourceKey<Feature>> trees = WeightedList.<ResourceKey<Feature>>of(new Weighted<>(treeKey, GROWN_COMMON),
+                new Weighted<>(grandKey, GROWN_GRAND));
         WeightedList<ResourceKey<Feature>> none = WeightedList.<ResourceKey<Feature>>of();
         TreeGrower grower = new TreeGrower(typeName, trees, none, none, treeKey);
         sapling = block(name + "_sapling", props -> new SaplingBlock(grower, props) { },
                 () -> Properties.of().mapColor(MapColor.PLANT).noCollision().randomTicks().instabreak()
                         .sound(SoundType.GRASS).pushReaction(PushReaction.POPPED));
+        shelf = block(name + "_shelf", ShelfBlock::new, () -> Properties.of().mapColor(planksColor)
+                .instrument(NoteBlockInstrument.BASS).sound(SoundType.SHELF).ignitedByLava().strength(2.0F, 3.0F));
         pottedSapling = block("potted_" + name + "_sapling", props -> new FlowerPotBlock(sapling.get(), props),
                 () -> Properties.of().instabreak().noOcclusion().pushReaction(PushReaction.POPPED));
 
@@ -156,6 +179,7 @@ public final class WoodSet {
         item(name + "_door", props -> new DoubleHighBlockItem(door.get(), props.useBlockDescriptionPrefix()
                 .cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_ITEMS_LARGE)));
         blockItem(trapdoor, ContextIntProviders.COOKING_TIME_WOOD_BLOCKS);
+        blockItem(shelf, ContextIntProviders.COOKING_TIME_WOOD_BLOCKS);
         blockItem(button, ContextIntProviders.COOKING_TIME_WOOD_ITEMS_SMALL);
         blockItem(pressurePlate, ContextIntProviders.COOKING_TIME_WOOD_BLOCKS);
         item(name + "_sign", props -> new StandingAndWallBlockItem(sign.get(), wallSign.get(), Direction.DOWN,
@@ -164,6 +188,19 @@ public final class WoodSet {
         item(name + "_hanging_sign", props -> new HangingSignItem(hangingSign.get(), wallHangingSign.get(),
                 props.useBlockDescriptionPrefix().cookingFuel(ContextIntProviders.COOKING_TIME_HANGING_SIGNS)
                         .stacksTo(16).signText()));
+        // the boats: an entity type each, found by id from the entity's drop (the item needs the type, the type the item)
+        Supplier<Item> boatItem = () -> BuiltInRegistries.ITEM.getValue(CozyChristmas.id(name + "_boat"));
+        Supplier<Item> chestBoatItem = () -> BuiltInRegistries.ITEM.getValue(CozyChristmas.id(name + "_chest_boat"));
+        boat = boatType(name + "_boat", (type, level) -> new Boat(type, level, boatItem));
+        chestBoat = boatType(name + "_chest_boat", (type, level) -> new ChestBoat(type, level, chestBoatItem));
+        RegistrySupplier<Item> boatStack = CozyItems.register(name + "_boat", props -> new BoatItem(boat.get(),
+                props.useItemDescriptionPrefix().stacksTo(1).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS)));
+        RegistrySupplier<Item> chestBoatStack = CozyItems.register(name + "_chest_boat", props -> new BoatItem(chestBoat.get(),
+                props.useItemDescriptionPrefix().stacksTo(1).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS)));
+        items.add(boatStack);
+        items.add(chestBoatStack);
+        boatStack.listen(i -> DispenserBlock.registerBehavior(i, new BoatDispenseItemBehavior(boat.get())));
+        chestBoatStack.listen(i -> DispenserBlock.registerBehavior(i, new BoatDispenseItemBehavior(chestBoat.get())));
         item(name + "_leaves", props -> new BlockItem(leaves.get(), props.useBlockDescriptionPrefix()
                 .compostable(ContextIntProviders.COMPOSTABLE_LOW)));
         item(name + "_sapling", props -> new BlockItem(sapling.get(), props.useBlockDescriptionPrefix()
@@ -178,7 +215,7 @@ public final class WoodSet {
     /** Every block of the set that is part of it (not the wall variants and the pot, which have no item). */
     public List<RegistrySupplier<Block>> all() {
         return List.of(log, strippedLog, wood, strippedWood, planks, stairs, slab, fence, fenceGate, door, trapdoor,
-                button, pressurePlate, sign, wallSign, hangingSign, wallHangingSign, leaves, sapling, pottedSapling);
+                button, pressurePlate, sign, wallSign, hangingSign, wallHangingSign, leaves, sapling, pottedSapling, shelf);
     }
 
     private Properties logProperties() {
@@ -207,6 +244,12 @@ public final class WoodSet {
                 .noOcclusion().isValidSpawn((state, level, pos, type) -> false).isSuffocating((state, level, pos) -> false)
                 .isViewBlocking((state, level, pos, box) -> false).ignitedByLava().pushReaction(PushReaction.POPPED)
                 .isRedstoneConductor((state, level, pos) -> false);
+    }
+
+    private static <T extends AbstractBoat> RegistrySupplier<EntityType<T>> boatType(String name, EntityType.EntityFactory<T> factory) {
+        ResourceKey<EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, CozyChristmas.id(name));
+        return CozyEntities.REGISTER.register(key.identifier(), () -> EntityType.Builder.<T>of(factory, MobCategory.MISC)
+                .noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10).build(key));
     }
 
     /** Properties are built when the block is registered: some of them look other blocks of the set up. */

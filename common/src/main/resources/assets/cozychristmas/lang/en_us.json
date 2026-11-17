@@ -215,5 +215,15 @@
   "block.cozychristmas.orange_leaves": "Orange Leaves",
   "block.cozychristmas.orange_sapling": "Orange Sapling",
   "block.cozychristmas.potted_orange_sapling": "Potted Orange Sapling",
-  "item.cozychristmas.orange": "Orange"
+  "item.cozychristmas.orange": "Orange",
+  "block.cozychristmas.tangerine_shelf": "Tangerine Shelf",
+  "item.cozychristmas.tangerine_boat": "Tangerine Boat",
+  "entity.cozychristmas.tangerine_boat": "Tangerine Boat",
+  "item.cozychristmas.tangerine_chest_boat": "Tangerine Boat with Chest",
+  "entity.cozychristmas.tangerine_chest_boat": "Tangerine Boat with Chest",
+  "block.cozychristmas.orange_shelf": "Orange Shelf",
+  "item.cozychristmas.orange_boat": "Orange Boat",
+  "entity.cozychristmas.orange_boat": "Orange Boat",
+  "item.cozychristmas.orange_chest_boat": "Orange Boat with Chest",
+  "entity.cozychristmas.orange_chest_boat": "Orange Boat with Chest"
 }

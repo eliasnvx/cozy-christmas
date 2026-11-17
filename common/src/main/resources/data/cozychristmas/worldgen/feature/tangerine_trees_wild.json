@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:random_selector",
+  "default": {
+    "feature": "cozychristmas:tangerine_trees_wild",
+    "placement": []
+  },
+  "features": [
+    {
+      "chance": 0.15,
+      "feature": {
+        "feature": "cozychristmas:tangerine_tree_grand_wild",
+        "placement": []
+      }
+    }
+  ]
+}

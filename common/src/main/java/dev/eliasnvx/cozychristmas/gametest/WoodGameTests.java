@@ -25,12 +25,16 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
+import net.minecraft.world.level.block.entity.ShelfBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.entity.vehicle.boat.Boat;
+import net.minecraft.world.entity.vehicle.boat.ChestBoat;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.BlockHitResult;
@@ -51,10 +55,12 @@ public final class WoodGameTests {
             new GameTestEntry("wood_recipes_craft", WoodGameTests::recipesCraft),
             new GameTestEntry("wood_blocks_are_in_the_vanilla_tags", WoodGameTests::tags),
             new GameTestEntry("wood_signs_are_sign_block_entities", WoodGameTests::signsAreBlockEntities),
+            new GameTestEntry("wood_boats_are_entities", WoodGameTests::boatsFloat),
             new GameTestEntry("an_axe_strips_our_logs", WoodGameTests::axeStrips),
             new GameTestEntry("saplings_grow_fruit_trees", WoodGameTests::saplingsGrow),
             new GameTestEntry("fruit_ripens_and_is_picked", WoodGameTests::fruitRipensAndIsPicked),
-            new GameTestEntry("wild_groves_are_in_their_biomes", WoodGameTests::grovesAreInTheirBiomes));
+            new GameTestEntry("wild_groves_are_in_their_biomes", WoodGameTests::grovesAreInTheirBiomes),
+            new GameTestEntry("bone_meal_ripens_the_fruit", WoodGameTests::boneMealRipens));
 
     private static final BlockPos AT = new BlockPos(2, 1, 2);
     private static final Vec3 PLAYER = new Vec3(4.5, 1.0, 4.5);
@@ -95,6 +101,13 @@ public final class WoodGameTests {
             assertCrafts(helper, set.door.get().asItem(), 3, CraftingInput.of(2, 3, repeat(planks, 6)));
             assertCrafts(helper, set.slab.get().asItem(), 6, CraftingInput.of(3, 1, repeat(planks, 3)));
             assertCrafts(helper, set.wood.get().asItem(), 3, CraftingInput.of(2, 2, repeat(log, 4)));
+            ItemStack boat = new ItemStack(CozyItemsHolder.item(set.name + "_boat"));
+            assertCrafts(helper, boat.getItem(), 1, CraftingInput.of(3, 2,
+                    List.of(planks, ItemStack.EMPTY, planks, planks, planks, planks)));
+            assertCrafts(helper, CozyItemsHolder.item(set.name + "_chest_boat"), 1, CraftingInput.of(2, 1,
+                    List.of(new ItemStack(Items.CHEST), boat)));
+            assertCrafts(helper, set.shelf.get().asItem(), 6, CraftingInput.of(3, 3, List.of(stripped, stripped, stripped,
+                    ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY, stripped, stripped, stripped)));
             ItemStack chain = new ItemStack(Items.IRON_CHAIN);
             assertCrafts(helper, set.hangingSign.get().asItem(), 6, CraftingInput.of(3, 3,
                     List.of(chain, ItemStack.EMPTY, chain, stripped, stripped, stripped, stripped, stripped, stripped)));
@@ -139,7 +152,24 @@ public final class WoodGameTests {
             helper.setBlock(AT, set.hangingSign.get());
             helper.assertTrue(helper.getLevel().getBlockEntity(helper.absolutePos(AT)) instanceof HangingSignBlockEntity,
                     set.name + " hanging sign has its block entity");
+            helper.setBlock(AT, set.shelf.get());
+            helper.assertTrue(helper.getLevel().getBlockEntity(helper.absolutePos(AT)) instanceof ShelfBlockEntity,
+                    set.name + " shelf has its block entity");
             helper.setBlock(AT, Blocks.AIR);
+        }
+        helper.succeed();
+    }
+
+    /** The boats are entities of their own that come back as their item. */
+    public static void boatsFloat(GameTestHelper helper) {
+        for (WoodSet set : CozyWoods.ALL) {
+            Boat boat = helper.spawn(set.boat.get(), new Vec3(2.5, 1.0, 2.5));
+            helper.assertTrue(boat.isAlive(), set.name + " boat exists");
+            helper.assertTrue(boat.getPickResult().is(CozyItemsHolder.item(set.name + "_boat")), "it picks as its item");
+            boat.discard();
+            ChestBoat chest = helper.spawn(set.chestBoat.get(), new Vec3(2.5, 1.0, 2.5));
+            helper.assertTrue(chest.getPickResult().is(CozyItemsHolder.item(set.name + "_chest_boat")), "the chest boat too");
+            chest.discard();
         }
         helper.succeed();
     }
@@ -251,6 +281,26 @@ public final class WoodGameTests {
         }
     }
 
+    /** Bone meal moves the fruit leaves a stage on, always, and stops at ripe. */
+    public static void boneMealRipens(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (WoodSet set : CozyWoods.ALL) {
+            FruitLeavesBlock block = (FruitLeavesBlock) set.leaves.get();
+            helper.setBlock(AT, block.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true));
+            BlockPos abs = helper.absolutePos(AT);
+            for (int age = 0; age < FruitLeavesBlock.RIPE; age++) {
+                BlockState now = helper.getBlockState(AT);
+                helper.assertTrue(block.isValidBonemealTarget(level, abs, now, BonemealSource.INTERACTION), "stage " + age + " takes bone meal");
+                helper.assertTrue(block.isBonemealSuccess(level, level.getRandom(), abs, now, BonemealSource.INTERACTION), "always works");
+                block.performBonemeal(level, level.getRandom(), abs, now, BonemealSource.INTERACTION);
+                helper.assertValueEqual(helper.getBlockState(AT).getValue(FruitLeavesBlock.AGE), age + 1, "one stage on");
+            }
+            helper.assertFalse(block.isValidBonemealTarget(level, abs, helper.getBlockState(AT), BonemealSource.INTERACTION),
+                    "ripe fruit takes no more");
+        }
+        helper.succeed();
+    }
+
     /** The groves are added to the biomes of their tags, and their placed features load. */
     public static void grovesAreInTheirBiomes(GameTestHelper helper) {
         var registries = helper.getLevel().registryAccess();
@@ -287,5 +337,12 @@ public final class WoodGameTests {
                 .map(recipe -> recipe.value().assemble(grid));
         helper.assertTrue(result.isPresent() && result.get().is(item) && result.get().getCount() == count,
                 "crafting " + item + " x" + count + ", got " + result);
+    }
+
+    /** Items of the sets by id. */
+    private static final class CozyItemsHolder {
+        static net.minecraft.world.item.Item item(String name) {
+            return BuiltInRegistries.ITEM.getValue(CozyChristmas.id(name));
+        }
     }
 }
