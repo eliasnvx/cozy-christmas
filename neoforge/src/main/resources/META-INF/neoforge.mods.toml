@@ -8,6 +8,7 @@ version = "${version}"
 displayName = "${mod_name}"
 authors = "eliasnvx"
 displayURL = "https://cubimoon.com"
+logoFile = "assets/cozychristmas/icon.png"
 description = '''
 A Christmas adventure: Santa's workshop, Krampus's lair and goblin camps in the snow, and presents that hold gifts or coal depending on your karma.
 '''
