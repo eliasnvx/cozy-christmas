@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:stripped_tangerine_wood"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "cozychristmas:blocks/stripped_tangerine_wood"
+}

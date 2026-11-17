@@ -13,6 +13,9 @@ import dev.eliasnvx.cozychristmas.krampus.KrampusChainItem;
 import dev.eliasnvx.cozychristmas.present.PresentDesign;
 import dev.eliasnvx.cozychristmas.tree.OrnamentColor;
 import dev.eliasnvx.cozychristmas.snowman.IceSnowballItem;
+import dev.eliasnvx.cozychristmas.wood.CozyWoods;
+import dev.eliasnvx.cozychristmas.wood.WoodSet;
+import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -159,6 +162,13 @@ public final class CozyItems {
     /** SPEC: 3 food and an easter egg with no explanation ({@link TangerineItem}). */
     public static final RegistrySupplier<Item> TANGERINE = register("tangerine", props -> new TangerineItem(props.food(
             new FoodProperties.Builder().nutrition(3).saturationModifier(0.3F).build())));
+    /** An orange: the other fruit of the citrus trees. A little more filling than a tangerine, no secret. */
+    public static final RegistrySupplier<Item> ORANGE = register("orange", props -> new Item(props.food(
+            new FoodProperties.Builder().nutrition(4).saturationModifier(0.3F).build())));
+    static {
+        TANGERINE.listen(i -> ComposterBlock.COMPOSTABLES.put(i, 0.5F));
+        ORANGE.listen(i -> ComposterBlock.COMPOSTABLES.put(i, 0.5F));
+    }
 
     public static final RegistrySupplier<CreativeModeTab> TAB = TABS.register("cozychristmas", () -> CreativeTabRegistry.create(builder -> builder
             .title(Component.translatable("itemGroup.cozychristmas"))
@@ -202,6 +212,12 @@ public final class CozyItems {
                 output.accept(KRAMPUS_HORNS.get());
                 output.accept(KRAMPUS_CHAIN.get());
                 output.accept(CozyBlocks.SACK_ITEM.get());
+                output.accept(ORANGE.get());
+                for (WoodSet set : CozyWoods.ALL) {
+                    for (RegistrySupplier<Item> item : set.items()) {
+                        output.accept(item.get());
+                    }
+                }
             })));
 
     private CozyItems() {

@@ -15,6 +15,7 @@
       "dev.eliasnvx.cozychristmas.fabric.gametest.GoblinGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.StockingGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.SnowmanGameTestsFabric",
+      "dev.eliasnvx.cozychristmas.fabric.gametest.WoodGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.KrampusGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.FoodGameTestsFabric",
       "dev.eliasnvx.cozychristmas.fabric.gametest.TreeGameTestsFabric",

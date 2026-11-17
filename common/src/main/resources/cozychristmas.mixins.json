@@ -9,15 +9,20 @@
     "client.CreativeModeInventoryScreenMixin",
     "client.EffectRenderingInventoryScreenMixin",
     "client.InventoryScreenMixin",
-    "client.PlayerRendererHandMixin"
+    "client.PlayerRendererHandMixin",
+    "client.SheetsMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
+    "BlockEntityTypeMixin",
+    "BlockSetTypeInvoker",
+    "FireBlockInvoker",
     "InventoryMenuMixin",
     "LivingEntityMixin",
     "PlayerMixin",
-    "ServerGamePacketListenerImplMixin"
+    "ServerGamePacketListenerImplMixin",
+    "WoodTypeInvoker"
   ]
 }

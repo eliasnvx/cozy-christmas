@@ -71,9 +71,12 @@ Where lairs generate is the biome tag `#cozychristmas:has_structure/krampus_lair
 - **Hot cocoa with marshmallows** comes in a brick mug and warms you through: it thaws you and keeps the frost off for two minutes.
 - **Mulled wine** heals a little (Regeneration I for 10 seconds).
 - **Chestnuts** sometimes fall from dark oak leaves; roast them on a campfire.
-- **Tangerines** and **gingerbread cookies** (elves love those).
+- **Tangerines**, **oranges** and **gingerbread cookies** (elves love those).
 
 Santa sells some of it, and presents and chests hold the rest.
+
+## Tangerine and orange trees
+Two new woods with the whole vanilla set: logs and wood (strip them with an axe), planks, stairs, slabs, fence and gate, door, trapdoor, button, pressure plate, signs, hanging signs, boats and chest boats. Their saplings grow into round, bushy trees (now and then a grand one), and the leaves bear fruit: bare, then blossom, then ripe; bone meal moves them a stage on. A right click picks the ripe fruit (tangerines or oranges) and the leaves start over; breaking them drops it too. Tangerine groves grow wild in plains, meadows and forests, orange groves in savannas and sparse jungles (`#cozychristmas:has_tangerine_trees`, `has_orange_trees`); Santa sells saplings and oranges.
 
 ## Karma
 Every player has a hidden karma from -100 to +100. Hurting villagers, elves and other peaceful folk or stealing from Santa lowers it; giving gifts, feeding reindeer and getting back what goblins stole raises it; it drifts back toward zero by about one point per in-game day. Nice players mostly find gifts in their presents, naughty ones find coal.
@@ -81,7 +84,7 @@ Every player has a hidden karma from -100 to +100. Hurting villagers, elves and 
 Mobs that count are in the entity tag `#cozychristmas:karma_protected`, so data packs can change them.
 
 ## Config
-`config/cozychristmas-common.json`: season dates (`real_date`, `always`, `never`, or `serene_seasons` with the sub-seasons that count), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts, the sleigh: whether it flies, how many presents it takes), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread), stockings (`stockings`: season only, how much coal), evil snowmen (`evil_snowman`: health, throwing, melting), Krampus (`krampus`: his moves, karma, `visits`), chestnuts from leaves (`food`: which leaves, how often), Christmas trees (`tree`: season only, how many ornaments, how far presents land, how many pile up). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
+`config/cozychristmas-common.json`: season dates (`real_date`, `always`, `never`, or `serene_seasons` with the sub-seasons that count), karma thresholds and amounts, present odds per karma tier, the warning radius, the boom (damage, radius, knockback, `breaks_blocks`), presents in the snow (`presents.snow`), the Toasty set's bonuses (`keeps_warm`, `snow_speed_bonus`), Santa and the elves (`workshop`: health, anger, the nice discount, daily gifts, the sleigh: whether it flies, how many presents it takes), reindeer (`reindeer`: when they fly, `season` / `always` / `never`, speeds, taming chance, wild herds), goblins (`goblins`: stealing on or off, night spawns, soggy gingerbread), stockings (`stockings`: season only, how much coal), evil snowmen (`evil_snowman`: health, throwing, melting), Krampus (`krampus`: his moves, karma, `visits`), chestnuts from leaves (`food`: which leaves, how often), Christmas trees (`tree`: season only, how many ornaments, how far presents land, how many pile up), tangerine and orange trees (`citrus`: how fast fruit ripens, how much a harvest gives, wild groves on or off). Missing options are filled with defaults; a broken file is kept as `.broken` and replaced.
 
 Operators: `/cozychristmas karma get|set|add <players> [value]`, `/cozychristmas season`.
 

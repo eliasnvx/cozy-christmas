@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityEvent;
@@ -30,7 +31,10 @@ import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +60,7 @@ public class EvilSnowman extends Monster implements RangedAttackMob {
     private static final double ARC = 0.2;
     private static final float LOOK_DISTANCE = 8.0F;
     private static final int MELT_PARTICLES = 6;
+    private static final double TRAIL_OFFSET = 0.25;
 
     private int throwTicks;
 
@@ -140,6 +145,22 @@ public class EvilSnowman extends Monster implements RangedAttackMob {
                 hurt(damageSources().onFire(), BIOME_MELT_DAMAGE);
             } else if ((tickCount + getId()) % HEAT_CHECK_INTERVAL == 0 && nearHeat(server)) {
                 hurt(damageSources().inFire(), HEAT_DAMAGE);
+            }
+            if (settings().leavesSnow() && server.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                leaveSnow(server);
+            }
+        }
+    }
+
+    /** Like the snow golem: a snow layer on every free block under its four corners that can hold one. */
+    private void leaveSnow(ServerLevel level) {
+        BlockState snow = Blocks.SNOW.defaultBlockState();
+        for (int i = 0; i < 4; i++) {
+            BlockPos pos = new BlockPos(Mth.floor(getX() + (i % 2 * 2 - 1) * TRAIL_OFFSET), Mth.floor(getY()),
+                    Mth.floor(getZ() + (i / 2 % 2 * 2 - 1) * TRAIL_OFFSET));
+            if (level.getBlockState(pos).isAir() && snow.canSurvive(level, pos)) {
+                level.setBlockAndUpdate(pos, snow);
+                level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(this, snow));
             }
         }
     }
