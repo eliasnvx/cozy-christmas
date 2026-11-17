@@ -19,6 +19,7 @@ import dev.eliasnvx.cozychristmas.registry.CozyMenus;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.season.SeasonSource;
+import dev.eliasnvx.cozychristmas.wood.CozyWoods;
 import dev.eliasnvx.cozychristmas.snowman.IceSnowball;
 import dev.eliasnvx.cozychristmas.stocking.StockingEvents;
 import net.minecraft.core.Position;
@@ -52,6 +53,7 @@ public final class CozyChristmas {
         CozyConfig.loadCommon();
 
         // blocks before items: block items look them up
+        CozyWoods.init();
         CozyBlocks.REGISTER.register();
         CozyEffects.REGISTER.register();
         CozyEntities.REGISTER.register(); // before items: spawn eggs refer to the entity types
@@ -63,6 +65,7 @@ public final class CozyChristmas {
         CozyParticles.REGISTER.register();
         CozyItems.TABS.register();
         CozyEntities.init();
+        CozyWoods.initWorldgen();
 
         CosmeticsEvents.register();
         StockingEvents.register();

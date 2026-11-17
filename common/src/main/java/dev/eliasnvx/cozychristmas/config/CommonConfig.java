@@ -13,6 +13,7 @@ import dev.eliasnvx.cozychristmas.season.SeasonSettings;
 import dev.eliasnvx.cozychristmas.snowman.EvilSnowmanSettings;
 import dev.eliasnvx.cozychristmas.stocking.StockingSettings;
 import dev.eliasnvx.cozychristmas.tree.TreeSettings;
+import dev.eliasnvx.cozychristmas.wood.CitrusSettings;
 import dev.eliasnvx.cozychristmas.workshop.WorkshopSettings;
 
 /**
@@ -22,12 +23,12 @@ import dev.eliasnvx.cozychristmas.workshop.WorkshopSettings;
 public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSettings presents,
                            ToastySettings toastySet, WorkshopSettings workshop, ReindeerSettings reindeer,
                            GoblinSettings goblins, StockingSettings stockings, EvilSnowmanSettings evilSnowman,
-                           KrampusSettings krampus, FoodSettings food, TreeSettings tree) {
+                           KrampusSettings krampus, FoodSettings food, TreeSettings tree, CitrusSettings citrus) {
 
     public static final CommonConfig DEFAULTS = new CommonConfig(SeasonSettings.DEFAULTS, KarmaSettings.DEFAULTS,
             PresentSettings.DEFAULTS, ToastySettings.DEFAULTS, WorkshopSettings.DEFAULTS, ReindeerSettings.DEFAULTS,
             GoblinSettings.DEFAULTS, StockingSettings.DEFAULTS, EvilSnowmanSettings.DEFAULTS,
-            KrampusSettings.DEFAULTS, FoodSettings.DEFAULTS, TreeSettings.DEFAULTS);
+            KrampusSettings.DEFAULTS, FoodSettings.DEFAULTS, TreeSettings.DEFAULTS, CitrusSettings.DEFAULTS);
 
     public static final Codec<CommonConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
             ConfigCodecs.field(SeasonSettings.CODEC, "season", DEFAULTS.season).forGetter(CommonConfig::season),
@@ -44,6 +45,7 @@ public record CommonConfig(SeasonSettings season, KarmaSettings karma, PresentSe
                     .forGetter(CommonConfig::evilSnowman),
             ConfigCodecs.field(KrampusSettings.CODEC, "krampus", DEFAULTS.krampus).forGetter(CommonConfig::krampus),
             ConfigCodecs.field(FoodSettings.CODEC, "food", DEFAULTS.food).forGetter(CommonConfig::food),
-            ConfigCodecs.field(TreeSettings.CODEC, "tree", DEFAULTS.tree).forGetter(CommonConfig::tree)
+            ConfigCodecs.field(TreeSettings.CODEC, "tree", DEFAULTS.tree).forGetter(CommonConfig::tree),
+            ConfigCodecs.field(CitrusSettings.CODEC, "citrus", DEFAULTS.citrus).forGetter(CommonConfig::citrus)
     ).apply(i, CommonConfig::new));
 }

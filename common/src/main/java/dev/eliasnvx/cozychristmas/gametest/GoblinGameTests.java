@@ -62,6 +62,7 @@ public final class GoblinGameTests {
     private static final int STICKS = 12;
     private static final int SOAK_TICKS = 30;
     private static final int CAMP_PRESENTS = 8;
+    private static final double GOBLIN_DROP_REACH = 6.0;
 
     private GoblinGameTests() {
     }
@@ -192,6 +193,9 @@ public final class GoblinGameTests {
                 helper.assertTrue(dropped(helper, goblin, stack -> stack.is(Items.COBBLESTONE)), "the cobblestone comes back");
                 GameTestAsserts.assertValueEqual(helper, dropped(helper, goblin, stack -> stack.is(CozyBlocks.PRESENT_ITEM.get())), round == 0,
                         "a present only the first time today, round " + round);
+                // what round 0 dropped can lie within reach of round 1's goblin, so it starts from clean ground
+                helper.getLevel().getEntitiesOfClass(ItemEntity.class, goblin.getBoundingBox().inflate(GOBLIN_DROP_REACH))
+                        .forEach(ItemEntity::discard);
             }
             GameTestAsserts.assertValueEqual(helper, KarmaManager.get(player), karma + CozyConfig.common().karma().returnStolen(),
                     "karma for returned loot once a day");

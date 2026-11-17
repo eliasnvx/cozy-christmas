@@ -15,9 +15,10 @@ import net.minecraft.util.ExtraCodecs;
  * in groups of {@code minGroup}..{@code maxGroup}.
  */
 public record EvilSnowmanSettings(double health, double speed, int throwInterval, double throwRange, double fireMultiplier,
-                                  int heatRadius, int spawnWeight, int minGroup, int maxGroup, IceSnowballSettings iceSnowball) {
+                                  int heatRadius, boolean leavesSnow, int spawnWeight, int minGroup, int maxGroup,
+                                  IceSnowballSettings iceSnowball) {
 
-    public static final EvilSnowmanSettings DEFAULTS = new EvilSnowmanSettings(16.0, 0.25, 30, 12.0, 3.0, 2, 20, 1, 2,
+    public static final EvilSnowmanSettings DEFAULTS = new EvilSnowmanSettings(16.0, 0.25, 30, 12.0, 3.0, 2, true, 20, 1, 2,
             IceSnowballSettings.DEFAULTS);
 
     public static final Codec<EvilSnowmanSettings> CODEC = ExtraCodecs.validate(RecordCodecBuilder.<EvilSnowmanSettings>create(i -> i.group(
@@ -33,6 +34,8 @@ public record EvilSnowmanSettings(double health, double speed, int throwInterval
                     .forGetter(EvilSnowmanSettings::fireMultiplier),
             ConfigCodecs.field(Codec.intRange(0, 4), "heat_radius", DEFAULTS.heatRadius)
                     .forGetter(EvilSnowmanSettings::heatRadius),
+            ConfigCodecs.field(Codec.BOOL, "leaves_snow", DEFAULTS.leavesSnow)
+                    .forGetter(EvilSnowmanSettings::leavesSnow),
             ConfigCodecs.field(Codec.intRange(0, 1000), "spawn_weight", DEFAULTS.spawnWeight)
                     .forGetter(EvilSnowmanSettings::spawnWeight),
             ConfigCodecs.field(Codec.intRange(1, 16), "min_group", DEFAULTS.minGroup)

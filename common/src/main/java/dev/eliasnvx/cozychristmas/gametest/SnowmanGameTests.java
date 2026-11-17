@@ -46,7 +46,8 @@ public final class SnowmanGameTests {
             new GameTestEntry("fire_hurts_snowmen_more", SnowmanGameTests::fireHurtsMore),
             new GameTestEntry("a_lit_fireplace_melts_snowmen", SnowmanGameTests::litFireplaceMelts),
             new GameTestEntry("dispensers_throw_ice_snowballs", SnowmanGameTests::dispensersThrow),
-            new GameTestEntry("evil_snowmen_spawn_in_snowy_biomes", SnowmanGameTests::spawnInSnowyBiomes));
+            new GameTestEntry("evil_snowmen_spawn_in_snowy_biomes", SnowmanGameTests::spawnInSnowyBiomes),
+            new GameTestEntry("evil_snowman_leaves_snow", SnowmanGameTests::leavesSnow));
 
     private static final Vec3 COLD_PIG = new Vec3(1.5, 1.0, 1.5);
     private static final Vec3 WARM_PIG = new Vec3(5.5, 1.0, 1.5);
@@ -137,6 +138,18 @@ public final class SnowmanGameTests {
         dispenser.setItem(0, new ItemStack(CozyItems.ICE_SNOWBALL.get()));
         helper.setBlock(DISPENSER.east(), Blocks.REDSTONE_BLOCK);
         helper.succeedWhen(() -> helper.assertFalse(balls(helper).isEmpty(), "the dispenser threw an ice snowball"));
+    }
+
+    /** Like a snow golem, it leaves snow layers where it stands (when its config says so). */
+    public static void leavesSnow(GameTestHelper helper) {
+        BlockPos under = new BlockPos(2, 1, 4);
+        helper.setBlock(under.below(), Blocks.STONE); // the test floor is a barrier, which holds no snow
+        snowman(helper, SNOWMAN);
+        if (!CozyConfig.common().evilSnowman().leavesSnow()) {
+            helper.succeed();
+            return;
+        }
+        helper.succeedWhen(() -> helper.assertBlockPresent(Blocks.SNOW, under));
     }
 
     /** The loader's biome modification lands in the biome's spawn settings (see GoblinGameTests#spawnInSnowyBiomes). */

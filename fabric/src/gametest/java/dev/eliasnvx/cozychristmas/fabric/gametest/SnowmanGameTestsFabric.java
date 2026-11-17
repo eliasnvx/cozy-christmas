@@ -51,6 +51,11 @@ public final class SnowmanGameTestsFabric implements FabricGameTest {
         SnowmanGameTests.spawnInSnowyBiomes(helper);
     }
 
+    @GameTest(template = EMPTY_STRUCTURE, timeoutTicks = SLOW)
+    public void leavesSnow(GameTestHelper helper) {
+        SnowmanGameTests.leavesSnow(helper);
+    }
+
     @GameTest(template = EMPTY_STRUCTURE)
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())

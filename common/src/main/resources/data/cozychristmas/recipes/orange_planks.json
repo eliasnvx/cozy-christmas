@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "planks",
+  "ingredients": [
+    {
+      "tag": "cozychristmas:orange_logs"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "item": "cozychristmas:orange_planks"
+  }
+}

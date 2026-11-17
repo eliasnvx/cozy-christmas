@@ -4,6 +4,7 @@ import dev.eliasnvx.cozychristmas.CozyChristmas;
 import dev.eliasnvx.cozychristmas.registry.CozyBlocks;
 import dev.eliasnvx.cozychristmas.registry.CozyItems;
 import dev.eliasnvx.cozychristmas.tree.OrnamentColor;
+import dev.eliasnvx.cozychristmas.wood.CozyWoods;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -47,6 +48,9 @@ public final class SantaTrades {
             sells("name_tag", 5, () -> Items.NAME_TAG, 1, 2, 10),
             sells("spruce_saplings", 1, () -> Items.SPRUCE_SAPLING, 4, 6, 2),
             sells("tangerines", 1, CozyItems.TANGERINE, 6, 8, 2),
+            sells("oranges", 1, CozyItems.ORANGE, 6, 8, 2),
+            sells("tangerine_saplings", 3, () -> CozyWoods.TANGERINE.sapling.get(), 1, 4, 2),
+            sells("orange_saplings", 3, () -> CozyWoods.ORANGE.sapling.get(), 1, 4, 2),
             sells("chestnuts", 1, CozyItems.CHESTNUTS, 10, 8, 2),
             sells("hot_cocoa", 2, CozyItems.HOT_COCOA, 2, 6, 2),
             sells("tree_star", 4, CozyBlocks.TREE_STAR_ITEM, 1, 4, 2),

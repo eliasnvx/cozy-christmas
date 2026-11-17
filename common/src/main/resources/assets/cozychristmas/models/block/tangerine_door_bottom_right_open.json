@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_bottom_right_open",
+  "textures": {
+    "bottom": "cozychristmas:block/tangerine_door_bottom",
+    "top": "cozychristmas:block/tangerine_door_top"
+  }
+}

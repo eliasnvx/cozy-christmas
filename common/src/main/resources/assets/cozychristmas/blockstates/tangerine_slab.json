@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "cozychristmas:block/tangerine_slab"
+    },
+    "type=double": {
+      "model": "cozychristmas:block/tangerine_planks"
+    },
+    "type=top": {
+      "model": "cozychristmas:block/tangerine_slab_top"
+    }
+  }
+}

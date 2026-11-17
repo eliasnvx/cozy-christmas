@@ -21,6 +21,7 @@ import dev.eliasnvx.cozychristmas.client.krampus.SackRenderer;
 import dev.eliasnvx.cozychristmas.client.reindeer.ReindeerRenderer;
 import dev.eliasnvx.cozychristmas.client.sleigh.SleighRenderer;
 import dev.eliasnvx.cozychristmas.client.snowman.EvilSnowmanRenderer;
+import dev.eliasnvx.cozychristmas.client.wood.WoodBoatRenderers;
 import dev.eliasnvx.cozychristmas.client.workshop.ElfRenderer;
 import dev.eliasnvx.cozychristmas.client.workshop.SantaRenderer;
 import dev.eliasnvx.cozychristmas.cosmetic.CosmeticSlot;
@@ -91,6 +92,7 @@ public final class CozyChristmasClient {
         SackRenderer.registerLayers();
         SleighRenderer.registerLayers();
         SackOverlay.register();
+        WoodBoatRenderers.register();
         ClientTickEvent.CLIENT_POST.register(minecraft -> {
             if (minecraft.player != null) {
                 EarlySyncs.flush(minecraft.player);

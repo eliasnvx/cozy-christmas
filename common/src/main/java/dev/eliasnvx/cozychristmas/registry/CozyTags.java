@@ -60,6 +60,10 @@ public final class CozyTags {
     /** Wild reindeer spawn on these. */
     public static final TagKey<Block> REINDEER_SPAWNABLE_ON = TagKey.create(Registries.BLOCK, CozyChristmas.id("reindeer_spawnable_on"));
 
+    /** Biomes where tangerine groves grow wild, and orange groves. */
+    public static final TagKey<Biome> HAS_TANGERINE_TREES = TagKey.create(Registries.BIOME, CozyChristmas.id("has_tangerine_trees"));
+    public static final TagKey<Biome> HAS_ORANGE_TREES = TagKey.create(Registries.BIOME, CozyChristmas.id("has_orange_trees"));
+
     /** Biomes with wild reindeer herds. */
     public static final TagKey<Biome> SPAWNS_REINDEER = TagKey.create(Registries.BIOME, CozyChristmas.id("spawns_reindeer"));
 
