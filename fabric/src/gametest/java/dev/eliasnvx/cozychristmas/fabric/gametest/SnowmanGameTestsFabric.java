@@ -49,6 +49,11 @@ public final class SnowmanGameTestsFabric {
         SnowmanGameTests.spawnInSnowyBiomes(helper);
     }
 
+    @GameTest(maxTicks = SLOW)
+    public void leavesSnow(GameTestHelper helper) {
+        SnowmanGameTests.leavesSnow(helper);
+    }
+
     @GameTest
     public void everySharedTestRegistered(GameTestHelper helper) {
         long wrappers = Arrays.stream(getClass().getMethods())
