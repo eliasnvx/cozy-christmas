@@ -43,6 +43,8 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.LivingEntity;
@@ -166,26 +168,40 @@ public final class CozyChristmasClient {
             appendPresent(present, lines);
         }
         if (stack.is(CozyBlocks.STOCKING_ITEM.get())) {
-            lines.add(Component.translatable("tooltip.cozychristmas.stocking").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.stocking");
         } else if (stack.is(CozyTags.HANGS_AS_STOCKING)) {
-            lines.add(Component.translatable("tooltip.cozychristmas.hangs_as_stocking").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.hangs_as_stocking");
         }
         if (stack.is(CozyBlocks.TREE_STAR_ITEM.get())) {
-            lines.add(Component.translatable("tooltip.cozychristmas.tree_star").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.tree_star");
         } else if (stack.getItem() instanceof BlockItem item && item.getBlock() instanceof OrnamentBlock) {
-            lines.add(Component.translatable("tooltip.cozychristmas.ornament").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.ornament");
         }
         if (stack.is(CozyItems.KRAMPUS_HORNS.get())) {
-            lines.add(Component.translatable("tooltip.cozychristmas.krampus_horns").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.krampus_horns");
         } else if (stack.is(CozyItems.KRAMPUS_CHAIN.get())) {
-            lines.add(Component.translatable("tooltip.cozychristmas.krampus_chain").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.krampus_chain");
         }
         if (stack.is(CozyItems.ICE_SNOWBALL.get())) {
-            lines.add(Component.translatable("tooltip.cozychristmas.ice_snowball").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.ice_snowball");
         } else if (stack.is(CozyItems.HOT_COCOA.get())) {
-            lines.add(Component.translatable("tooltip.cozychristmas.hot_cocoa").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.hot_cocoa");
         } else if (stack.is(CozyItems.CHESTNUTS.get())) {
-            lines.add(Component.translatable("tooltip.cozychristmas.chestnuts").withStyle(ChatFormatting.GRAY));
+            addWrapped(lines, "tooltip.cozychristmas.chestnuts");
+        }
+    }
+
+    private static final int TOOLTIP_WRAP_WIDTH = 170;
+
+    private static void addWrapped(List<Component> lines, String key) {
+        Minecraft mc = Minecraft.getInstance();
+        Component text = Component.translatable(key);
+        if (mc.font == null) {
+            lines.add(text.copy().withStyle(ChatFormatting.GRAY));
+            return;
+        }
+        for (FormattedText part : mc.font.getSplitter().splitLines(text, TOOLTIP_WRAP_WIDTH, Style.EMPTY)) {
+            lines.add(Component.literal(part.getString()).withStyle(ChatFormatting.GRAY));
         }
     }
 
