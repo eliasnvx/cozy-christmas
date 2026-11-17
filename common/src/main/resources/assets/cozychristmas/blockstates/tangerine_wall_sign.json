@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "cozychristmas:block/tangerine_wall_sign",
+      "y": 270
+    },
+    "facing=north": {
+      "model": "cozychristmas:block/tangerine_wall_sign",
+      "y": 180
+    },
+    "facing=south": {
+      "model": "cozychristmas:block/tangerine_wall_sign"
+    },
+    "facing=west": {
+      "model": "cozychristmas:block/tangerine_wall_sign",
+      "y": 90
+    }
+  }
+}

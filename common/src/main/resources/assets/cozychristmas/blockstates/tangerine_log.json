@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "cozychristmas:block/tangerine_log_x"
+    },
+    "axis=y": {
+      "model": "cozychristmas:block/tangerine_log_y"
+    },
+    "axis=z": {
+      "model": "cozychristmas:block/tangerine_log_z"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "age=0": {
+      "model": "cozychristmas:block/tangerine_leaves"
+    },
+    "age=1": {
+      "model": "cozychristmas:block/tangerine_leaves_blossom"
+    },
+    "age=2": {
+      "model": "cozychristmas:block/tangerine_leaves_fruit"
+    }
+  }
+}

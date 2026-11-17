@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "cozychristmas:block/stripped_orange_log",
+    "side": "cozychristmas:block/stripped_orange_log"
+  }
+}

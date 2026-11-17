@@ -18,9 +18,13 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "BlockEntityTypeMixin",
+    "BlockSetTypeInvoker",
+    "FireBlockInvoker",
     "InventoryMenuMixin",
     "LivingEntityMixin",
     "PlayerMixin",
-    "ServerGamePacketListenerImplMixin"
+    "ServerGamePacketListenerImplMixin",
+    "WoodTypeInvoker"
   ]
 }

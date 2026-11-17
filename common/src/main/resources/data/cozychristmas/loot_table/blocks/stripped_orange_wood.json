@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:stripped_orange_wood"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "cozychristmas:blocks/stripped_orange_wood"
+}

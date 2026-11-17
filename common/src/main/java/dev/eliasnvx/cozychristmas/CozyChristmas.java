@@ -20,6 +20,7 @@ import dev.eliasnvx.cozychristmas.registry.CozyMenus;
 import dev.eliasnvx.cozychristmas.registry.CozyParticles;
 import dev.eliasnvx.cozychristmas.registry.CozySounds;
 import dev.eliasnvx.cozychristmas.season.SeasonSource;
+import dev.eliasnvx.cozychristmas.wood.CozyWoods;
 import dev.eliasnvx.cozychristmas.stocking.StockingEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -47,6 +48,7 @@ public final class CozyChristmas {
 
         // components first: items read them in their properties; blocks before items: block items look them up
         CozyComponents.REGISTER.register();
+        CozyWoods.init(); // queues the wood sets' blocks and items before the registries are written
         CozyBlocks.REGISTER.register();
         CozyEffects.REGISTER.register();
         CozyEntities.REGISTER.register(); // before items: spawn eggs refer to the entity types
@@ -58,6 +60,7 @@ public final class CozyChristmas {
         CozyParticles.REGISTER.register();
         CozyItems.TABS.register();
         CozyEntities.init();
+        CozyWoods.initWorldgen();
 
         CosmeticsEvents.register();
         StockingEvents.register();

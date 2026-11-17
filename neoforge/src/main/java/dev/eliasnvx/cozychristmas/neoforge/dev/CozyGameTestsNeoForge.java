@@ -15,6 +15,7 @@ import dev.eliasnvx.cozychristmas.gametest.GoblinGameTests;
 import dev.eliasnvx.cozychristmas.gametest.HeadPieceGameTests;
 import dev.eliasnvx.cozychristmas.gametest.KrampusGameTests;
 import dev.eliasnvx.cozychristmas.gametest.SnowmanGameTests;
+import dev.eliasnvx.cozychristmas.gametest.WoodGameTests;
 import dev.eliasnvx.cozychristmas.gametest.StockingGameTests;
 import dev.eliasnvx.cozychristmas.gametest.ToastySetGameTests;
 import dev.eliasnvx.cozychristmas.gametest.WorkshopGameTests;
@@ -62,7 +63,7 @@ public final class CozyGameTestsNeoForge {
             for (List<GameTestEntry> tests : List.of(KarmaGameTests.ALL, CosmeticSlotGameTests.ALL, ToastySetGameTests.ALL,
                     HeadPieceGameTests.ALL, PresentGameTests.ALL, WorkshopGameTests.ALL, GoblinGameTests.ALL,
                     StockingGameTests.ALL, SnowmanGameTests.ALL, KrampusGameTests.ALL, FoodGameTests.ALL, TreeGameTests.ALL,
-                    CompatGameTests.ALL, SleighGameTests.ALL)) {
+                    CompatGameTests.ALL, SleighGameTests.ALL, WoodGameTests.ALL)) {
                 entries.addAll(tests);
             }
         }

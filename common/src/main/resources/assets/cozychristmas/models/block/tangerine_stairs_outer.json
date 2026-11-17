@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "cozychristmas:block/tangerine_planks",
+    "side": "cozychristmas:block/tangerine_planks",
+    "top": "cozychristmas:block/tangerine_planks"
+  }
+}

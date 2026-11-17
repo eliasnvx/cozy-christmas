@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "cozychristmas:tangerine_button"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "cozychristmas:blocks/tangerine_button"
+}
